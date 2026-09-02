@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🚕 タクシー乗務ログ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f7;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.app{max-width:520px;margin:auto;padding-bottom:90px}header{background:#151515;color:#fff;padding:20px 18px}
+h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.7;margin-top:4px}main{padding:14px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}
+.label{font-weight:700;font-size:13px;margin-bottom:10px}.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip,.btn{border:0;border-radius:999px;background:#eef0f3;padding:10px 13px;font-size:15px}.chip.on{background:#d9f0ff;color:#12608a}.chip.on.second{background:#1677b7;color:#fff}.chip.on.first{background:#bfe7ff;color:#12608a}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.grid>div{min-width:0}input,textarea{width:100%;min-width:0;padding:11px;border:1px solid #ddd;border-radius:12px;font-size:16px;background:#fafafa}
+textarea{min-height:70px;resize:none}.small{font-size:12px;color:#777;margin-top:7px}.full{width:100%;margin-top:8px}
+.preview img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px}
+.save{width:100%;border:0;border-radius:16px;background:#151515;color:#fff;padding:16px;font-size:17px;font-weight:700}
+.total{text-align:center;background:linear-gradient(135deg,#fff7df,#fff)}.cat{font-size:52px}.amount{font-size:30px;font-weight:800}
+.hidden{display:none}.logitem{padding:14px 4px;border-bottom:1px solid #eee}.logitem:last-child{border-bottom:0}
+.logtop{display:flex;justify-content:space-between;font-weight:700}.tag{font-size:12px;color:#666;margin-top:5px}
+.status{font-size:12px;text-align:center;margin:8px 0;color:#777}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;text-align:center;font-size:12px}
+</style>
+</head>
+<body><div class="app">
+<header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
+
+<main id="today">
+<div class="card"><div class="label">📅 日付</div><strong id="date"></strong></div>
+
+<div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
+<button class="chip" onclick="weather(this)">☀️ 晴れ</button><button class="chip" onclick="weather(this)">☁️ 曇り</button>
+<button class="chip" onclick="weather(this)">🌧️ 雨</button><button class="chip" onclick="weather(this)">❄️ 雪</button>
+<button class="chip" onclick="weather(this)">🌧️ 大雨</button><button class="chip" onclick="weather(this)">🌀 台風</button>
+</div></div>
+
+<div class="card"><div class="label">📅 イベント</div><div class="chips" id="events">
+<button class="chip" onclick="pick(this)">なし</button><button class="chip" onclick="pick(this)">⚾ 野球</button>
+<button class="chip" onclick="pick(this)">⚽ サッカー</button><button class="chip" onclick="pick(this)">🎆 花火</button>
+<button class="chip" onclick="pick(this)">🏮 夏祭り</button><button class="chip" onclick="pick(this)">🎤 ライブ</button>
+</div></div>
+
+<div class="card"><div class="label">🕐 出入庫・営業時間</div><div class="grid">
+<div><div class="small">出庫</div><input id="out" type="time"></div>
+<div><div class="small">入庫</div><input id="in" type="time"></div>
+<div><div class="small">営業時間</div><input id="hours" readonly></div><div><div class="small">営業距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
+
+<div class="card"><div class="label">💰 売上</div><div class="grid">
+<div><div class="small">自分の売上</div><input id="sales" type="number" inputmode="numeric"></div><div><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
+<div id="diff" style="font-weight:800;margin-top:10px">平均との差　—</div></div>
+
+<div class="card"><div class="label">🛣️ 覚えておきたい道</div><textarea id="road" placeholder="覚えておきたい道を入力"></textarea>
+<input id="roadPhoto" type="file" accept="image/*" capture="environment" hidden onchange="photo(this)">
+<button class="btn full" onclick="document.getElementById('roadPhoto').click()">📷 道の写真を追加</button><div id="preview" class="preview"></div></div>
+
+<div class="card"><div class="label">🏢 覚えておきたい建物</div><textarea id="building"></textarea></div>
+
+<div class="card"><div class="label">📝 本日の営業メモ</div><textarea id="eventNote" placeholder="本日の出来事や気づいたことを入力"></textarea></div>
+
+<div class="card total"><div class="cat">🐱💰</div><div class="small">保存したログの累計売上</div><div class="amount" id="total">¥0</div></div>
+
+<button class="save" onclick="saveLog()">保存する</button>
+<div class="status" id="status">この端末に保存します</div>
+</main>
+
+<main id="logs" class="hidden"><div class="card"><div class="label">📚 保存した乗務ログ</div><div id="logList"></div></div>
+<button class="btn full" onclick="showToday()">← 今日の入力に戻る</button></main>
+<nav>🏠 今日　　📚 ログ</nav>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DB_NAME='TaxiDriverLogDB', STORE='logs';
+let db, photoData='';
+
+function initDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
+  req.onsuccess=e=>{db=e.target.result;resolve()};
+  req.onerror=()=>reject(req.error);
+ });
+}
+function getLogs(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function addLog(log){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add(log);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+
+const d=new Date();$('date').textContent=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+['日','月','火','水','木','金','土'][d.getDay()]+'）';
+function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
+rememberTimes();
+function pick(e){[...e.parentElement.children].forEach(x=>x.classList.remove('on'));e.classList.add('on')}
+function weather(e){let a=[...document.querySelectorAll('#weather .on')];if(e.classList.contains('on')){e.classList.remove('on');e.classList.remove('second');refreshWeather();return}if(a.length>=2)return;e.classList.add('on');refreshWeather()}
+function refreshWeather(){[...document.querySelectorAll('#weather .chip')].forEach(x=>{x.classList.remove('first','second')});let a=[...document.querySelectorAll('#weather .on')];if(a[0])a[0].classList.add('first');if(a[1])a[1].classList.add('second')}
+function duration(){if(!$('out').value||!$('in').value){$('hours').value='';return}let a=new Date('2000-01-01T'+$('out').value),b=new Date('2000-01-01T'+$('in').value);if(b<a)b.setDate(b.getDate()+1);let m=Math.round((b-a)/60000);$('hours').value=Math.floor(m/60)+'時間'+m%60+'分'}
+$('out').oninput=()=>{localStorage.setItem('taxiDefaultOut',$('out').value);duration()};$('in').oninput=()=>{localStorage.setItem('taxiDefaultIn',$('in').value);duration()};
+function calc(){let s=+$('sales').value,a=+$('avg').value;$('diff').textContent=s&&a?'平均との差　'+(s-a>=0?'+':'')+(s-a).toLocaleString()+'円':'平均との差　—'}
+$('sales').oninput=calc;$('avg').oninput=calc;
+
+function photo(i){let f=i.files[0];if(!f)return;let r=new FileReader();r.onload=e=>{photoData=e.target.result;$('preview').innerHTML='<img src="'+photoData+'">'};r.readAsDataURL(f)}
+
+async function updateTotal(){let a=await getLogs();let t=a.reduce((n,x)=>n+(Number(x.sales)||0),0);$('total').textContent='¥'+t.toLocaleString()}
+async function saveLog(){
+ let ev=document.querySelector('#events .on');
+ let log={date:$('date').textContent,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev?ev.textContent.trim():'',out:$('out').value,in:$('in').value,hours:$('hours').value,km:$('km').value,sales:$('sales').value,avg:$('avg').value,road:$('road').value,building:$('building').value,eventNote:$('eventNote').value,photo:photoData,savedAt:new Date().toISOString()};
+ let all=await getLogs();let same=all.find(x=>x.date===log.date);if(same){log.id=same.id;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(log);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}else await addLog(log);await updateTotal();$('status').textContent='✅ 保存しました。明日もこの端末に残ります';alert('保存しました！');showLogs();
+}
+async function showLogs(){$('today').classList.add('hidden');$('logs').classList.remove('hidden');let a=await getLogs();a.sort((x,y)=>y.id-x.id);$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>¥${Number(x.sales||0).toLocaleString()}</span></div><div class="tag">${x.weather.join(' ')} ${x.event||''} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||x.road||''}</div><button class="btn" onclick="deleteLog(${x.id})">削除</button></div>`).join(''):'まだログはありません。'}
+async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});await updateTotal();showLogs()}
+function showToday(){$('logs').classList.add('hidden');$('today').classList.remove('hidden')}
+initDB().then(updateTotal).catch(()=>{$('status').textContent='⚠️ この環境では端末保存を利用できません'});
+</script>
+</body></html>
