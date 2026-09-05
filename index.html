@@ -272,7 +272,7 @@ async function showMonthlyDetail(key){
     const ev=Array.isArray(x.event)?x.event.join(' '):(x.event||'');
     const route=(x.destination||'')+(x.course?' → '+x.course:'');
     return `<div class="dailyCard"><div class="dailyTitle">📅 ${x.date}</div><div class="dailyGrid"><div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">営業時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">営業距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div><div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${x.avg?'¥'+Number(x.avg).toLocaleString():'—'}</div></div>${route?`<div class="dailyBox dailyFull"><div class="dailyLabel">🗺️ 覚えておきたい道順</div><div class="dailyValue">${route}</div></div>`:''}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
-  }).join(''):'この期間の保存データはありません。';
+  }).join(''):'この期間の保存データはありません。');
 }
 
 function showSettings(){
