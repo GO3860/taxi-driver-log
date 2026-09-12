@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🚕 タクシー乗務ログ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f7;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.app{max-width:520px;margin:auto;padding-bottom:90px}header{background:#151515;color:#fff;padding:20px 18px}
+h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.7;margin-top:4px}main{padding:14px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}
+.label{font-weight:700;font-size:13px;margin-bottom:10px}.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip,.btn{border:0;border-radius:999px;background:#eef0f3;padding:10px 13px;font-size:15px}
+.dateChangeWrap{position:relative;display:inline-block}.datePickerOverlay{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;margin:0;padding:0}.dateChangeWrap .btn{width:100%;height:100%;pointer-events:none}.chip.on{background:#d9f0ff;color:#12608a}.chip.on.second{background:#1677b7;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;row-gap:18px;min-width:0;overflow:visible}.grid>div{min-width:0;width:100%}input,textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}input[type="time"]{-webkit-appearance:none;appearance:none;min-width:0;width:100%}.hoursbox{display:flex;align-items:center;min-height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}
+textarea{min-height:70px;resize:none}.small{font-size:12px;color:#777;margin-top:7px}.help-text{font-size:12px;color:#777;margin-top:7px}.help-text.hidden-help{display:none}.full{width:100%;margin-top:8px}
+.preview img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px}
+.save{width:100%;border:0;border-radius:16px;background:#b8b8b8;color:#fff;padding:16px;font-size:17px;font-weight:700;box-shadow:0 5px 0 #888;transition:all .08s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.savePressed{background:#151515;transform:translateY(5px);box-shadow:0 0 0 #151515}
+.save:not(:active):not(:focus){ }
+.total{text-align:center;background:linear-gradient(135deg,#fff7df,#fff)}.cat{font-size:52px}.amount{font-size:30px;font-weight:800}
+.hidden{display:none}.optional-widget{margin-top:0}.widget-note{font-size:12px;color:#777;margin-top:8px}.logitem{padding:14px 4px;border-bottom:1px solid #eee}.logitem:last-child{border-bottom:0}
+.logtop{display:flex;justify-content:space-between;font-weight:700}.tag{font-size:12px;color:#666;margin-top:5px}
+.status{font-size:12px;text-align:center;margin:8px 0;color:#777}
+.dataPeriod{border:1px solid #e4e6ea;border-radius:16px;padding:14px;margin-top:12px;background:#fff}.periodTitle{font-weight:800;font-size:16px;margin-bottom:10px}.dataGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dataBox{background:#f5f6f8;border-radius:12px;padding:10px}.dataLabel{font-size:11px;color:#777}.dataValue{font-size:18px;font-weight:800;margin-top:3px}.dataNote{font-size:11px;color:#888;margin-top:8px}.archiveTitle{font-weight:800;font-size:14px;margin:18px 0 8px}.archiveBadge{display:inline-block;font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:999px;padding:4px 8px;margin-left:6px}.dataPeriod{cursor:pointer}.dataPeriod:active{transform:scale(.99)}.detailHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.detailBtn{border:0;border-radius:999px;background:#e8f2ff;color:#1677b7;padding:8px 12px;font-weight:700}.dailyCard{background:#fff;border:1px solid #e3e6eb;border-radius:16px;padding:14px;margin-top:10px}.dailyTitle{font-weight:800;font-size:16px;margin-bottom:10px}.dailyGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dailyBox{background:#f5f6f8;border-radius:12px;padding:9px}.dailyLabel{font-size:11px;color:#777}.dailyValue{font-size:15px;font-weight:700;margin-top:3px;word-break:break-word}.dailyFull{grid-column:1/-1}.photoThumb{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-top:8px}.backData{width:100%;border:0;border-radius:999px;background:#eef0f3;padding:12px;font-size:15px;font-weight:700;color:#1677b7;margin-bottom:10px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;text-align:center;font-size:12px;display:flex;justify-content:center;gap:28px}.navbtn{border:0;background:none;font-size:16px;padding:8px 16px}
+.duty-date-large{font-size:2em !important;font-weight:600;line-height:1.2;}
+
+.duty-date-block{text-align:left;}
+.duty-date-label{font-size:1.1em;font-weight:600;margin-bottom:4px;}
+
+
+.detail-actions{display:flex;gap:8px;margin-top:10px;}
+.detail-actions button{flex:1;}
+.detailEdit{border:0;border-radius:999px;background:#eaf4ff;color:#2580ee;padding:12px;font-size:15px;font-weight:700;}
+
+
+.routeItem{border:1px solid #e2e5e9;border-radius:14px;padding:12px;margin-top:10px;background:#fafbfc}
+.routeItemTitle{font-weight:800;margin-bottom:8px}
+.routeRemove{margin-top:8px;background:#f1f2f4;color:#666}
+.routeAdd{margin-top:10px}
+.annualGraphWrap{margin-top:14px;padding:14px 8px 10px;background:#f7f8fa;border-radius:16px}.annualLegend{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;font-size:12px;color:#333;margin-bottom:10px}.annualGraph{height:190px;display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #ddd;padding:0 2px}.annualGroup{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.annualBars{height:160px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px}.annualBar{width:34%;max-width:16px;border-radius:4px 4px 0 0}.annualBar.self{background:#4d8bd8}.annualBar.area{background:#aab2bd}.annualMonth{font-size:11px;font-weight:700;margin-top:6px;white-space:nowrap}.annualSummary{margin-top:14px}.annualTable{margin-top:16px}.annualRow{display:grid;grid-template-columns:42px 1fr 1fr 72px;gap:8px;padding:10px 0;border-bottom:1px solid #eee;align-items:end}.annualMonthCell{font-weight:800;font-size:16px}.annualValue{font-weight:800;font-size:15px}.analysisButtons{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.analysisBtn{background:#f3f5f7;color:#2580ee;border:1px solid #dfe3e8;font-weight:800;font-size:16px;padding:14px 12px}.backData{border:0;background:#eef1f4;color:#2580ee;border-radius:999px;padding:12px 16px;font-size:15px;font-weight:700;width:100%;margin-bottom:10px}
+
+.calendarModal{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:1000;display:flex;align-items:flex-end;justify-content:center}.calendarModal.hidden{display:none}.calendarSheet{width:100%;max-width:560px;background:#fff;border-radius:24px 24px 0 0;padding:18px;box-sizing:border-box;max-height:90vh;overflow:auto;box-shadow:0 -8px 30px rgba(0,0,0,.15)}.calendarHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.calendarHead button{border:0;background:#f1f3f5;border-radius:12px;width:42px;height:42px;font-size:22px}.calendarTitle{font-size:20px;font-weight:800}.calendarWeek,.calendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}.calendarWeek div{text-align:center;font-size:12px;color:#777;padding:4px 0}.calDay{min-height:46px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px;position:relative}.calDay.empty{border:0;background:transparent}.calDay.selected{outline:3px solid #3b82f6;outline-offset:-2px}.calDay.work{background:#eaf3ff}.calDay.plan{background:#fff7df}.calDay.rest{background:#f3f4f6}.calMark{display:block;font-size:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendarForm{margin-top:16px;padding-top:14px;border-top:1px solid #eee}.calendarForm label{display:block;font-size:14px;font-weight:700;margin-top:10px}.calendarForm select,.calendarForm input{width:100%;box-sizing:border-box;padding:11px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-top:6px}.calendarActions{display:flex;gap:8px;margin-top:14px}.calendarActions button{flex:1;padding:12px;border:0;border-radius:12px;font-size:16px;font-weight:700}.calSave{background:#e8f1ff;color:#1670d2}.calDelete{background:#f1f3f5}.calClose{width:100%;margin-top:8px;padding:11px;border:0;background:transparent;font-size:15px;color:#666}
+</style>
+</head>
+<body><div class="app">
+<header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
+
+<main id="today">
+<div class="card"><div class="duty-date-block"><div class="duty-date-label">📅業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button">📅 乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
+
+<div class="card"><div class="label">今日は？</div><div class="chips" id="dayType"><button class="chip on" data-type="work" onclick="setDayType(this,'work')">🚕 勤務</button><button class="chip" data-type="rest" onclick="setDayType(this,'rest')">🏠 休み</button><button class="chip" data-type="parttime" onclick="setDayType(this,'parttime')">💰 アルバイト</button></div><div class="help-text">非番・公休・有休は全て『休み』で処理します。</div></div>
+
+<div id="workFields">
+<div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
+<button class="chip" onclick="weather(this)">☀️ 晴れ</button><button class="chip" onclick="weather(this)">☁️ 曇り</button>
+<button class="chip" onclick="weather(this)">🌧️ 雨</button><button class="chip" onclick="weather(this)">❄️ 雪</button>
+
+</div></div>
+
+<div class="card"><div class="label">📅 イベント</div><div class="chips" id="events">
+<button class="chip" onclick="pick(this)">なし</button><button class="chip" onclick="pick(this)">⚾ 野球</button>
+<button class="chip" onclick="pick(this)">⚽ サッカー</button><button class="chip" onclick="pick(this)">🎆 花火</button>
+<button class="chip" onclick="pick(this)">🏮 夏祭り</button><button class="chip" onclick="pick(this)">🎤 ライブ</button>
+<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">🌧️ 大雨</button><button class="chip" onclick="pick(this)">❄️ 大雪</button><button class="chip" onclick="pick(this)">その他</button>
+</div></div>
+
+<div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・営業時間</div><div class="grid">
+<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
+<div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
+<div><div class="small">営業時間</div><div id="hours" class="hoursbox">—</div></div><div id="distanceField"><div class="small">営業距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
+
+<div class="card"><div class="label">💰 売上</div><div class="grid">
+<div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
+<div id="diff" style="font-weight:800;margin-top:10px">平均との差　—</div></div>
+
+<div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
+<div id="routeList"></div>
+<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道順を追加</button>
+</div>
+
+<div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
+
+</div>
+
+<div id="restFields" class="card hidden"><div class="label">💰 同じエリアの平均売上</div><input id="restAvg" type="number" inputmode="numeric" placeholder="休みの日のエリア平均売上"></div>
+
+<div class="card total"><div class="cat">🐱💰</div><div class="small">保存したログの累計売上</div><div class="amount" id="total">¥0</div></div>
+
+<button class="save" type="button" id="saveButton">保存</button>
+<div class="status" id="status">この端末に保存します</div>
+</main>
+
+<main id="data" class="hidden">
+<div id="dataSummaryView">
+  <div class="card">
+    <div class="label">📊 月間売上</div>
+    <div id="monthlyData"></div>
+  </div>
+  <div class="card">
+    <div class="label">📈 分析データ</div>
+    <div class="help-text">知りたい項目を選ぶと、この期間のデータを分析します。</div>
+    <div class="analysisButtons">
+      <button class="btn analysisBtn" type="button" onclick="showAnalysis('weekday')">📅 曜日別</button>
+      <button class="btn analysisBtn" type="button" onclick="showAnalysis('weather')">🌤️ 天気別</button>
+      <button class="btn analysisBtn" type="button" onclick="showAnalysis('event')">📅 イベント別</button>
+    </div>
+  </div>
+  <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
+</div>
+<div id="dataAnalysisView" class="hidden">
+  <button class="backData" onclick="showDataSummary()">← 月間売上に戻る</button>
+  <div class="card"><div class="label" id="analysisTitle">📊 分析</div><div id="analysisContent"></div></div>
+</div>
+<div id="dataDetailView" class="hidden"><button class="backData" onclick="showDataSummary()">← 月間売上に戻る</button><div class="card"><div class="label">📋 保存した乗務内容</div><div id="monthlyDetail"></div></div></div>
+</main>
+
+<main id="settings" class="hidden">
+<div class="card"><div class="label">⚙️ 設定</div><div class="help-text">自分の会社や乗務スタイルに合わせて設定できます。</div></div>
+
+<div class="card">
+<div class="label">👤 個人データ・運賃設定</div>
+<div class="help-text">営業エリアと、現在の運賃・料金制度を登録できます。</div>
+<div style="display:grid;gap:12px;margin-top:12px">
+  <label style="font-size:15px">営業エリア
+    <input id="personalArea" type="text" placeholder="例：尼崎・伊丹・西宮" oninput="savePersonalData()" style="display:block;width:100%;box-sizing:border-box;padding:12px 10px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-top:6px">
+  </label>
+  <div style="font-weight:700;font-size:14px;margin-top:2px">初乗運賃</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="baseDistance" type="number" min="0" step="0.001" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> kmまで</label>
+    <label style="font-size:14px"><input id="baseFare" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円</label>
+  </div>
+  <div style="font-weight:700;font-size:14px">加算運賃</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="incrementDistance" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> mごとに</label>
+    <label style="font-size:14px"><input id="incrementFare" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円</label>
+  </div>
+  <div style="font-weight:700;font-size:14px">時間距離併用運賃</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="timeDistanceMin" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 分</label>
+    <label style="font-size:14px"><input id="timeDistanceSec" type="number" min="0" max="59" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 秒間まで</label>
+    <label style="font-size:14px"><input id="timeDistanceFare" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円</label>
+  </div>
+  <div style="font-weight:700;font-size:14px">貸切時間制度</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="charterMin" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 分まで毎に</label>
+    <label style="font-size:14px"><input id="charterFare" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円</label>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="charterHours" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 時間まで毎に</label>
+    <label style="font-size:14px"><input id="charterHoursFare" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円</label>
+  </div>
+  <div style="font-weight:700;font-size:14px">割引料金</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label style="font-size:14px"><input id="discountThreshold" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 円以上</label>
+    <label style="font-size:14px"><input id="discountRate" type="number" min="0" max="100" step="0.1" placeholder="◯" oninput="savePersonalData()" style="width:100%;box-sizing:border-box;padding:11px 8px;border:2px solid #ddd;border-radius:12px;font-size:16px"> 割引</label>
+  </div>
+  <div class="card" style="margin-top:12px;padding:14px;border:1px solid #e5e7eb;border-radius:16px;background:#fff">
+    <div style="font-weight:800;font-size:15px">📷 運賃・料金表の写真</div>
+    <div class="help-text" style="margin-top:4px">運賃表などを写真で保存できます。</div>
+    <input id="farePhotoInput" type="file" accept="image/*" onchange="saveFarePhoto(this)" style="display:block;width:100%;margin-top:10px;font-size:14px">
+    <div id="farePhotoPreview" style="margin-top:10px"></div>
+    <button type="button" onclick="clearFarePhoto()" style="margin-top:8px;padding:9px 14px;border:0;border-radius:10px;background:#eee;font-size:14px">写真を削除</button>
+  </div>
+  <div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
+</div>
+</div>
+
+<div class="card">
+<div class="label">💬 説明文の表示</div>
+<label style="display:flex;align-items:center;justify-content:space-between;font-size:15px">説明文を表示する <input id="showHelpText" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+</div>
+
+<div class="card">
+<div class="label">📅 締め日の設定</div>
+<div class="help-text">会社の給与・売上の締め日に合わせて設定してください。</div>
+<select id="closingDay" onchange="saveSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:10px"></select>
+<div class="small" id="closingStatus" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+<div class="label">👀 今日の画面に表示する項目</div>
+<div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・営業時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🚗 営業距離 <input id="showDistance" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">🗺️ 覚えておきたい道順 <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
+</div>
+
+<div class="card">
+<div class="label">📅 出勤日・予定</div>
+<div class="help-text">カレンダーから出勤日や予定を登録できます。</div>
+<button class="btn full" type="button" onclick="openWorkCalendar()" style="margin-top:10px">📅 出勤日を登録</button>
+</div>
+
+<div class="card">
+<div class="label">🔧 その他の設定</div>
+<div class="help-text">今後、乗務ログに必要な設定をここへ追加していきます。</div>
+</div>
+<button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
+</main>
+
+
+<div id="workCalendarModal" class="calendarModal hidden" onclick="if(event.target===this)closeWorkCalendar()">
+  <div class="calendarSheet">
+    <div class="calendarHead">
+      <button type="button" onclick="changeWorkCalendarMonth(-1)">‹</button>
+      <div id="workCalendarTitle" class="calendarTitle"></div>
+      <button type="button" onclick="changeWorkCalendarMonth(1)">›</button>
+    </div>
+    <div class="calendarWeek"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
+    <div id="workCalendarGrid" class="calendarGrid"></div>
+    <div class="calendarForm">
+      <div style="font-weight:800;font-size:16px">選択した日</div>
+      <div id="workCalendarSelected" class="small" style="margin-top:4px">日付を選択してください</div>
+      <label>登録内容
+        <select id="workPlanType">
+          <option value="work">🚕 出勤</option>
+          <option value="rest">🏠 公休</option>
+          <option value="paid">🌸 有休</option>
+          <option value="plan">📌 予定</option>
+        </select>
+      </label>
+      <label>メモ（任意）
+        <input id="workPlanMemo" type="text" placeholder="例：病院、旅行、出勤予定など">
+      </label>
+      <div class="calendarActions"><button type="button" class="calSave" onclick="saveWorkPlan()">保存</button><button type="button" class="calDelete" onclick="deleteWorkPlan()">登録を削除</button></div>
+      <button type="button" class="calClose" onclick="closeWorkCalendar()">閉じる</button>
+    </div>
+  </div>
+</div>
+<main id="logs" class="hidden"><div id="logListView"><div class="card"><div class="label">📚 保存した乗務ログ</div><div class="help-text">保存した1日分の内容を「詳細を見る」から確認できます。</div><div id="logList"></div></div>
+<button class="btn full" onclick="showToday()">← 今日の入力に戻る</button></div>
+<div id="logDetailView" class="hidden"><div class="card"><div class="label">📋 乗務ログの詳細</div><div id="logDetail"></div></div><div class="detail-actions"><button class="detailEdit" onclick="editLog(currentLogDetailId)">✏️ このログを修正</button><button class="btn full" onclick="showLogs()">← ログ一覧に戻る</button></div></div></main>
+<nav><button class="navbtn" onclick="showToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DB_NAME='TaxiDriverLogDB', STORE='logs';
+let db, photoData='', editingLogId=null, currentLogDetailId=null;
+
+function initDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
+  req.onsuccess=e=>{db=e.target.result;resolve()};
+  req.onerror=()=>reject(req.error);
+ });
+}
+function getLogs(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function addLog(log){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add(log);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+
+function formatDutyDate(date){
+  return date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日（'+['日','月','火','水','木','金','土'][date.getDay()]+'）';
+}
+function todayYMD(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
+function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
+function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
+function changeDutyDate(value){if(!value)return;localStorage.setItem('taxiDutyDate',value);const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}$('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';}
+function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
+document.addEventListener('DOMContentLoaded',()=>{
+  startDutyDate();
+  rememberTimes();
+  migrateOptionalSettings();
+  initSettings();
+  initRoutes();
+  initDB().then(updateTotal).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
+});
+
+let routeData=[];
+
+function addRoute(data){
+  const list=$('routeList');
+  if(!list)return;
+  const i=routeData.length;
+  routeData.push({
+    destination:data?.destination||'',
+    course:data?.course||'',
+    photo:data?.photo||''
+  });
+  const item=document.createElement('div');
+  item.className='routeItem';
+  item.dataset.index=i;
+  item.innerHTML=`<div class="routeItemTitle">道順 ${i+1}</div>
+    <div class="small">目的地</div>
+    <input class="routeDestination" type="text" placeholder="目的地を入力" value="${escapeHtml(routeData[i].destination)}">
+    <div class="small" style="margin-top:12px">コース</div>
+    <textarea class="routeCourse" placeholder="覚えておきたいコースを入力">${escapeHtml(routeData[i].course)}</textarea>
+    <input class="routePhoto" type="file" accept="image/*" onchange="photo(this)">
+    <div class="preview routePreview">${routeData[i].photo?`<img src="${routeData[i].photo}" alt="道順の写真">`:''}</div>
+    ${i>0?'<button type="button" class="btn full routeRemove" onclick="removeRoute(this)">この道順を削除</button>':''}`;
+  list.appendChild(item);
+}
+
+function escapeHtml(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function removeRoute(btn){
+  const item=btn.closest('.routeItem');
+  if(item)item.remove();
+  routeData=getRouteData();
+  refreshRouteTitles();
+}
+
+function refreshRouteTitles(){
+  document.querySelectorAll('#routeList .routeItem').forEach((el,i)=>{
+    const t=el.querySelector('.routeItemTitle');
+    if(t)t.textContent='道順 '+(i+1);
+    el.dataset.index=i;
+  });
+}
+
+function getRouteData(){
+  return [...document.querySelectorAll('#routeList .routeItem')].map((el,i)=>({
+    destination:el.querySelector('.routeDestination')?.value||'',
+    course:el.querySelector('.routeCourse')?.value||'',
+    photo:routeData[i]?.photo||''
+  })).filter(x=>x.destination||x.course||x.photo);
+}
+
+function photo(input){
+  const item=input?.closest('.routeItem');
+  if(!item)return;
+  const file=input.files?.[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){
+    alert('画像ファイルを選択してください。');
+    input.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const index=[...document.querySelectorAll('#routeList .routeItem')].indexOf(item);
+    if(index>=0)routeData[index].photo=reader.result;
+    const p=item.querySelector('.routePreview');
+    if(p)p.innerHTML=`<img src="${reader.result}" alt="道順の写真">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function initRoutes(routes){
+  routeData=[];
+  const list=$('routeList');
+  if(list)list.innerHTML='';
+  const a=Array.isArray(routes)?routes:[];
+  if(a.length){
+    a.forEach(r=>addRoute(r));
+  }else{
+    addRoute();
+  }
+}
+
+function pick(e){
+  const buttons=[...e.parentElement.children];
+  if(e.textContent.trim()==='なし'){
+    buttons.forEach(x=>x.classList.remove('on'));
+    e.classList.add('on');
+    return;
+  }
+  const none=buttons.find(x=>x.textContent.trim()==='なし');
+  if(none) none.classList.remove('on');
+  e.classList.toggle('on');
+}
+function refreshWeather(){let a=[...document.querySelectorAll('#weather .on')];a.forEach((x,i)=>x.classList.toggle('second',i===1));}
+function weather(e){let a=[...document.querySelectorAll('#weather .on')];if(e.classList.contains('on')){e.classList.remove('on');refreshWeather();return}if(a.length>=2)return;e.classList.add('on');refreshWeather();}
+function duration(){
+  const out=$('out').value;
+  const inn=$('in').value;
+  const hours=$('hours');
+  if(!out||!inn){
+    hours.textContent='—';
+    return;
+  }
+  const [oh,om]=out.split(':').map(Number);
+  const [ih,im]=inn.split(':').map(Number);
+  let minutes=(ih*60+im)-(oh*60+om);
+  if(minutes<0)minutes+=24*60;
+  hours.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+}
+
+async function updateTotal(){
+  const a=await getLogs();
+  const t=a.reduce((n,x)=>{
+    const type=x.dayType||'work';
+    return type==='work' ? n+(Number(x.sales)||0) : n;
+  },0);
+  const el=$('total');
+  if(el)el.textContent='¥'+t.toLocaleString();
+}
+function setDayType(el,type){
+  document.querySelectorAll('#dayType .chip').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  const work=type!=='rest';
+  const parttime=type==='parttime';
+  const wf=$('workFields'), rf=$('restFields'), th=$('takeHomeField'), af=$('averageField'), df=$('diff');
+  if(wf) wf.style.display=work?'':'none';
+  if(rf){
+    rf.classList.toggle('hidden', work);
+    rf.style.display=work?'none':'';
+  }
+  if($('salesLabel')) $('salesLabel').textContent='売上';
+  if(th){ th.classList.toggle('hidden', !parttime); th.style.display=parttime?'':'none'; }
+  if(af){ af.classList.toggle('hidden', parttime); af.style.display=parttime?'none':''; }
+  if(df){ df.classList.toggle('hidden', parttime); df.style.display=parttime?'none':''; }
+}
+function getDayType(){return document.querySelector('#dayType .chip.on')?.dataset.type||'work'}
+window.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
+const saveButton=document.getElementById('saveButton');
+if(saveButton){
+  const press=()=>saveButton.classList.add('savePressed');
+  const release=()=>saveButton.classList.remove('savePressed');
+  saveButton.addEventListener('pointerdown',press);
+  saveButton.addEventListener('pointerup',release);
+  saveButton.addEventListener('pointercancel',release);
+  saveButton.addEventListener('pointerleave',release);
+  saveButton.addEventListener('click',()=>saveLog());
+}
+
+async function saveLog(){
+ let dayType=getDayType();
+ let ev=(dayType==='work'||dayType==='parttime')?[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim()):[];
+ let log={date:$('date').textContent,dayType,weather:(dayType==='work'||dayType==='parttime')?[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()):[],event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',avg:dayType==='work'?$('avg').value:dayType==='rest'?$('restAvg').value:'',routes:(dayType==='work'||dayType==='parttime')?getRouteData():[],destination:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.destination||''):'',course:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.course||''):'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let all=await getLogs();
+ if(editingLogId!==null){
+   log.id=editingLogId;
+   await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(log);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});
+   editingLogId=null;
+ }else{
+   let same=all.find(x=>x.date===log.date);
+   if(same){log.id=same.id;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(log);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+   else await addLog(log);
+ }
+ all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await new Promise(r=>setTimeout(r,0));
+ if(dayType!=='rest') localStorage.removeItem('taxiDutyDate');
+ $('status').textContent='✅ 保存しました';
+ alert('保存しました！');
+ showLogs();
+}
+
+function parseDutyDate(value){
+  if(!value)return null;
+  if(value instanceof Date)return value;
+  const s=String(value);
+  const m=s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  const d=new Date(s+'T00:00:00');
+  return isNaN(d.getTime())?null:d;
+}
+async function editLog(id){
+ try{
+  const b=document.getElementById('saveButton');
+  if(b){
+    b.classList.remove('savePressed');
+    b.blur();
+  }
+  const all=await getLogs();
+  const x=all.find(v=>Number(v.id)===Number(id));
+  if(!x){
+    alert('このログが見つかりません。');
+    return;
+  }
+
+  editingLogId=x.id;
+  currentLogDetailId=x.id;
+  resetSaveButton();
+
+  const d=parseDutyDate(x.date);
+  const ymd=d
+    ? d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')
+    : todayYMD();
+
+  localStorage.setItem('taxiDutyDate',ymd);
+
+  const dateEl=$('date');
+  if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+
+  const dp=$('datePicker');
+  if(dp){
+    dp.value=ymd;
+    dp.max=todayYMD();
+  }
+
+  photoData=x.photo||'';
+
+  document.querySelectorAll('#weather .chip').forEach(b=>b.classList.remove('on','second'));
+  document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+
+  (Array.isArray(x.weather)?x.weather:[]).forEach(v=>{
+    const b=[...document.querySelectorAll('#weather .chip')].find(b=>b.textContent.trim()===v);
+    if(b)b.classList.add('on');
+  });
+  refreshWeather();
+
+  (Array.isArray(x.event)?x.event:[]).forEach(v=>{
+    const b=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()===v);
+    if(b)b.classList.add('on');
+  });
+  if(!(Array.isArray(x.event)?x.event:[]).length){
+    const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+    if(none)none.classList.add('on');
+  }
+
+  const typeBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type===x.dayType);
+  if(typeBtn) setDayType(typeBtn,x.dayType||'work');
+
+  if($('out'))$('out').value=x.out||'';
+  if($('in'))$('in').value=x.in||'';
+  if($('km'))$('km').value=x.km||'';
+  if($('sales'))$('sales').value=x.sales||'';
+  if($('avg'))$('avg').value=x.avg||'';
+  if($('restAvg'))$('restAvg').value=x.avg||'';
+  if($('parttimeTakeHomeInput'))$('parttimeTakeHomeInput').value=x.parttimeTakeHome||'';
+  const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
+  initRoutes(savedRoutes);
+  if($('eventNote'))$('eventNote').value=x.eventNote||'';
+
+  duration();
+
+  const preview=$('preview');
+  if(preview)preview.innerHTML=photoData?`<img src="${photoData}" alt="道順の写真">`:'';
+
+  const status=$('status');
+  if(status)status.textContent='✏️ このログを修正中です';
+
+  showToday();
+  window.scrollTo({top:0,behavior:'smooth'});
+ }catch(err){
+  console.error(err);
+  alert('ログの修正を開始できませんでした。');
+ }
+}
+
+function migrateOptionalSettings(){
+  if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
+  if(localStorage.getItem('taxiShowDistance')===null) localStorage.setItem('taxiShowDistance',localStorage.getItem('taxiShowEfficiency')==='1'?'1':'0');
+  if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
+}
+function savePersonalData(){
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate'];
+  const data={};
+  ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
+  localStorage.setItem('taxiPersonalData',JSON.stringify(data));
+  const status=$('personalDataStatus');
+  if(status)status.textContent='✓ 入力内容を保存しました';
+}
+function loadPersonalData(){
+  let data={};
+  try{data=JSON.parse(localStorage.getItem('taxiPersonalData')||'{}')}catch(e){data={};}
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate'];
+  ids.forEach(id=>{const el=$(id);if(el)el.value=data[id]||'';});
+  renderFarePhoto();
+}
+function saveFarePhoto(input){
+  const file=input&&input.files&&input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('画像ファイルを選択してください。');return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const maxW=1200;
+      const scale=Math.min(1,maxW/img.width);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.82);
+      localStorage.setItem('taxiFarePhoto',dataUrl);
+      renderFarePhoto();
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function renderFarePhoto(){
+  const box=$('farePhotoPreview');
+  if(!box)return;
+  const src=localStorage.getItem('taxiFarePhoto')||'';
+  box.innerHTML=src?`<img src="${src}" alt="運賃・料金表の写真" style="display:block;width:100%;max-height:420px;object-fit:contain;border-radius:12px;border:1px solid #ddd;background:#fff">`:'<div class="small">写真はまだ登録されていません。</div>';
+}
+function clearFarePhoto(){
+  localStorage.removeItem('taxiFarePhoto');
+  const input=$('farePhotoInput');
+  if(input)input.value='';
+  renderFarePhoto();
+}
+function initSettings(){
+  loadPersonalData();
+  const select=$('closingDay');
+  if(select){
+    select.innerHTML='';
+    for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'日';select.appendChild(o)}
+    const saved=localStorage.getItem('taxiClosingDay')||'15';
+    select.value=saved;
+    $('closingStatus').textContent='現在の設定：毎月'+saved+'日締め';
+  }
+  const showTime=localStorage.getItem('taxiShowTime')==='1';
+  const showDistance=localStorage.getItem('taxiShowDistance')==='1';
+  const showRoute=localStorage.getItem('taxiShowRoute')==='1';
+  const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
+  if($('showTime'))$('showTime').checked=showTime;
+  if($('showDistance'))$('showDistance').checked=showDistance;
+  if($('showRoute'))$('showRoute').checked=showRoute;
+  if($('showHelpText'))$('showHelpText').checked=showHelpText;
+  applySettings();
+}
+function saveSettings(){
+  localStorage.setItem('taxiClosingDay',$('closingDay').value);
+  localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
+  localStorage.setItem('taxiShowDistance',$('showDistance').checked?'1':'0');
+  localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
+  localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
+  $('closingStatus').textContent='現在の設定：毎月'+$('closingDay').value+'日締め';
+  applySettings();
+}
+function applySettings(){
+  const timeCard=$('timeCard');
+  const distanceWidget=$('distanceField');
+  const routeCard=$('routeCard');
+  if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
+  if(distanceWidget)distanceWidget.classList.toggle('hidden',localStorage.getItem('taxiShowDistance')!=='1');
+  if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
+  const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
+  document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
+}
+function showSettings(){
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('settings').classList.remove('hidden');initSettings();
+}
+
+function getDataPeriod(){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const now=new Date();
+  let end=new Date(now.getFullYear(),now.getMonth(),closing);
+  if(now> end) end=new Date(now.getFullYear(),now.getMonth()+1,closing);
+  let start=new Date(end.getFullYear(),end.getMonth()-1,closing+1);
+  return {start,end};
+}
+function dateOnly(value){
+  const d=parseDutyDate(value);
+  return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;
+}
+function inDataPeriod(value,period){
+  const d=dateOnly(value); if(!d)return false;
+  return d>=period.start && d<=period.end;
+}
+function periodLabel(period){
+  return period.start.getFullYear()+'年'+(period.start.getMonth()+1)+'月'+period.start.getDate()+'日〜'+period.end.getFullYear()+'年'+(period.end.getMonth()+1)+'月'+period.end.getDate()+'日';
+}
+async function saveMonthlySnapshot(all){
+  try{
+    const p=getDataPeriod();
+    const rows=all.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    localStorage.setItem('taxiMonthlySnapshot',JSON.stringify({period:periodLabel(p),savedAt:new Date().toISOString(),count:rows.length,sales:rows.reduce((n,x)=>n+(Number(x.sales)||0),0)}));
+  }catch(e){console.warn(e)}
+}
+async function getPeriodWorkLogs(){
+  if(!db){try{await initDB()}catch(e){return []}}
+  const logs=await getLogs();
+  const p=getDataPeriod();
+  return logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+}
+function yen(v){return '¥'+Number(v||0).toLocaleString()}
+function diffText(v){return v===null?'—':(v>=0?'+':'−')+yen(Math.abs(v))}
+function renderMetricCards(work){
+  const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+  const areaRows=work.filter(x=>Number(x.avg)>0);
+  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  return `<div class="dataGrid" style="margin-top:14px">
+    <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
+    <div class="dataBox"><div class="dataLabel">勤務売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">全乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">全乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+  </div>`;
+}
+async function renderMonthlyTop(){
+  const box=$('monthlyData'); if(!box)return;
+  let work=[]; try{work=await getPeriodWorkLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
+  const p=getDataPeriod();
+  box.innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div class="periodTitle">対象期間：${periodLabel(p)}</div>
+    <div class="dataNote">この期間の「勤務」のログを集計しています。</div>
+    ${renderMetricCards(work)}
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="label">📈 年度データ</div>
+    <div class="help-text">12か月分をまとめて、自分の売上と営業エリア全体を月ごとに比較します。</div>
+    <div id="annualData"></div>
+  </div>`;
+  await renderAnnualData();
+}
+
+function getFiscalYearStartYear(){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const now=new Date();
+  const thisStart=new Date(now.getFullYear(),3,closing+1);
+  return now>=thisStart?now.getFullYear():now.getFullYear()-1;
+}
+function getFiscalPeriods(startYear){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const y=Number.isFinite(Number(startYear))?Number(startYear):getFiscalYearStartYear();
+  return Array.from({length:12},(_,i)=>{
+    const start=new Date(y,3+i,closing+1);
+    const end=new Date(y,4+i,closing);
+    return {start,end,label:(start.getMonth()+1)+'月'};
+  });
+}
+function fiscalYearLabel(startYear){return (Number.isFinite(Number(startYear))?Number(startYear):getFiscalYearStartYear())+'年度';}
+function getAvailableFiscalYears(logs){
+  const current=getFiscalYearStartYear();
+  const years=new Set();
+  // 過去5年度＋現在年度を常に選択可能にし、保存ログがある年度も追加。
+  for(let i=0;i<6;i++) years.add(current-i);
+  (logs||[]).forEach(x=>{
+    const d=parseDutyDate(x.date);
+    if(!d)return;
+    const close=Number(localStorage.getItem('taxiClosingDay')||15);
+    // 4月16日締めの場合、1〜4月15日は前年開始年度。
+    const fiscalStart=(d.getMonth()===3 && d.getDate()<=close) || d.getMonth()<3 ? d.getFullYear()-1 : d.getFullYear();
+    years.add(fiscalStart);
+  });
+  return [...years].sort((a,b)=>b-a);
+}
+function annualYearOptions(logs, selected){
+  return getAvailableFiscalYears(logs).map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}年度</option>`).join('');
+}
+async function renderAnnualData(selectedYear){
+  const box=$('annualData'); if(!box)return;
+  let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
+  const currentYear=getFiscalYearStartYear();
+  const available=getAvailableFiscalYears(logs);
+  const year=available.includes(Number(selectedYear))?Number(selectedYear):currentYear;
+  const periods=getFiscalPeriods(year);
+  const rows=periods.map((p,i)=>{
+    const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const areaRows=work.filter(x=>Number(x.avg)>0);
+    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    return {label:p.label,sales,areaTotal,duties:work.length,detail:p};
+  });
+  const max=Math.max(1,...rows.map(r=>Math.max(r.sales,r.areaTotal)));
+  const totalSales=rows.reduce((n,r)=>n+r.sales,0);
+  const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
+  const active=rows.filter(r=>r.duties>0);
+  const avgSales=active.length?Math.round(totalSales/active.length):0;
+  const avgArea=active.length?Math.round(totalArea/active.length):0;
+  const graph=`<div class="annualGraphWrap">
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span><span><b style="color:#aab2bd">■</b> 営業エリア全体</span></div>
+    <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div><div class="annualBar area" style="height:${h2}px" title="${r.label} 営業エリア全体 ${r.areaTotal?yen(r.areaTotal):'—'}"></div></div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
+  </div>`;
+  const table=`<div class="annualTable">${rows.map(r=>`<div class="annualRow"><div class="annualMonthCell">${r.label}</div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div><div><div class="dataLabel">営業エリア全体</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div><div><div class="dataLabel">差</div><div class="annualValue">${r.sales||r.areaTotal?diffText(r.sales-r.areaTotal):'—'}</div></div></div>`).join('')}</div>`;
+  const summary=`<div class="dataGrid annualSummary">
+    <div class="dataBox"><div class="dataLabel">年度自分売上合計</div><div class="dataValue">${yen(totalSales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">年度エリア全体</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の月平均</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">エリアの月平均</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+  </div>`;
+  box.innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="periodTitle" style="margin:0">${fiscalYearLabel(year)}</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#555">年度を選択
+        <select id="annualYearSelect" onchange="renderAnnualData(this.value)" aria-label="年度を選択" style="min-width:150px;padding:10px 12px;border:2px solid #ddd;border-radius:12px;font-size:15px;font-weight:700;background:#fafafa">${annualYearOptions(logs,year)}</select>
+      </label>
+    </div>
+    <div class="dataNote">対象期間：4月16日〜翌4月15日</div>
+    ${graph}${summary}${table}
+  </div>`;
+}
+function analysisStats(work, getter, names){
+  return names.map(name=>{
+    const rows=work.filter(x=>getter(x).includes(name));
+    const total=rows.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const avg=rows.length?Math.round(total/rows.length):0;
+    const areaRows=rows.filter(x=>Number(x.avg)>0);
+    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+    const diff=rows.length&&areaRows.length?avg-areaAvg:null;
+    return {name,rows,total,avg,areaAvg,diff};
+  });
+}
+function renderBarGraph(stats){
+  const maxGraph=Math.max(1,...stats.map(x=>Math.max(x.avg,x.areaAvg)));
+  return `<div style="margin-top:16px;padding:16px 10px 12px;background:#f7f8fa;border-radius:16px">
+    <div style="font-weight:800;font-size:15px;margin-bottom:10px">📊 自分の平均 vs エリア平均</div>
+    <div style="display:flex;justify-content:flex-end;gap:14px;font-size:12px;color:#333;margin-bottom:8px"><span><b style="color:#4d8bd8">■</b> 自分</span><span><b style="color:#aab2bd">■</b> エリア平均</span></div>
+    <div style="height:190px;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid #ddd;padding:0 2px">
+      ${stats.map(s=>{const h1=s.avg?Math.max(4,Math.round(s.avg/maxGraph*150)):0;const h2=s.areaAvg?Math.max(4,Math.round(s.areaAvg/maxGraph*150)):0;return `<div style="flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px"><div title="${s.name} 自分 ${s.avg?yen(s.avg):'—'}" style="width:22%;max-width:24px;height:${h1}px;background:#4d8bd8;border-radius:5px 5px 0 0"></div><div title="${s.name} エリア平均 ${s.areaAvg?yen(s.areaAvg):'—'}" style="width:22%;max-width:24px;height:${h2}px;background:#aab2bd;border-radius:5px 5px 0 0"></div></div>`}).join('')}
+    </div>
+    <div style="display:flex;gap:4px;margin-top:6px">${stats.map(s=>`<div style="flex:1;text-align:center;font-size:12px;font-weight:700">${s.name}</div>`).join('')}</div>
+  </div>`;
+}
+function renderAnalysisRows(stats){
+  return `<div style="margin-top:18px">${stats.map(s=>`<div style="padding:10px 0;border-bottom:1px solid #eee">
+    <div style="font-weight:800;font-size:16px;margin-bottom:7px">${s.name}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div class="dataLabel">売上合計</div><div style="font-weight:800">${yen(s.total)}</div></div>
+      <div><div class="dataLabel">自分の平均</div><div style="font-weight:800">${s.rows.length?yen(s.avg):'—'}</div></div>
+      <div><div class="dataLabel">エリア平均</div><div style="font-weight:800">${s.areaAvg?yen(s.areaAvg):'—'}</div></div>
+      <div><div class="dataLabel">平均との差</div><div style="font-weight:800">${diffText(s.diff)}</div></div>
+    </div>
+  </div>`).join('')}</div>`;
+}
+async function showAnalysis(type){
+  $('dataSummaryView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataAnalysisView').classList.remove('hidden');
+  const work=await getPeriodWorkLogs();
+  const p=getDataPeriod();
+  const content=$('analysisContent');
+  if(type==='weekday'){
+    $('analysisTitle').textContent='📅 曜日別の売上';
+    const names=['日曜','月曜','火曜','水曜','木曜','金曜','土曜'];
+    const stats=analysisStats(work,x=>{const d=parseDutyDate(x.date);return d?[names[d.getDay()]]:[]},names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle">対象期間：${periodLabel(p)}</div><div class="dataNote">この期間の「勤務」のログだけを曜日ごとに集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else if(type==='weather'){
+    $('analysisTitle').textContent='🌤️ 天気別の売上';
+    const names=['☀️ 晴れ','☁️ 曇り','🌧️ 雨','❄️ 雪'];
+    const stats=analysisStats(work,x=>Array.isArray(x.weather)?x.weather:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle">対象期間：${periodLabel(p)}</div><div class="dataNote">天気を選択した勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else{
+    $('analysisTitle').textContent='📅 イベント別の売上';
+    const names=['なし','⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','その他'];
+    const stats=analysisStats(work,x=>Array.isArray(x.event)?x.event:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle">対象期間：${periodLabel(p)}</div><div class="dataNote">選択したイベントを含む勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }
+}
+async function showData(){
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.remove('hidden');
+  $('dataSummaryView').classList.remove('hidden');$('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');
+  await renderMonthlyTop();
+}
+function showDataSummary(){
+  $('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataSummaryView').classList.remove('hidden');renderMonthlyTop();
+}
+
+async function showLogs(){$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest'?'🏠 休み':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${x.dayType==='rest'?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join(' '):'')} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+async function showLogDetail(id){
+ const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
+ await updateTotal();
+ const weather=Array.isArray(x.weather)?x.weather.join(' '):'';const ev=Array.isArray(x.event)?x.event.join(' '):(x.event||'');const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
+ const routeHtml=savedRoutes.length?savedRoutes.map((r,i)=>`<div class="dailyBox dailyFull"><div class="dailyLabel">🗺️ 道順 ${i+1}</div><div class="dailyValue">${r.destination||'—'}${r.course?' → '+r.course:''}</div>${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}</div>`).join(''):'';
+
+ const rest=x.dayType==='rest', parttime=x.dayType==='parttime';
+ $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
+ $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${rest?'🏠 休み':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${x.avg?'¥'+Number(x.avg).toLocaleString():'—'}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">営業時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">営業距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${x.avg?'¥'+Number(x.avg).toLocaleString():'—'}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
+}
+
+async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();showLogs()}
+function resetSaveButton(){
+  const b=document.getElementById('saveButton');
+  if(b)b.classList.remove('savePressed');
+}
+function showToday(){resetSaveButton();$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('today').classList.remove('hidden');applySettings()}
+
+
+let workCalendarCursor=new Date();
+let workCalendarSelectedKey='';
+function getWorkPlans(){try{return JSON.parse(localStorage.getItem('taxiWorkPlans')||'{}')}catch(e){return {}}}
+function setWorkPlans(v){localStorage.setItem('taxiWorkPlans',JSON.stringify(v))}
+function dateKey(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function openWorkCalendar(){
+  workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
+  const modal=$('workCalendarModal');if(modal)modal.classList.remove('hidden');
+  renderWorkCalendar();
+}
+function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden')}
+function changeWorkCalendarMonth(delta){workCalendarCursor.setMonth(workCalendarCursor.getMonth()+delta);renderWorkCalendar()}
+function selectWorkCalendarDate(key){
+  workCalendarSelectedKey=key;
+  const plans=getWorkPlans(), p=plans[key]||{};
+  $('workPlanType').value=p.type||'work';$('workPlanMemo').value=p.memo||'';
+  $('workCalendarSelected').textContent=key.replace(/^(\d{4})-(\d{2})-(\d{2})$/,'$1年$2月$3日');
+  renderWorkCalendar();
+}
+function renderWorkCalendar(){
+  const y=workCalendarCursor.getFullYear(),m=workCalendarCursor.getMonth();
+  $('workCalendarTitle').textContent=y+'年'+(m+1)+'月';
+  const grid=$('workCalendarGrid');if(!grid)return;
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),plans=getWorkPlans();
+  let html='';for(let i=0;i<first;i++)html+='<button class="calDay empty" type="button"></button>';
+  const labels={work:'出勤',rest:'公休',paid:'有休',plan:'予定'};
+  for(let d=1;d<=days;d++){const key=dateKey(y,m,d),p=plans[key],cls=p?(p.type==='work'?'work':p.type==='rest'?'rest':'plan'):'',sel=key===workCalendarSelectedKey?' selected':'';html+=`<button type="button" class="calDay ${cls}${sel}" onclick="selectWorkCalendarDate('${key}')"><span>${d}</span>${p?`<span class="calMark">${labels[p.type]||'予定'}</span>`:''}</button>`}
+  grid.innerHTML=html;
+}
+function saveWorkPlan(){
+  if(!workCalendarSelectedKey){alert('登録する日付を選択してください。');return}
+  const plans=getWorkPlans();plans[workCalendarSelectedKey]={type:$('workPlanType').value,memo:$('workPlanMemo').value||'',updatedAt:new Date().toISOString()};setWorkPlans(plans);renderWorkCalendar();
+}
+function deleteWorkPlan(){
+  if(!workCalendarSelectedKey)return;const plans=getWorkPlans();if(!plans[workCalendarSelectedKey])return;delete plans[workCalendarSelectedKey];setWorkPlans(plans);$('workPlanMemo').value='';renderWorkCalendar();
+}
+</script>
+</body></html>
