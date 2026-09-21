@@ -444,7 +444,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     </div>
     <div class="calendarLegend">
       <div class="calendarLegendItem"><span class="calendarLegendBox work"></span>勤務</div>
-      <div class="calendarLegendItem"><span class="calendarLegendBox paid"></span>有給</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox paid"></span>有休</div>
       <div class="calendarLegendItem"><span class="calendarLegendBox plan"></span>予定</div>
       <div class="calendarLegendItem"><span class="calendarLegendBox parttime"></span>バイト</div>
       <div class="calendarLegendItem"><span class="calendarLegendBox other"></span>その他</div>
@@ -460,7 +460,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
       <label>登録内容
         <select id="workPlanType">
           <option value="work">🚕 勤務</option>
-          <option value="paid">🌸 有給</option>
+          <option value="paid">🌸 有休</option>
           <option value="plan">📌 予定</option>
           <option value="parttime">🟧 バイト</option>
           <option value="other">🟩 その他</option>
@@ -1532,7 +1532,7 @@ function planClass(type){
   return {work:'work',paid:'paid',plan:'plan',parttime:'parttime',other:'other',absent:'absent'}[type]||'other';
 }
 function planLabel(type){
-  return {work:'勤務',paid:'有給',plan:'予定',parttime:'バイト',other:'その他',absent:'欠勤'}[type]||'予定';
+  return {work:'勤務',paid:'有休',plan:'予定',parttime:'バイト',other:'その他',absent:'欠勤'}[type]||'予定';
 }
 function renderWorkCalendar(){
   const y=workCalendarCursor.getFullYear(),m=workCalendarCursor.getMonth();
@@ -1656,3 +1656,9 @@ function deleteWorkPlan(){
 /* v109: 2件なら18px、3件なら18pxずつ重ねる。最新登録が最前面。 */
 /* v109 stack wrapper disabled by v112 fit design */
 </script>
+
+<style id="calendar-color-text-v119">
+/* v119: 色と表示文字だけ変更。位置・大きさ・3D・厚みは変更しない */
+.planCube.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;color:#10202d!important;}
+.calendarLegendBox.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;}
+</style>
