@@ -282,7 +282,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
 <div class="card"><div class="label">📊 営業データ</div><div class="grid">
-<div><div class="small">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div></div>
+<div><div class="small">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="タップして計算" readonly onclick="openLoadedRateModal()" onfocus="this.blur()"><div class="small" style="margin-top:4px">%</div></div>
 <div><div class="small">営業回</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="例：30"><div class="small" style="margin-top:4px">回</div></div>
 </div></div>
 
@@ -934,7 +934,7 @@ async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:(dayType==='work'||dayType==='parttime')?getRouteData():[],destination:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.destination||''):'',course:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.course||''):'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',loadedDistance:(dayType==='work'||dayType==='parttime')?$('loadedDistanceModal')?.value||'':'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:(dayType==='work'||dayType==='parttime')?getRouteData():[],destination:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.destination||''):'',course:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.course||''):'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1066,6 +1066,7 @@ async function editLog(id){
   if($('km'))$('km').value=x.km||'';
   if($('sales'))$('sales').value=x.sales||'';
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
+  if($('loadedDistanceModal'))$('loadedDistanceModal').value=x.loadedDistance??'';
   if($('tripCount'))$('tripCount').value=x.tripCount??'';
   if($('avg'))$('avg').value=x.avg||'';
   if($('restAvg'))$('restAvg').value=x.avg||'';
@@ -2372,3 +2373,87 @@ function deleteWorkPlan(){
   .dailySalesDayType{font-size:9px;margin-top:1px;}
 }
 </style>
+
+<style id="loaded-rate-calculator-v164">
+.loadedRateModalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+.loadedRateModalBackdrop.hidden{display:none}
+.loadedRateModal{width:min(360px,92vw);background:#fff;border-radius:22px;padding:20px;box-shadow:0 14px 45px rgba(0,0,0,.25)}
+.loadedRateModalTitle{font-size:20px;font-weight:900;text-align:center;margin-bottom:6px}
+.loadedRateModalSub{font-size:12px;color:#777;text-align:center;margin-bottom:16px;line-height:1.5}
+.loadedRateModalRow{margin-bottom:12px}
+.loadedRateModalLabel{font-size:13px;font-weight:700;color:#555;margin-bottom:5px}
+.loadedRateModalInput{width:100%;box-sizing:border-box;padding:13px 14px;border:2px solid #ddd;border-radius:13px;font-size:18px;background:#fff}
+.loadedRateModalResult{margin:12px 0 14px;padding:13px;border-radius:14px;background:#f3f7fb;text-align:center}
+.loadedRateModalResultLabel{font-size:12px;color:#777}
+.loadedRateModalResultValue{font-size:28px;font-weight:900;margin-top:2px}
+.loadedRateModalActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.loadedRateModalActions button{border:0;border-radius:13px;padding:13px;font-size:15px;font-weight:800}
+.loadedRateCancel{background:#eef1f4;color:#555}
+.loadedRateConfirm{background:#2580ee;color:#fff}
+</style>
+<div id="loadedRateModalBackdrop" class="loadedRateModalBackdrop hidden" onclick="if(event.target===this)closeLoadedRateModal()">
+  <div class="loadedRateModal">
+    <div class="loadedRateModalTitle">📊 実車率を計算</div>
+    <div class="loadedRateModalSub">実車距離 ÷ 走行距離 × 100 で自動計算します。</div>
+    <div class="loadedRateModalRow">
+      <div class="loadedRateModalLabel">実車距離（km）</div>
+      <input id="loadedDistanceModal" class="loadedRateModalInput" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：120.5">
+    </div>
+    <div class="loadedRateModalRow">
+      <div class="loadedRateModalLabel">走行距離（km）</div>
+      <input id="totalDistanceModal" class="loadedRateModalInput" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：220.0">
+    </div>
+    <div class="loadedRateModalResult">
+      <div class="loadedRateModalResultLabel">実車率</div>
+      <div id="loadedRateModalResult" class="loadedRateModalResultValue">— %</div>
+    </div>
+    <div class="loadedRateModalActions">
+      <button type="button" class="loadedRateCancel" onclick="closeLoadedRateModal()">キャンセル</button>
+      <button type="button" class="loadedRateConfirm" onclick="confirmLoadedRateModal()">確定</button>
+    </div>
+  </div>
+</div>
+<script id="loaded-rate-calculator-v164">
+function openLoadedRateModal(){
+  const modal=$('loadedRateModalBackdrop');
+  if(!modal)return;
+  const ld=$('loadedDistanceModal'), td=$('totalDistanceModal');
+  if(ld && !ld.value) ld.value='';
+  if(td) td.value=$('km')?.value||'';
+  updateLoadedRateModalResult();
+  modal.classList.remove('hidden');
+  setTimeout(()=>ld?.focus(),80);
+}
+function closeLoadedRateModal(){
+  $('loadedRateModalBackdrop')?.classList.add('hidden');
+}
+function updateLoadedRateModalResult(){
+  const ld=Number($('loadedDistanceModal')?.value);
+  const td=Number($('totalDistanceModal')?.value);
+  const out=$('loadedRateModalResult');
+  if(!out)return;
+  if(ld>0 && td>0){
+    const rate=Math.round((ld/td)*1000)/10;
+    out.textContent=(Number.isFinite(rate)?rate.toFixed(1):'—')+' %';
+  }else out.textContent='— %';
+}
+function confirmLoadedRateModal(){
+  const ld=Number($('loadedDistanceModal')?.value);
+  const td=Number($('totalDistanceModal')?.value);
+  if(!(ld>0)||!(td>0)){
+    alert('実車距離と走行距離を入力してください。');
+    return;
+  }
+  if(ld>td){
+    alert('実車距離は走行距離以下で入力してください。');
+    return;
+  }
+  const rate=Math.round((ld/td)*1000)/10;
+  if($('loadedRate'))$('loadedRate').value=rate.toFixed(1);
+  if($('km'))$('km').value=td;
+  closeLoadedRateModal();
+}
+['loadedDistanceModal','totalDistanceModal'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',updateLoadedRateModalResult);
+});
+</script>
