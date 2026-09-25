@@ -1703,8 +1703,6 @@ async function showMonthlyDetail(year,index){
   $('monthlyDetail').innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div>
     <div class="dataNote">この期間のログを集計しています。</div>
-    <button type="button" class="analysisBtn btn full" onclick="toggleMonthlyDailySales()">📋 ${periodMonthLabel(p)}の日々の営業データ</button>
-    ${dailyTable}
     <div class="dataGrid" style="margin-top:18px">
       <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
@@ -1717,6 +1715,8 @@ async function showMonthlyDetail(year,index){
       <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
       <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
     </div>
+    <button type="button" class="analysisBtn btn full" onclick="toggleMonthlyDailySales()">📋 ${periodMonthLabel(p)}の日々の営業データ</button>
+    ${dailyTable}
     <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})">📅 ${periodMonthLabel(p)}の曜日別比較</button>
   </div>`;
 }
