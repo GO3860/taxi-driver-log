@@ -218,6 +218,35 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .calendarPlanDelete{border:0;border-radius:10px;background:#f2f2f2;color:#777;padding:7px 9px;font-weight:800;white-space:nowrap}
 .calendarAddWide{width:100%;margin-top:2px}
 </style>
+<style id="landscape-sales-table-v163">
+/* v163: iPhone横向きでは営業データ7列を画面内に収める */
+@media screen and (orientation: landscape) and (max-height: 600px){
+  html,body{width:100%;overflow-x:hidden}
+  .app{max-width:none!important;width:100%!important;padding-bottom:76px!important}
+  #data{padding:8px 10px 76px!important;max-width:none!important}
+  #dataDetailView{width:100%!important}
+  #dataDetailView>.card{width:100%!important;max-width:none!important;padding:10px!important;margin:0!important}
+  .dailySalesWrap{width:100%!important;margin-top:8px!important}
+  .dailySalesTitle{font-size:16px!important;margin-bottom:4px!important}
+  .dailySalesSub{font-size:9px!important;margin-bottom:5px!important}
+  .dailySalesHint{font-size:9px!important;padding:4px 7px!important;margin-bottom:5px!important}
+  .dailySalesScrollerBar{display:none!important}
+  .dailySalesScroll{width:100%!important;max-width:none!important;overflow-x:hidden!important;overflow-y:visible!important;border-radius:10px!important;touch-action:auto!important}
+  .dailySalesScroll::after{display:none!important}
+  .dailySalesTable{width:100%!important;min-width:0!important;table-layout:fixed!important;font-size:10px!important}
+  .dailySalesTable th,.dailySalesTable td{padding:6px 3px!important;height:34px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
+  .dailySalesTable th{position:static!important}
+  .dailySalesTable th:first-child,.dailySalesTable td:first-child{position:static!important;width:8%!important;min-width:0!important;box-shadow:none!important}
+  .dailySalesTable th:nth-child(2),.dailySalesTable td:nth-child(2){width:16%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(3),.dailySalesTable td:nth-child(3){width:13%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(4),.dailySalesTable td:nth-child(4){width:20%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(5),.dailySalesTable td:nth-child(5){width:15%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(6),.dailySalesTable td:nth-child(6){width:14%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(7),.dailySalesTable td:nth-child(7){width:14%!important;min-width:0!important}
+  .dailySalesDayType{font-size:8px!important;margin-top:1px!important}
+  .dailySalesTable td:nth-child(2),.dailySalesTable td:nth-child(3),.dailySalesTable td:nth-child(4){font-size:10px!important}
+}
+</style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
