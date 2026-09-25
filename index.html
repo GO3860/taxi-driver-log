@@ -1,0 +1,2259 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🚕 タクシー乗務ログ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f7;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.app{max-width:520px;margin:auto;padding-bottom:90px}header{background:#151515;color:#fff;padding:20px 18px}
+h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.7;margin-top:4px}main{padding:14px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}
+.label{font-weight:700;font-size:13px;margin-bottom:10px}.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip,.btn{border:0;border-radius:999px;background:#eef0f3;padding:10px 13px;font-size:15px}
+.dateChangeWrap{position:relative;display:inline-block}.datePickerOverlay{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;margin:0;padding:0}.dateChangeWrap .btn{width:100%;height:100%;pointer-events:none}.chip.on{background:#d9f0ff;color:#12608a}.chip.on.second{background:#7fc1f5;color:#0b4f7a;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;row-gap:18px;min-width:0;overflow:visible}.grid>div{min-width:0;width:100%}input,textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}input[type="time"]{-webkit-appearance:none;appearance:none;min-width:0;width:100%}.hoursbox{display:flex;align-items:center;min-height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}
+textarea{min-height:70px;resize:none}.small{font-size:12px;color:#777;margin-top:7px}.help-text{font-size:12px;color:#777;margin-top:7px}.help-text.hidden-help{display:none}.full{width:100%;margin-top:8px}
+.preview img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px}
+.save{width:100%;border:0;border-radius:16px;background:#b8b8b8;color:#fff;padding:16px;font-size:17px;font-weight:700;box-shadow:0 5px 0 #888;transition:all .08s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.savePressed{background:#151515;transform:translateY(5px);box-shadow:0 0 0 #151515}
+.save:not(:active):not(:focus){ }
+.total{text-align:center;background:linear-gradient(135deg,#fff7df,#fff)}.cat{font-size:52px}.amount{font-size:30px;font-weight:800}
+.salesGoalCard{background:linear-gradient(135deg,#f7fbff,#eef8ff);border:1px solid #dcecf8;border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}.salesGoalHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.salesGoalTitle{font-size:20px;font-weight:800}.salesGoalChange{border:1px solid #d6dfe8;background:#fff;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;color:#444;white-space:nowrap}.salesGoalNumbers{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.salesGoalSmall{font-size:13px;color:#555;margin-bottom:3px}.salesGoalAmount{font-size:25px;font-weight:900;letter-spacing:.01em}.salesGoalTarget{text-align:right}.salesRoad{position:relative;height:40px;margin:20px 6px 5px;border-radius:999px;background:#d8dde2;overflow:visible}.salesRoad:after{content:"";position:absolute;left:10px;right:10px;top:19px;border-top:3px dashed rgba(255,255,255,.95);z-index:2}.salesRoadDone{position:absolute;left:0;top:0;height:100%;border-radius:999px;background:#27c94a;z-index:1;transition:width .3s ease}.salesTaxi{position:absolute;top:-19px;font-size:39px;line-height:1;z-index:4;display:inline-block;-webkit-transform:scaleX(-1)!important;transform:scaleX(-1)!important;transform-origin:center;filter:drop-shadow(0 2px 1px rgba(0,0,0,.12));transition:left .3s ease}.salesFlag{position:absolute;right:-2px;top:-20px;font-size:34px;line-height:1;z-index:4}.salesGoalBottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:5px;color:#5c6874;font-size:14px}.salesGoalBottom strong{font-size:25px;color:#20a63b}.salesGoalMessage{margin:13px auto 0;max-width:92%;text-align:center;background:#e4f8e7;border-radius:999px;padding:9px 14px;font-size:15px;font-weight:700;color:#245d2e}.salesGoalCard + .total{display:none}
+.hidden{display:none}.optional-widget{margin-top:0}.widget-note{font-size:12px;color:#777;margin-top:8px}.logitem{padding:14px 4px;border-bottom:1px solid #eee}.logitem:last-child{border-bottom:0}
+.logtop{display:flex;justify-content:space-between;font-weight:700}.tag{font-size:12px;color:#666;margin-top:5px}
+.status{font-size:12px;text-align:center;margin:8px 0;color:#777}
+.dailySalesWrap{margin-top:18px}.dailySalesTitle{font-size:20px;font-weight:800;margin:0 0 8px}.dailySalesScroll{position:relative;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:auto;touch-action:pan-y;border:1px solid #dfe4ea;border-radius:16px;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.04);scrollbar-width:thin;max-width:100%}.dailySalesScroll::after{content:"← 左右にスライド →";display:block;text-align:center;font-size:10px;color:#8b9198;padding:6px 0 7px;border-top:1px solid #eef0f3;background:#fafbfc}.dailySalesScrollerBar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 6px}.dailySalesScrollBtn{border:1px solid #d8e2ec;background:#f5f9fd;color:#1677b7;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:700}.dailySalesScrollPos{font-size:11px;color:#7a838d}.dailySalesTable{width:860px;min-width:860px;border-collapse:separate;border-spacing:0;font-size:14px}.dailySalesTable th,.dailySalesTable td{padding:12px 12px;border-bottom:1px solid #e8ebef;text-align:right;white-space:nowrap;height:48px;box-sizing:border-box}.dailySalesTable th{background:#f2f5f8;font-weight:800;color:#4e555c;position:sticky;top:0;z-index:4;text-align:center}.dailySalesTable th:first-child,.dailySalesTable td:first-child{text-align:center;position:sticky;left:0;z-index:5;background:#fff;font-weight:800;width:78px;min-width:78px;box-shadow:4px 0 7px -7px rgba(0,0,0,.45)}.dailySalesTable th:first-child{background:#f2f5f8;z-index:7}.dailySalesTable th:nth-child(2){min-width:118px}.dailySalesTable th:nth-child(3){min-width:112px}.dailySalesTable th:nth-child(4){min-width:140px}.dailySalesTable th:nth-child(5){min-width:112px}.dailySalesTable th:nth-child(6){min-width:92px}.dailySalesTable th:nth-child(7){min-width:92px}.dailySalesTable tr:last-child td{border-bottom:0}.dailySalesTable tbody tr:nth-child(even) td{background:#fcfdfe}.dailySalesTable tbody tr:nth-child(even) td:first-child{background:#fcfdfe}.dailySalesTable tbody tr:active td{background:#f0f7ff}.dailySalesSub{font-size:11px;color:#777;margin:0 0 8px}.dailySalesHint{font-size:11px;color:#6f7780;margin:0 0 8px;padding:7px 10px;border-radius:10px;background:#f5f8fb}.dailySalesMuted{color:#aaa}.dailySalesDayType{font-size:10px;color:#888;font-weight:600;margin-top:3px}
+.dataPeriod{border:1px solid #e4e6ea;border-radius:16px;padding:14px;margin-top:12px;background:#fff}.periodTitle{white-space:normal;line-height:1.45;font-weight:800;font-size:16px;margin-bottom:10px}.dataGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dataBox{background:#f5f6f8;border-radius:12px;padding:10px}.dataLabel{font-size:11px;color:#777}.dataValue{font-size:18px;font-weight:800;margin-top:3px}.dataNote{font-size:11px;color:#888;margin-top:8px}.archiveTitle{font-weight:800;font-size:14px;margin:18px 0 8px}.archiveBadge{display:inline-block;font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:999px;padding:4px 8px;margin-left:6px}.dataPeriod{cursor:pointer}.dataPeriod:active{transform:scale(.99)}
+.eventModal{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:1100;display:flex;align-items:center;justify-content:center;padding:24px}.eventModal.hidden{display:none}.eventSheet{width:min(320px,88vw);max-height:72vh;overflow:auto;background:#fff;border-radius:22px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.22)}.eventSheetTitle{font-size:19px;font-weight:800;text-align:center;margin-bottom:12px}.eventRows{display:flex;flex-direction:column;gap:7px}.eventRow{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f5f6f8;border-radius:12px;font-size:15px}.eventRow strong{font-size:16px}.eventClose{width:100%;margin-top:12px;padding:11px;border:0;border-radius:12px;background:#eef1f4;color:#2580ee;font-size:15px;font-weight:700}.detailHead{display:flex;align-items:center;justify-content:space-between;gap:8px}.detailBtn{border:0;border-radius:999px;background:#e8f2ff;color:#1677b7;padding:8px 12px;font-weight:700}.dailyCard{background:#fff;border:1px solid #e3e6eb;border-radius:16px;padding:14px;margin-top:10px}.dailyTitle{font-weight:800;font-size:16px;margin-bottom:10px}.dailyGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dailyBox{background:#f5f6f8;border-radius:12px;padding:9px}.dailyLabel{font-size:11px;color:#777}.dailyValue{font-size:15px;font-weight:700;margin-top:3px;word-break:break-word}.dailyFull{grid-column:1/-1}.photoThumb{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-top:8px}.backData{width:100%;border:0;border-radius:999px;background:#eef0f3;padding:12px;font-size:15px;font-weight:700;color:#1677b7;margin-bottom:10px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:8px 6px;text-align:center;font-size:12px;display:flex;justify-content:space-around;gap:4px}.navbtn{border:0;background:none;font-size:16px;padding:6px 4px;flex:1;min-width:0}
+.duty-date-large{font-size:2em !important;font-weight:600;line-height:1.2;}
+
+.duty-date-block{text-align:left;}
+.duty-date-label{font-size:1.1em;font-weight:600;margin-bottom:4px;}
+
+
+.detail-actions{display:flex;gap:8px;margin-top:10px;}
+.detail-actions button{flex:1;}
+.detailEdit{border:0;border-radius:999px;background:#eaf4ff;color:#2580ee;padding:12px;font-size:15px;font-weight:700;}
+
+
+.routeItem{border:1px solid #e2e5e9;border-radius:14px;padding:12px;margin-top:10px;background:#fafbfc}
+.routeItemTitle{font-weight:800;margin-bottom:8px}
+.routeRemove{margin-top:8px;background:#f1f2f4;color:#666}
+.routeAdd{margin-top:10px}
+.annualGraphWrap{margin-top:14px;padding:14px 8px 10px;background:#f7f8fa;border-radius:16px}.annualLegend{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;font-size:12px;color:#333;margin-bottom:10px}.annualGraph{height:190px;display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #ddd;padding:0 2px}.annualGroup{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.annualBars{height:160px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px}.annualBar{width:34%;max-width:16px;border-radius:4px 4px 0 0}.annualBar.self{background:#4d8bd8}.annualBar.area{background:#aab2bd}.annualMonth{font-size:11px;font-weight:700;margin-top:6px;white-space:nowrap}.annualSummary{margin-top:14px}.annualTable{margin-top:16px}.annualRow{display:grid;grid-template-columns:68px 1px 1fr 1fr;gap:7px;margin:8px 0;padding:12px 10px;border:1.5px solid #d9dee5;border-radius:18px;align-items:center;background:linear-gradient(145deg,#ffffff,#f1f4f7);box-shadow:0 5px 10px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.08);transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease}.annualMonthCell{font-weight:800;font-size:17px;text-align:center}.annualDivider{width:1px;height:44px;background:#aeb5bd;border-radius:1px}.annualValue{font-weight:800;font-size:15px}.annualMonthBtn{width:100%;border:1.5px solid #d9dee5;border-radius:18px;background:linear-gradient(145deg,#ffffff,#f1f4f7);color:inherit;text-align:left;font:inherit;cursor:pointer;box-shadow:0 5px 10px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.08);transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease}.annualMonthBtn:hover{border-color:#b9c8dc}.annualMonthBtn:active,.annualMonthBtn.pressed,.annualMonthBtn.selected{transform:translateY(3px);background:linear-gradient(145deg,#dcebff,#c8e0fb);border-color:#6fa5ef;box-shadow:inset 0 3px 7px rgba(0,0,0,.16),0 1px 2px rgba(0,0,0,.05)}.annualChevron{font-size:28px;line-height:1;color:#2580ee;align-self:center;text-align:right}.analysisButtons{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.analysisBtn{background:#f3f5f7;color:#2580ee;border:1px solid #dfe3e8;font-weight:800;font-size:16px;padding:14px 12px}.backData{border:0;background:#eef1f4;color:#2580ee;border-radius:999px;padding:12px 16px;font-size:15px;font-weight:700;width:100%;margin-bottom:10px}
+
+
+.routeDbSearch{margin-top:10px}.routeDbSearch input{font-size:17px}.routeDbHint{font-size:12px;color:#777;margin-top:7px}.routeDbItem{padding:14px 4px;border-bottom:1px solid #eee}.routeDbItem:last-child{border-bottom:0}.routeDbTitle{font-size:17px;font-weight:800}.routeDbCourse{font-size:14px;line-height:1.6;margin-top:7px;white-space:pre-wrap;word-break:break-word}.routeDbMeta{font-size:11px;color:#888;margin-top:7px}.routeDbEmpty{padding:18px 4px;color:#777;font-size:14px}.routeDbBack{width:100%;border:0;border-radius:999px;background:#eef1f4;color:#2580ee;padding:12px;font-size:15px;font-weight:700;margin-bottom:10px}.navbtn.routeNav{font-size:16px}.navbtn.routeNav .navIcon{display:block;font-size:24px;line-height:1.05}.navbtn.routeNav .navLabel{display:block;font-size:12px;margin-top:2px}
+.calendarModal{position:fixed;inset:0;background:rgba(232,242,252,.86);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:10px 0}.calendarModal.hidden{display:none}.calendarSheet{width:100%;max-width:720px;background:linear-gradient(180deg,#f9fdff 0%,#eef7ff 100%);border-radius:28px;padding:14px 14px 10px;box-sizing:border-box;max-height:96vh;overflow:auto;box-shadow:0 12px 42px rgba(45,90,130,.16)}.calendarHead{display:grid;grid-template-columns:92px 1fr 92px;align-items:center;gap:8px;margin:0 8px 8px}.calendarHead button{border:2px solid #b7dcff;background:linear-gradient(145deg,#fff,#e9f5ff);color:#1677d2;border-radius:999px;height:40px;font-size:15px;font-weight:900;box-shadow:0 4px 8px rgba(60,120,180,.14)}.calendarTitle{text-align:center;font-size:25px;font-weight:900;color:#111;white-space:nowrap}.calendarLegend{display:flex;justify-content:center;align-items:flex-start;gap:15px;margin:3px 0 9px;flex-wrap:wrap}.calendarLegendItem{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:900;color:#111}.calendarLegendBox{width:34px;height:23px;border-radius:7px;border:1px solid rgba(255,255,255,.9);box-shadow:0 5px 8px rgba(40,70,90,.18),inset 0 1px rgba(255,255,255,.95)}.calendarLegendBox.work{background:linear-gradient(145deg,#a8f2ff,#4cc7e8)}.calendarLegendBox.paid{background:linear-gradient(145deg,#ff9a84,#ee6b58)}.calendarLegendBox.plan{background:linear-gradient(145deg,#fff38a,#ffd33b)}.calendarLegendBox.parttime{background:linear-gradient(145deg,#ffd49c,#f49a3d)}.calendarLegendBox.other{background:linear-gradient(145deg,#d9c2ff,#9b68e8)}.calendarWeek,.calendarGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:5px}.calendarWeek div{text-align:center;font-size:13px;font-weight:900;padding:3px 0}.calendarWeek div:first-child{color:#e11}.calendarWeek div:last-child{color:#1765cc}.calDay{height:68px;min-height:68px;border:1px solid #d2dfeb;border-radius:13px;background:linear-gradient(145deg,#fff,#edf5fb);font-size:14px;position:relative;padding:0;overflow:visible;box-shadow:0 4px 9px rgba(70,100,125,.11);cursor:pointer}.calDay.empty{border:0;background:transparent;box-shadow:none}.calDay.selected{outline:3px solid #4aa1ff;outline-offset:-2px}.calDayFace{position:absolute;inset:0;border-radius:13px;overflow:visible}.calDayTop{position:absolute;left:8px;right:8px;bottom:6px;height:27px;border-radius:9px;background:linear-gradient(145deg,#fff,#f1f5f9);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#171b20;box-shadow:0 3px 6px rgba(40,60,80,.14),inset 0 1px rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.85);z-index:5}.calDayTop.plain{bottom:6px}.calDayStack{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;justify-content:flex-start;z-index:4;overflow:visible}.calStackBlock{width:100%;height:31px;min-height:31px;border-radius:11px 11px 9px 9px;border:1px solid rgba(255,255,255,.95);box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:2px 3px;font-size:11px;font-weight:900;color:#10202d;position:relative;overflow:visible;box-shadow:0 5px 8px rgba(45,70,95,.22),inset 0 1px rgba(255,255,255,.95);line-height:1.05}.calStackBlock .blockDate{display:block;font-size:15px;font-weight:900;line-height:1}.calStackBlock .blockLabel{display:block;font-size:11px;font-weight:900;line-height:1;margin-top:2px}.calStackBlock:first-child{height:68px;min-height:68px;flex-direction:column;gap:0}.calStackBlock:first-child .blockDate{font-size:17px}.calStackBlock:first-child .blockLabel{font-size:12px;margin-top:4px}.calStackBlock:not(:first-child){margin-top:-5px;z-index:2}.calStackBlock:before{content:'';position:absolute;left:5px;right:-5px;bottom:-5px;height:6px;border-radius:0 0 6px 6px;z-index:-1;opacity:.72;filter:brightness(.82)}.calStackBlock:after{content:'';position:absolute;right:-5px;top:5px;width:5px;height:calc(100% - 5px);border-radius:0 4px 4px 0;z-index:-1;opacity:.62;filter:brightness(.72)}.calStackBlock.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)}.calStackBlock.work:before{background:#2aa7cc}.calStackBlock.work:after{background:#3ba9c7}.calStackBlock.paid{background:linear-gradient(145deg,#d8b08a 0%,#b47b4e 58%,#8f5a32 100%)}.calStackBlock.paid:before{background:#704321}.calStackBlock.paid:after{background:#7d4b29}.calStackBlock.plan{background:linear-gradient(145deg,#fff68d 0%,#ffdc48 58%,#efbd25 100%)}.calStackBlock.plan:before{background:#d6a51b}.calStackBlock.plan:after{background:#d9ae20}.calStackBlock.parttime{background:linear-gradient(145deg,#ffd79f 0%,#ffae58 58%,#ed8831 100%)}.calStackBlock.parttime:before{background:#d87526}.calStackBlock.parttime:after{background:#d97d2b}.calStackBlock.other{background:linear-gradient(145deg,#dfc8ff 0%,#ad7df0 58%,#8b55d1 100%)}.calStackBlock.other:before{background:#3d9e5b}.calStackBlock.other:after{background:#4aa765}.calStackBlock.absent{background:linear-gradient(145deg,#ffc9dd 0%,#f58fb5 58%,#df6e99 100%)}.calStackBlock.absent:before{background:#c65c84}.calStackBlock.absent:after{background:#cc668b}.calDay.hasPlans .calDayStack{overflow:visible}.calDay.hasPlans .calStackBlock:first-child{border-radius:11px 11px 8px 8px}.calendarDetail{margin-top:12px;background:rgba(255,255,255,.92);border:1px solid #d5e4f0;border-radius:19px;padding:12px;box-shadow:0 5px 15px rgba(70,100,130,.08)}.calendarDetailHead{font-size:19px;font-weight:900;margin-bottom:8px}.calendarDetailRow{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center}.calendarDetailBadge{border-radius:9px;padding:9px 7px;font-weight:900;text-align:center}.calendarDetailInfo{background:#f4f8fc;border-radius:9px;padding:10px;font-size:14px;font-weight:700;min-height:20px}.calendarSwapBlocksBtn{display:block;width:100%;margin:12px 0 0;padding:13px 16px;border:2px solid #9ecbff;border-radius:999px;background:#f4f9ff;color:#1976d2;font-size:17px;font-weight:700;box-sizing:border-box;}
+.calendarAddBtn{border:2px solid #a9d8ff;background:linear-gradient(145deg,#fff,#e9f5ff);color:#1677d2;border-radius:999px;padding:10px 13px;font-weight:900;font-size:14px;white-space:nowrap}.calendarDetailHint{text-align:right;color:#777;font-size:11px;margin-top:5px}.calendarForm{margin-top:12px;padding-top:12px;border-top:1px solid #dfe7ef}.calendarForm label{display:block;font-size:14px;font-weight:700;margin-top:10px}.calendarForm select,.calendarForm input{width:100%;box-sizing:border-box;padding:11px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-top:6px}.calendarActions{display:flex;gap:8px;margin-top:14px}.calendarActions button{flex:1;padding:12px;border:0;border-radius:12px;font-size:16px;font-weight:700}.calSave{background:#e8f1ff;color:#1670d2}.calDelete{background:#f1f3f5}.calClose{width:100%;margin-top:8px;padding:11px;border:0;background:transparent;font-size:15px;color:#666}.calendarBottomNav{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:12px;padding:10px 2px 2px;border-top:1px solid #d9e5f0;color:#176bd0;background:rgba(255,255,255,.72);border-radius:12px}.calendarBottomNav div{text-align:center;font-size:12px;font-weight:800}.calendarBottomNav span{display:block;font-size:22px;line-height:1.1;margin-bottom:2px;color:#45566b}
+.settingsMenuBtn{width:100%;border:0;border-radius:16px;background:#eef1f4;color:#2580ee;padding:16px;font-size:17px;font-weight:800;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px #00000008}.settingsMenuBtn:active{transform:scale(.99)}.settingsSubHead{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;margin-bottom:12px}.settingsBack{width:100%;border:0;border-radius:999px;background:#eef0f3;color:#2580ee;padding:12px;font-size:15px;font-weight:700;margin-bottom:12px}.settingsSectionTitle{font-weight:800;font-size:15px;margin-bottom:4px}
+.fareNum{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;font-size:18px !important;font-weight:800 !important;letter-spacing:.01em;} #otherSettingsPanel input[type="number"]{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;font-size:18px !important;font-weight:800 !important;letter-spacing:.01em;}
+
+.fareSettingsGrid{display:grid;gap:14px;margin-top:12px}.fareAreaLabel,.fareSectionTitle{font-size:17px;font-weight:800}.fareAreaLabel input{display:block;width:100%;box-sizing:border-box;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:20px;font-weight:700;background:#fafafa;margin-top:7px}.fareFields{display:grid;gap:8px}.fareFields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.fareFields.three{grid-template-columns:repeat(3,minmax(0,1fr))}.fareFields.one{grid-template-columns:1fr}.fareFields label{display:block;min-width:0;font-size:15px}.fareFields input.fareNum{display:block;width:100%;box-sizing:border-box;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;font-size:24px!important;font-weight:800!important;line-height:1.15;background:#fafafa}.fareFields label span{display:block;margin-top:5px;font-size:15px;line-height:1.2}.farePhotoCard{margin-top:0;padding:14px;border:1px solid #e5e7eb;border-radius:16px;background:#fff}.farePhotoTitle{font-weight:800;font-size:17px}.farePhotoCard input[type="file"]{display:block;width:100%;margin-top:10px;font-size:14px}
+
+/* v96 calendar refinement: registered days become the 3D tile itself */
+.calendarSheet{scroll-behavior:smooth}
+.calDay.hasPlans{background:transparent;border-color:transparent;box-shadow:none;overflow:visible}
+.calDay.hasPlans .calDayFace{overflow:visible}
+.calDay.hasPlans .calDayStack{inset:0;gap:0;padding:0;overflow:visible}
+.calDay.hasPlans .calStackBlock{width:100%;margin:0!important;border-radius:12px;box-shadow:0 7px 0 rgba(55,75,95,.18),0 10px 14px rgba(55,80,105,.16),inset 0 2px 0 rgba(255,255,255,.82),inset 0 -3px 0 rgba(0,0,0,.08);transform:translateZ(0);}
+.calDay.hasPlans .calStackBlock:first-child{height:100%;min-height:100%;}
+.calDay.hasPlans .calStackBlock:not(:first-child){margin-top:0!important;border-radius:8px 8px 10px 10px;box-shadow:0 5px 0 rgba(55,75,95,.16),0 7px 10px rgba(55,80,105,.13),inset 0 2px 0 rgba(255,255,255,.8),inset 0 -2px 0 rgba(0,0,0,.07);}
+.calDay.hasPlans .calStackBlock + .calStackBlock{border-top:1px solid rgba(255,255,255,.75)}
+.calDay.hasPlans .calStackBlock:before{left:5px;right:-6px;bottom:-6px;height:6px;opacity:.8}
+.calDay.hasPlans .calStackBlock:after{right:-6px;width:6px;opacity:.7}
+.calDay.hasPlans .calStackBlock:first-child .blockDate{font-size:17px;margin-bottom:2px}
+.calDay.hasPlans .calStackBlock:first-child .blockLabel{font-size:12px}
+.calDay.hasPlans .calStackBlock:not(:first-child) .blockLabel{font-size:11px}
+.calendarDetail{margin-top:14px}
+@media(max-width:430px){
+  .calendarSheet{padding:13px 10px 9px;border-radius:25px}
+  .calendarHead{grid-template-columns:88px 1fr 88px;margin:0 4px 7px}
+  .calendarHead button{height:39px;font-size:14px}
+  .calendarTitle{font-size:24px}
+  .calendarLegend{gap:12px;margin-bottom:8px}
+  .calendarLegendBox{width:34px;height:23px}
+  .calendarWeek,.calendarGrid{gap:4px}
+  .calDay{height:64px;min-height:64px;border-radius:12px}
+}
+
+
+/* v97: date cells are full 3D cubes, matching the reference calendar */
+.calendarSheet{max-width:700px;padding:14px 12px 10px;background:linear-gradient(180deg,#fbfeff 0%,#eef7ff 100%)}
+.calendarGrid,.calendarWeek{gap:5px}
+.calDay{height:68px;min-height:68px;border:0;border-radius:12px;background:transparent;box-shadow:none;overflow:visible;position:relative;padding:0}
+.calDayFace{position:absolute;inset:0;border-radius:12px;overflow:visible}
+.calDayFace:after{content:"";position:absolute;left:5px;right:-3px;bottom:-5px;height:7px;border-radius:0 0 8px 8px;background:linear-gradient(180deg,#d8e4ee,#b9c8d6);z-index:0;filter:brightness(.92);box-shadow:0 4px 7px rgba(40,70,95,.18)}
+.plainCube{position:absolute;inset:0;border-radius:12px;background:linear-gradient(145deg,#ffffff 0%,#f4f9fd 62%,#e4eef6 100%);border:1px solid rgba(203,220,233,.95);box-shadow:0 5px 8px rgba(58,88,112,.14),inset 0 1px rgba(255,255,255,.98),inset 0 -2px 0 rgba(184,204,219,.45);display:flex;align-items:center;justify-content:center;z-index:1}
+.plainCube:before{content:"";position:absolute;left:5px;right:5px;top:4px;height:14px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,0));pointer-events:none}
+.plainCube span{font-size:17px;font-weight:900;color:#15191d;position:relative;z-index:2}
+.calDay.selected .plainCube,.calDay.selected .calStackBlock{outline:3px solid #4aa1ff;outline-offset:-2px}
+.calStackBlock{position:relative;width:100%;border-radius:11px 11px 8px 8px;border:1px solid rgba(255,255,255,.98);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 3px;color:#10202d;line-height:1;overflow:visible;box-shadow:0 5px 8px rgba(45,70,95,.24),inset 0 1px rgba(255,255,255,.96),inset 0 -2px 0 rgba(80,90,100,.10);z-index:2}
+.calStackBlock:after{content:"";position:absolute;right:-5px;top:5px;width:5px;height:calc(100% - 5px);border-radius:0 4px 4px 0;background:inherit;filter:brightness(.72);z-index:-1;opacity:.9}
+.calStackBlock:before{content:"";position:absolute;left:5px;right:-5px;bottom:-5px;height:6px;border-radius:0 0 6px 6px;background:inherit;filter:brightness(.68);z-index:-1;opacity:.88}
+.calStackBlock .blockDate{font-size:17px;font-weight:900;line-height:1.05}
+.calStackBlock .blockLabel{font-size:11px;font-weight:900;line-height:1.05;margin-top:3px}
+.calStackBlock:not(:first-child){margin-top:-4px;z-index:3}
+.calStackBlock.work{background:linear-gradient(145deg,#a9efff 0%,#52c9e9 62%,#31afd2 100%)}
+.calStackBlock.paid{background:linear-gradient(145deg,#ff9a84 0%,#ee6b58 62%,#d94f3d 100%)}
+.calStackBlock.plan{background:linear-gradient(145deg,#fff18a 0%,#ffd63e 62%,#efbc1f 100%)}
+.calStackBlock.parttime{background:linear-gradient(145deg,#ffd29a 0%,#f6a247 62%,#e88927 100%)}
+.calStackBlock.other{background:linear-gradient(145deg,#a8efbd 0%,#60cc83 62%,#43b96b 100%)}
+.calStackBlock.absent{background:linear-gradient(145deg,#d8b08a 0%,#b47b4e 62%,#8f5a32 100%)}
+.calStackBlock.firstBlock{z-index:2}
+@media (max-width:430px){
+  .calendarHead{grid-template-columns:82px 1fr 82px;margin:0 2px 8px}.calendarHead button{font-size:14px;height:40px}.calendarTitle{font-size:24px}.calendarLegend{gap:12px}.calendarLegendBox{width:34px;height:23px}.calendarWeek div{font-size:13px}.calDay{height:78px;min-height:78px}.plainCube span,.calStackBlock .blockDate{font-size:16px}.calStackBlock .blockLabel{font-size:10px}
+}
+
+
+/* v99: square calendar base + raised 3D schedule cubes */
+.calendarGrid{gap:5px}
+.calDay{height:82px!important;min-height:82px!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.calDayFace{position:absolute;inset:0;overflow:visible!important}
+.calDayFace:after{display:none!important}
+.baseCube{position:absolute;inset:0;border-radius:13px;background:linear-gradient(145deg,#ffffff 0%,#f2f7fb 72%,#e4edf5 100%);border:1px solid #d6e3ed;box-shadow:0 6px 0 #c8d5df,0 9px 13px rgba(55,80,105,.14),inset 0 1px 0 rgba(255,255,255,.95);display:flex;align-items:flex-end;justify-content:flex-start;padding:0 0 8px 10px;box-sizing:border-box;z-index:1}
+.baseCube .baseDate{font-size:16px;font-weight:900;color:#171b20;background:rgba(255,255,255,.88);border-radius:9px;padding:4px 8px;box-shadow:0 2px 5px rgba(50,70,90,.12)}
+.baseCube.sun .baseDate{color:#df1717}.baseCube.sat .baseDate{color:#1765cc}
+.planCubes{position:absolute;left:8px;right:8px;top:-12px;bottom:10px;z-index:5;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.planCube{position:relative;width:82%;height:42px;min-height:42px;margin:0;box-sizing:border-box;border-radius:10px 10px 8px 8px;border:1px solid rgba(255,255,255,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#10202d;box-shadow:0 7px 0 rgba(65,80,95,.32),0 12px 15px rgba(45,70,95,.22),inset 0 2px 0 rgba(255,255,255,.88),inset 0 -2px 0 rgba(0,0,0,.07);overflow:visible}
+.planCube:before{content:"";position:absolute;left:5px;right:-5px;bottom:-6px;height:6px;border-radius:0 0 6px 6px;background:inherit;filter:brightness(.68);z-index:-1;opacity:.9}
+.planCube:after{content:"";position:absolute;right:-6px;top:5px;width:6px;height:calc(100% - 5px);border-radius:0 4px 4px 0;background:inherit;filter:brightness(.72);z-index:-1;opacity:.92}
+.planCube + .planCube{margin-top:-7px;z-index:2}
+.planCube .cubeDate{font-size:16px;font-weight:900;line-height:1}.planCube .cubeLabel{font-size:12px;font-weight:900;line-height:1;margin-top:4px}
+.planCube.work{background:linear-gradient(145deg,#b9f5ff,#57cbed 58%,#35b4d6)}
+.planCube.paid{background:linear-gradient(145deg,#ff9a84,#ee6b58 58%,#d94f3d)}
+.planCube.plan{background:linear-gradient(145deg,#fff68e,#ffd943 58%,#efbe23)}
+.planCube.parttime{background:linear-gradient(145deg,#ffd79f,#f5a44b 58%,#e98a2e)}
+.planCube.other{background:linear-gradient(145deg,#dfc8ff,#ad7df0 58%,#8b55d1 100%)}
+.planCube.absent{background:linear-gradient(145deg,#d8b08a,#b47b4e 58%,#8f5a32)}
+.calDay.hasPlans .baseCube{transform:translateY(1px);box-shadow:0 5px 0 #c8d5df,0 8px 11px rgba(55,80,105,.12),inset 0 1px 0 rgba(255,255,255,.95)}
+.calDay.selected .baseCube{outline:3px solid #4aa1ff;outline-offset:-2px}
+@media(max-width:560px){.calDay{height:70px!important;min-height:70px!important}.baseCube .baseDate{font-size:15px;padding:3px 7px}.planCube{height:46px;min-height:46px;width:90%}.planCube .cubeDate{font-size:15px}.planCube .cubeLabel{font-size:11px}}
+</style>
+
+<style id="overlap-stack-v107">
+/* v107: 重箱型カレンダー。下段を約半分見せる固定重ね配置 */
+.planCubes{
+  position:absolute!important;
+  left:3px!important; right:3px!important; top:-8px!important; bottom:4px!important;
+  display:block!important; overflow:visible!important;
+  z-index:8!important; pointer-events:none!important;
+}
+.planCube{
+  position:absolute!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:92%!important;
+  height:46px!important; min-height:46px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  border-radius:9px 9px 7px 7px!important;
+  overflow:visible!important;
+}
+.planCube:before{height:7px!important;bottom:-7px!important;left:5px!important;right:-5px!important;}
+.planCube:after{width:7px!important;right:-7px!important;top:5px!important;height:calc(100% - 5px)!important;}
+.planCube .cubeLabel{font-size:11px!important;margin-top:3px!important;}
+.planCube .cubeDate{font-size:15px!important;}
+@media(max-width:430px){
+  .planCube{width:94%!important;height:46px!important;min-height:46px!important;}
+}
+</style>
+
+<style id="calendar-fit-v112">
+/* v112: 予定ブロックを日付マスに縦横ぴったり収める */
+.calendarGrid{gap:6px!important}
+.calDay{height:72px!important;min-height:72px!important;position:relative!important;overflow:hidden!important}
+.calDayFace{position:absolute!important;inset:0!important;overflow:hidden!important;border-radius:13px!important}
+.baseCube{position:absolute!important;inset:0!important;height:100%!important;z-index:1!important;padding:5px 6px!important;align-items:flex-start!important;justify-content:flex-start!important}
+.baseCube .baseDate{position:relative!important;z-index:20!important;font-size:14px!important;padding:3px 7px!important;border-radius:8px!important}
+.planCubes{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;left:0!important;right:auto!important;top:0!important;bottom:auto!important;display:block!important;overflow:hidden!important;z-index:5!important;pointer-events:none!important}
+.planCube{position:absolute!important;left:0!important;top:0!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;border-radius:13px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:24px 4px 4px!important;z-index:var(--stack-z,10)!important;pointer-events:auto!important}
+.planCube .cubeDate{font-size:15px!important;line-height:1!important;display:none!important}
+.planCube .cubeLabel{font-size:12px!important;line-height:1!important;margin:10px 0 0!important;font-weight:900!important}
+.planCube:before{left:5px!important;right:-5px!important;bottom:-5px!important;height:5px!important;border-radius:0 0 7px 7px!important}
+.planCube:after{right:-5px!important;top:5px!important;width:5px!important;height:calc(100% - 5px)!important;border-radius:0 5px 5px 0!important}
+/* 勤務・予定は同じ濃い青 */
+.planCube.work,.planCube.plan{background:linear-gradient(145deg,#3d9cff 0%,#1672dc 58%,#0759bd 100%)!important;color:#fff!important}
+.planCube.paid{background:linear-gradient(145deg,#ff9a84 0%,#ee6b58 58%,#d94f3d 100%)!important;color:#fff!important}
+.planCube.parttime{background:linear-gradient(145deg,#ffc77f 0%,#f29a3c 58%,#df7a20 100%)!important;color:#202020!important}
+.planCube.other{background:linear-gradient(145deg,#dfc8ff 0%,#ad7df0 58%,#8b55d1 100%)!important;color:#fff!important}
+.planCube.absent{background:linear-gradient(145deg,#d8b08a 0%,#b47b4e 58%,#8f5a32 100%)!important;color:#fff!important}
+@media(max-width:430px){
+ .calDay{height:72px!important;min-height:72px!important}
+ .planCube .cubeLabel{font-size:11px!important}
+}
+/* v113: 日付マスに予定ブロックを上下左右ぴったり収める */
+.calDay{overflow:hidden!important}
+.calDayFace{overflow:hidden!important}
+.planCubes{inset:0!important;overflow:hidden!important;padding:0!important}
+.planCube{left:0!important;right:0!important;width:100%!important;box-sizing:border-box!important;border-radius:11px 11px 9px 9px!important;overflow:visible!important}
+.planCube .cubeLabel{font-size:12px!important;font-weight:900!important;line-height:1!important;margin:0!important;position:relative!important;z-index:3!important}
+.planCube:before{left:4px!important;right:-4px!important;bottom:-5px!important;height:5px!important}
+.planCube:after{right:-5px!important;top:4px!important;width:5px!important;height:calc(100% - 4px)!important}
+/* 勤務・予定は同じ濃い青 */
+.planCube.work,.planCube.plan{background:linear-gradient(145deg,#fff27a 0%,#ffd83d 58%,#f0b900 100%)!important;color:#3b2a00!important}
+
+</style>
+
+<style>
+/* v115: 予定ブロックを日付マス内で大きく右寄せ */
+.planCubes{
+  transform:translateX(17px)!important;
+}
+@media(max-width:430px){
+  .planCubes{transform:translateX(17px)!important;}
+}
+</style>
+
+<style id="plan-daily-list-v138">
+.calendarPlanList{display:flex;flex-direction:column;gap:7px;margin-bottom:9px}
+.calendarPlanItem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#fff8d9;border:1px solid #f0d978;border-radius:12px}
+.calendarPlanText{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;font-weight:800}
+.calendarPlanTime{font-variant-numeric:tabular-nums;white-space:nowrap;color:#a06a00;min-width:48px}
+.calendarPlanTime.muted{font-size:12px;color:#999}
+.calendarPlanMemo{word-break:break-word}
+.calendarPlanDelete{border:0;border-radius:10px;background:#f2f2f2;color:#777;padding:7px 9px;font-weight:800;white-space:nowrap}
+.calendarAddWide{width:100%;margin-top:2px}
+</style>
+</head>
+<body><div class="app">
+<header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
+
+<main id="today">
+<div class="card"><div class="duty-date-block"><div class="duty-date-label">📅業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button">📅 乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
+
+<div class="card"><div class="label">今日は？</div><div class="chips" id="dayType"><button class="chip on" data-type="work" onclick="setDayType(this,'work')">🚕 勤務</button><button class="chip" data-type="rest_nonpublic" onclick="setDayType(this,'rest_nonpublic')">🏠 休（非・公）</button><button class="chip" data-type="rest_leaveabsence" onclick="setDayType(this,'rest_leaveabsence')">🌸 休（有・欠）</button><button class="chip" data-type="parttime" onclick="setDayType(this,'parttime')">💰 アルバイト</button></div><div class="help-text">非番・公休は「休（非・公）」、有休・欠勤は「休（有・欠）」で記録します。</div></div>
+
+<div id="commonFields">
+<div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
+<button class="chip" onclick="weather(this)" aria-label="晴れ" title="晴れ">☀️</button><button class="chip" onclick="weather(this)" aria-label="曇り" title="曇り">☁️</button>
+<button class="chip" onclick="weather(this)" aria-label="雨" title="雨">☔</button><button class="chip" onclick="weather(this)" aria-label="雪" title="雪">❄️</button>
+
+</div></div>
+
+<div class="card"><div class="label">📅 イベント</div><div class="chips" id="events">
+<button class="chip" onclick="pick(this)">なし</button><button class="chip" onclick="pick(this)">⚾ 野球</button>
+<button class="chip" onclick="pick(this)">⚽ サッカー</button><button class="chip" onclick="pick(this)">🎆 花火</button>
+<button class="chip" onclick="pick(this)">🏮 夏祭り</button><button class="chip" onclick="pick(this)">🎤 ライブ</button>
+<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">🌧️ 大雨</button><button class="chip" onclick="pick(this)">❄️ 大雪</button><button class="chip" onclick="pick(this)">その他</button>
+</div></div>
+</div>
+
+<div id="workFields">
+<div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
+<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
+<div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
+<div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—</div></div><div id="distanceField"><div class="small">走行距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
+
+<div class="card"><div class="label">💰 売上</div><div class="grid">
+<div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
+<div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
+
+<div class="card"><div class="label">📊 営業データ</div><div class="grid">
+<div><div class="small">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div></div>
+<div><div class="small">営業回</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="例：30"><div class="small" style="margin-top:4px">回</div></div>
+</div></div>
+
+<div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
+<div id="routeList"></div>
+<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道順を追加</button>
+</div>
+
+<div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
+
+<div id="salesGoalCard" class="salesGoalCard"></div>
+
+</div>
+
+<div id="restFields" class="card hidden"><div class="label">💰 同じエリアの平均売上</div><input id="restAvg" type="number" inputmode="numeric" placeholder="休みの日のエリア平均売上"></div>
+
+<div id="total" class="hidden">¥0</div>
+
+<button class="save" type="button" id="saveButton">保存</button>
+<div class="status" id="status">この端末に保存します</div>
+
+</main>
+
+<main id="data" class="hidden">
+<div id="dataSummaryView">
+  <div class="card">
+    <div class="label">📈 年度データ</div>
+    <div class="help-text">12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。</div>
+    <div id="monthlyData"></div>
+  </div>
+  <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
+</div>
+<div id="dataDetailView" class="hidden">
+  <button class="backData" onclick="showDataSummary()">← 年度データに戻る</button>
+  <div class="card"><div class="label" id="monthlyDetailTitle">📅 月間売上</div><div id="monthlyDetail"></div></div>
+</div>
+<div id="dataAnalysisView" class="hidden">
+  <button class="backData" onclick="showMonthlyDetail(currentMonthYear,currentMonthIndex)">← 月間売上に戻る</button>
+  <div class="card"><div class="label" id="analysisTitle">📊 曜日別の売上</div><div id="analysisContent"></div></div>
+</div>
+</main>
+
+<main id="settings" class="hidden">
+<div class="card"><div class="label">⚙️ 設定</div><div class="help-text">自分の会社や乗務スタイルに合わせて設定できます。</div></div>
+
+<div id="settingsOverview">
+
+
+
+
+
+
+
+
+
+<div class="card">
+<div class="label">💬 説明文の表示</div>
+<label style="display:flex;align-items:center;justify-content:space-between;font-size:15px">説明文を表示する <input id="showHelpText" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+</div>
+<div class="card">
+<div class="label">📅 締め日の設定</div>
+<div class="help-text">会社の給与・売上の締め日に合わせて設定してください。</div>
+<select id="closingDay" onchange="saveSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:10px"></select>
+<div class="small" id="closingStatus" style="margin-top:8px"></div>
+</div>
+<div class="card">
+<div class="label">🎯 売上目標の設定</div>
+<div class="help-text">今月の売上目標を入力すると、今日の画面に進捗ゲージが表示されます。</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+  <input id="salesGoalInput" type="number" min="0" step="1000" inputmode="numeric" placeholder="例：800000" style="flex:1;font-weight:800;font-size:20px">
+  <span style="font-weight:800;font-size:18px">円</span>
+</div>
+<button type="button" class="btn full" onclick="saveSalesGoal()">🎯 売上目標を登録</button>
+<div class="small" id="salesGoalStatus" style="margin-top:8px"></div>
+</div>
+<div class="card">
+<div class="label">👀 今日の画面に表示する項目</div>
+<div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🚗 走行距離 <input id="showDistance" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">🗺️ 覚えておきたい道順 <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
+</div>
+
+<div class="card holidaySettingsMenuCard">
+<button class="settingsMenuBtn holidayMenuBtn" type="button" onclick="openHolidaySettings()">🇯🇵 祝日設定<br><span style="font-size:12px;color:#777;font-weight:500">年ごとの祝日を追加・削除・管理できます</span></button>
+</div>
+
+<div class="card">
+<button class="settingsMenuBtn" type="button" onclick="openOtherSettings()">🔧 その他の設定<br><span style="font-size:12px;color:#777;font-weight:500">個人データ・運賃設定／運賃・料金表の写真／出勤日・予定</span></button>
+</div>
+
+</div>
+
+<div id="holidaySettingsPanel" class="hidden">
+<button class="settingsBack" type="button" onclick="closeHolidaySettings()">← 設定に戻る</button>
+<div class="card holidaySettingsCard">
+<div class="label">🇯🇵 祝日設定</div>
+<div class="help-text">祝日を年ごとに管理します。管理する年を選ぶと、その年の祝日だけを表示・追加・削除できます。</div>
+<div class="holidayYearRow">
+  <label for="holidayManageYear">管理する年</label>
+  <select id="holidayManageYear" onchange="changeHolidayManageYear()"></select>
+  <span id="holidayYearCount" class="holidayYearCount"></span>
+</div>
+<div class="holidayAddRow">
+  <input id="holidayDateInput" type="text" inputmode="text" autocomplete="off" placeholder="例：9/23" aria-label="祝日の日付">
+  <input id="holidayNameInput" type="text" placeholder="例：秋分の日" aria-label="祝日名">
+  <button type="button" onclick="addHolidaySetting()">追加</button>
+</div>
+<div id="holidaySettingsList" class="holidaySettingsList"></div>
+</div>
+</div>
+
+<div id="otherSettingsPanel" class="hidden">
+<button class="settingsBack" type="button" onclick="closeOtherSettings()">← 設定に戻る</button>
+<div class="card">
+<div class="settingsSubHead">🔧 その他の設定</div>
+<div class="help-text">個人データ・運賃設定、運賃・料金表の写真、出勤日・予定をここでまとめて管理できます。</div>
+</div>
+
+<div class="card">
+<div class="label">👤 個人データ・運賃設定</div>
+<div class="help-text">乗務エリアと、現在の運賃・料金制度を登録できます。</div>
+<div class="fareSettingsGrid">
+  <label class="fareAreaLabel">乗務エリア
+    <input id="personalArea" type="text" placeholder="例：尼崎・伊丹・西宮" oninput="savePersonalData()">
+  </label>
+
+  <div class="fareSectionTitle">勤務形態</div>
+  <div class="workStyleChoices" style="display:flex;gap:28px;flex-wrap:wrap;align-items:center;margin:8px 0 16px">
+    <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px"><input type="radio" name="workStyle" value="隔日勤務者" onchange="savePersonalData()" style="width:22px;height:22px;margin:0"><span>隔日勤務者</span></label>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px"><input type="radio" name="workStyle" value="日勤者" onchange="syncBusySeasonForDayWorker()" style="width:22px;height:22px;margin:0"><span>日勤者</span></label>
+  </div>
+
+  <div class="fareSectionTitle">初乗運賃</div>
+  <div class="fareFields two">
+    <label><input id="baseDistance" class="fareNum" type="number" min="0" step="0.001" placeholder="◯◯" oninput="savePersonalData()"><span>kmまで</span></label>
+    <label><input id="baseFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
+  </div>
+
+  <div class="fareSectionTitle">加算運賃</div>
+  <div class="fareFields two">
+    <label><input id="incrementDistance" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>mごとに</span></label>
+    <label><input id="incrementFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
+  </div>
+
+  <div class="fareSectionTitle">時間距離併用運賃</div>
+  <div class="fareFields three">
+    <label><input id="timeDistanceMin" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>分</span></label>
+    <label><input id="timeDistanceSec" class="fareNum" type="number" min="0" max="59" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>秒間まで</span></label>
+    <label><input id="timeDistanceFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
+  </div>
+
+  <div class="fareSectionTitle">貸切時間制度</div>
+  <div class="fareFields two">
+    <label><input id="charterMin" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>分まで毎に</span></label>
+    <label><input id="charterFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
+  </div>
+  <div class="fareFields two">
+    <label><input id="charterHours" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>時間まで毎に</span></label>
+    <label><input id="charterHoursFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
+  </div>
+
+  <div class="fareSectionTitle">割引料金</div>
+  <div class="fareFields two">
+    <label><input id="discountThreshold" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円以上</span></label>
+    <label><input id="discountRate" class="fareNum" type="number" min="0" max="100" step="0.1" placeholder="◯" oninput="savePersonalData()"><span>割引</span></label>
+  </div>
+
+  <div class="fareSectionTitle">迎車料金</div>
+  <div class="fareFields one">
+    <label><input id="pickupDistance" class="fareNum" type="number" min="0" step="0.001" oninput="savePersonalData()"><span>kmを限度として実車扱い</span></label>
+  </div>
+
+  <div class="card farePhotoCard" style="margin-bottom:22px">
+    <div class="farePhotoTitle">📷 運賃・料金表の写真</div>
+    <div class="help-text" style="margin-top:4px">運賃表などを写真で保存できます。</div>
+    <input id="farePhotoInput" type="file" accept="image/*" onchange="saveFarePhoto(this)">
+    <div id="farePhotoPreview" style="margin-top:10px"></div>
+    <button type="button" onclick="clearFarePhoto()" style="margin-top:8px;padding:9px 14px;border:0;border-radius:10px;background:#eee;font-size:14px">写真を削除</button>
+  </div>
+
+  <div class="fareSectionTitle">繁忙期設定</div>
+  <div id="busySeasonMonths" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px 12px;margin:10px 0 22px">
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="1" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">1月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="2" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">2月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="3" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">3月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="4" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">4月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="5" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">5月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="6" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">6月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="7" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">7月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="8" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">8月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="9" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">9月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="10" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">10月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="11" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">11月</label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="12" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">12月</label>
+  </div>
+
+  <div class="fareFields two" style="margin-top:8px">
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">月間拘束時間</span><input id="monthlyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="syncBusySeasonForDayWorker()"><span>時間</span></label>
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">繁忙期月間拘束時間</span><input id="busySeasonConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
+  </div>
+
+  <div class="fareFields two" style="margin-top:14px">
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間</span><input id="dailyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の走行距離</span><input id="dailyDrivingDistance" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>km</span></label>
+  </div>
+
+  <div class="fareFields two" style="margin-top:14px">
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間（会社規定）</span><input id="dailyCompanyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
+  </div>
+
+<div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
+</div>
+</div>
+
+</div>
+<button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
+</main>
+
+
+<div id="workCalendarModal" class="calendarModal hidden" onclick="if(event.target===this)closeWorkCalendar()">
+  <div class="calendarSheet">
+    <div class="calendarHead">
+      <button type="button" onclick="changeWorkCalendarMonth(-1)">‹ 前月</button>
+      <div id="workCalendarTitle" class="calendarTitle"></div>
+      <button type="button" onclick="changeWorkCalendarMonth(1)">次月 ›</button>
+    </div>
+    <div class="calendarLegend">
+      <div class="calendarLegendItem"><span class="calendarLegendBox work"></span>勤務</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox paid"></span>有休</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox plan"></span>予定</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox event"></span>イベント</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox parttime"></span>バイト</div>
+      <div class="calendarLegendItem"><span class="calendarLegendBox other"></span>その他</div>
+    </div>
+    <div class="calendarWeek"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
+    <div id="workCalendarGrid" class="calendarGrid"></div>
+    <div id="calendarDetail" class="calendarDetail">
+      <div id="calendarDetailHead" class="calendarDetailHead">日付を選択してください</div>
+      <div id="calendarDetailBody"></div>
+    </div>
+    <div class="calendarForm">
+      <div style="font-weight:800;font-size:16px">登録・編集</div>
+      <label>登録内容
+        <select id="workPlanType" onchange="toggleWorkPlanFields()">
+          <option value="work">🚕 勤務</option>
+          <option value="paid">🌸 有休</option>
+          <option value="plan">📌 予定</option>
+          <option value="event">🎪 イベント</option>
+          <option value="parttime">🟧 バイト</option>
+          <option value="other">🟪 その他</option>
+          <option value="absent">🟫 欠勤</option>
+        </select>
+      </label>
+      <div id="workPlanTimeWrap" class="hidden">
+        <label>時間
+          <input id="workPlanTime" type="time">
+        </label>
+      </div>
+      <div id="workPlanEventIconWrap" class="hidden">
+        <label>イベントのアイコン
+          <select id="workPlanEventIcon">
+            <option value="⚾️">⚾️ 野球</option>
+            <option value="⚽️">⚽️ サッカー</option>
+            <option value="🎤">🎤 ライブ</option>
+            <option value="🏮">🏮 まつり</option>
+            <option value="🎆">🎆 花火</option>
+            <option value="🏃">🏃 マラソン</option>
+            <option value="🎽">🎽 駅伝</option>
+            <option value="🏋️‍♀️">🏋️‍♀️ スポーツ大会</option>
+            <option value="🏎️">🏎️ レース</option>
+            <option value="">アイコンなし</option>
+          </select>
+        </label>
+      </div>
+      <label id="workPlanMemoWrap">メモ（任意）
+        <input id="workPlanMemo" type="text" placeholder="例：病院、旅行、出勤予定など">
+      </label>
+      <div class="calendarActions"><button type="button" class="calSave" onclick="saveWorkPlan()">登録</button><button type="button" class="calDelete" onclick="deleteWorkPlan()">登録を削除</button></div>
+      <button type="button" class="calClose" onclick="closeWorkCalendar()">閉じる</button>
+    </div>
+    <div class="calendarBottomNav"><div><span>⌂</span>今日</div><div><span>📖</span>ログ</div><div><span>▥</span>データ</div><div><span>🛣</span>道ログ</div><div><span>⚙</span>設定</div></div>
+  </div>
+</div>
+<main id="routeDb" class="hidden">
+  <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
+  <div class="card">
+    <div class="label">🛣️ 道ログ</div>
+    <div class="help-text">毎日のログで「覚えておきたい道順」に入力した内容が、ここに自動で貯まります。</div>
+    <div class="routeDbSearch"><input id="routeDbSearch" type="search" placeholder="🔎 道・場所を検索" oninput="renderRouteDatabase()"></div>
+    <div class="routeDbHint">例：「ホテル」「空港」「病院」「宝塚」などで検索できます。</div>
+    <div id="routeDbList"></div>
+  </div>
+</main>
+<main id="logs" class="hidden"><div id="logListView"><div class="card"><div class="label">📚 保存した乗務ログ</div><div class="help-text">保存した1日分の内容を「詳細を見る」から確認できます。</div><div id="logList"></div></div>
+<button class="btn full" onclick="showToday()">← 今日の入力に戻る</button></div>
+<div id="logDetailView" class="hidden"><div class="card"><div class="label">📋 乗務ログの詳細</div><div id="logDetail"></div></div><div class="detail-actions"><button class="detailEdit" onclick="editLog(currentLogDetailId)">✏️ このログを修正</button><button class="btn full" onclick="showLogs()">← ログ一覧に戻る</button></div></div></main>
+<div id="eventBreakdownModal" class="eventModal hidden" onclick="if(event.target===this)closeEventBreakdown()">
+  <div class="eventSheet">
+    <div class="eventSheetTitle">📅 イベントの内訳</div>
+    <div id="eventBreakdownRows" class="eventRows"></div>
+    <button type="button" class="eventClose" onclick="closeEventBreakdown()">閉じる</button>
+  </div>
+</div>
+
+<button type="button" class="floatingCalendarBtn" onclick="openWorkCalendar()" aria-label="カレンダーを開く">
+  <span class="floatingCalendarIcon">📆</span>
+  <span>カレンダー</span>
+</button>
+<nav><button class="navbtn" onclick="goToToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn routeNav" onclick="showRouteDatabase()"><span class="navIcon">🛣️</span><span class="navLabel">道ログ</span></button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DB_NAME='TaxiDriverLogDB', STORE='logs';
+let db, photoData='', editingLogId=null, currentLogDetailId=null;
+
+function initDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
+  req.onsuccess=e=>{db=e.target.result;resolve()};
+  req.onerror=()=>reject(req.error);
+ });
+}
+function getLogs(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function addLog(log){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add(log);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+
+function formatDutyDate(date){
+  return date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日（'+['日','月','火','水','木','金','土'][date.getDay()]+'）';
+}
+function todayYMD(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
+function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
+function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
+function changeDutyDate(value){if(!value)return;localStorage.setItem('taxiDutyDate',value);const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}$('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';if(window.db)renderConstraintWarning();}
+function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
+document.addEventListener('DOMContentLoaded',()=>{
+  startDutyDate();
+  rememberTimes();
+  migrateOptionalSettings();
+  initSettings();
+  initRoutes();
+  initDB().then(()=>Promise.all([updateTotal(),renderSalesGoal(),renderConstraintWarning()])).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
+});
+
+let routeData=[];
+
+function addRoute(data){
+  const list=$('routeList');
+  if(!list)return;
+  const i=routeData.length;
+  routeData.push({
+    destination:data?.destination||'',
+    course:data?.course||'',
+    photo:data?.photo||''
+  });
+  const item=document.createElement('div');
+  item.className='routeItem';
+  item.dataset.index=i;
+  item.innerHTML=`<div class="routeItemTitle">道順 ${i+1}</div>
+    <div class="small">目的地</div>
+    <input class="routeDestination" type="text" placeholder="目的地を入力" value="${escapeHtml(routeData[i].destination)}">
+    <div class="small" style="margin-top:12px">コース</div>
+    <textarea class="routeCourse" placeholder="覚えておきたいコースを入力">${escapeHtml(routeData[i].course)}</textarea>
+    <input class="routePhoto" type="file" accept="image/*" onchange="photo(this)">
+    <div class="preview routePreview">${routeData[i].photo?`<img src="${routeData[i].photo}" alt="道順の写真">`:''}</div>
+    ${i>0?'<button type="button" class="btn full routeRemove" onclick="removeRoute(this)">この道順を削除</button>':''}`;
+  list.appendChild(item);
+}
+
+function escapeHtml(s){
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function removeRoute(btn){
+  const item=btn.closest('.routeItem');
+  if(item)item.remove();
+  routeData=getRouteData();
+  refreshRouteTitles();
+}
+
+function refreshRouteTitles(){
+  document.querySelectorAll('#routeList .routeItem').forEach((el,i)=>{
+    const t=el.querySelector('.routeItemTitle');
+    if(t)t.textContent='道順 '+(i+1);
+    el.dataset.index=i;
+  });
+}
+
+function getRouteData(){
+  return [...document.querySelectorAll('#routeList .routeItem')].map((el,i)=>({
+    destination:el.querySelector('.routeDestination')?.value||'',
+    course:el.querySelector('.routeCourse')?.value||'',
+    photo:routeData[i]?.photo||''
+  })).filter(x=>x.destination||x.course||x.photo);
+}
+
+function photo(input){
+  const item=input?.closest('.routeItem');
+  if(!item)return;
+  const file=input.files?.[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){
+    alert('画像ファイルを選択してください。');
+    input.value='';
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const index=[...document.querySelectorAll('#routeList .routeItem')].indexOf(item);
+    if(index>=0)routeData[index].photo=reader.result;
+    const p=item.querySelector('.routePreview');
+    if(p)p.innerHTML=`<img src="${reader.result}" alt="道順の写真">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function initRoutes(routes){
+  routeData=[];
+  const list=$('routeList');
+  if(list)list.innerHTML='';
+  const a=Array.isArray(routes)?routes:[];
+  if(a.length){
+    a.forEach(r=>addRoute(r));
+  }else{
+    addRoute();
+  }
+}
+
+function pick(e){
+  const buttons=[...e.parentElement.children];
+  if(e.textContent.trim()==='なし'){
+    buttons.forEach(x=>x.classList.remove('on'));
+    e.classList.add('on');
+    return;
+  }
+  const none=buttons.find(x=>x.textContent.trim()==='なし');
+  if(none) none.classList.remove('on');
+  e.classList.toggle('on');
+}
+let weatherPickSeq=0;
+function refreshWeather(){
+  const all=[...document.querySelectorAll('#weather .chip')];
+  all.forEach(x=>x.classList.remove('first','second'));
+  const selected=all.filter(x=>x.classList.contains('on')).sort((a,b)=>Number(a.dataset.weatherOrder||0)-Number(b.dataset.weatherOrder||0));
+  selected.forEach((x,i)=>{if(i===0)x.classList.add('first');if(i===1)x.classList.add('second');});
+}
+function weather(e){
+  const selected=[...document.querySelectorAll('#weather .chip.on')];
+  if(e.classList.contains('on')){
+    e.classList.remove('on','first','second');
+    delete e.dataset.weatherOrder;
+    refreshWeather();
+    return;
+  }
+  if(selected.length>=2)return;
+  e.classList.add('on');
+  e.dataset.weatherOrder=String(++weatherPickSeq);
+  refreshWeather();
+}
+function duration(){
+  const out=$('out').value;
+  const inn=$('in').value;
+  const hours=$('hours');
+  if(!out||!inn){
+    hours.textContent='—';
+    return;
+  }
+  const [oh,om]=out.split(':').map(Number);
+  const [ih,im]=inn.split(':').map(Number);
+  let minutes=(ih*60+im)-(oh*60+om);
+  if(minutes<0)minutes+=24*60;
+  hours.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+}
+
+async function updateTotal(){
+  const a=await getLogs();
+  const t=a.reduce((n,x)=>{
+    const type=x.dayType||'work';
+    return type==='work' ? n+(Number(x.sales)||0) : n;
+  },0);
+  const el=$('total');
+  if(el)el.textContent='¥'+t.toLocaleString();
+  return t;
+}
+function getCurrentMonthSales(logs){
+  // 売上目標の「今月」は、締め日の翌日から次の締め日まで。
+  // 締め日15日なら、9/16からは「9/16〜10/15」が新しい期間。
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let start,end;
+  const thisClosing=new Date(today.getFullYear(),today.getMonth(),closing);
+  if(today>thisClosing){
+    start=new Date(today.getFullYear(),today.getMonth(),closing+1);
+    end=new Date(today.getFullYear(),today.getMonth()+1,closing);
+  }else{
+    start=new Date(today.getFullYear(),today.getMonth()-1,closing+1);
+    end=new Date(today.getFullYear(),today.getMonth(),closing);
+  }
+  return (logs||[]).reduce((sum,x)=>{
+    const d=dateOnly(x.date);
+    return (d && d>=start && d<=end && (x.dayType||'work')==='work')
+      ? sum+(Number(x.sales)||0) : sum;
+  },0);
+}
+function saveSalesGoal(){
+  const value=Math.max(0,Number($('salesGoalInput')?.value||0));
+  if(!value){alert('売上目標を入力してください。');return;}
+  localStorage.setItem('taxiSalesGoal',String(Math.round(value)));
+  if($('salesGoalStatus'))$('salesGoalStatus').textContent='現在の目標：¥'+Math.round(value).toLocaleString();
+  renderSalesGoal();
+  alert('売上目標を登録しました！');
+}
+async function renderSalesGoal(){
+  const box=$('salesGoalCard');
+  if(!box)return;
+  let logs=[];try{logs=await getLogs()}catch(e){}
+  const goal=Math.max(0,Number(localStorage.getItem('taxiSalesGoal')||800000));
+  const sales=getCurrentMonthSales(logs);
+  const raw=goal>0?(sales/goal*100):0;
+  const pct=Math.min(100,Math.round(raw));
+  const remain=Math.max(0,goal-sales);
+  const width=Math.min(100,Math.max(0,raw));
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const now=new Date();
+  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const month=(today>new Date(today.getFullYear(),today.getMonth(),closing)?today.getMonth()+1:today.getMonth())+'月';
+  let message;
+  if(sales>=goal){
+    message='🎉 目標達成！おめでとう！';
+  }else if(pct>=90){
+    message='🚕 あと少し！安全運転で！';
+  }else if(pct>=80){
+    message='🐱 無理しないでね';
+  }else if(pct>=70){
+    message='🚕 もうひと踏ん張り！';
+  }else if(pct>=60){
+    message='🚕 順調、順調♪';
+  }else if(pct>=40){
+    message='🚕 半分まで来たよ！';
+  }else if(pct>=20){
+    message='🚕 いいスタート！その調子！';
+  }else{
+    message='🚕 目標に向かって、がんばろう！';
+  }
+  box.innerHTML=`<div class="salesGoalHead"><div class="salesGoalTitle">🚩 今月の売上目標</div><button type="button" class="salesGoalChange" onclick="showSettings()">設定で変更</button></div>
+    <div class="salesGoalNumbers"><div><div class="salesGoalSmall">${month}の累計売上</div><div class="salesGoalAmount">¥${sales.toLocaleString()}</div></div><div class="salesGoalTarget"><div class="salesGoalSmall">目標金額</div><div class="salesGoalAmount">¥${goal.toLocaleString()}</div></div></div>
+    <div class="salesRoad"><div class="salesRoadDone" style="width:${width}%"></div><div class="salesTaxi" style="left:calc(${width}% - 22px)">🚕</div><div class="salesFlag">🏁</div></div>
+    <div class="salesGoalBottom"><strong>${pct}%</strong><span>${sales>=goal?'目標達成！':'あと ¥'+remain.toLocaleString()}</span></div>
+    <div class="salesGoalMessage">${message} 🐱</div>`;
+}
+
+function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }
+function setDayType(el,type){
+  document.querySelectorAll('#dayType .chip').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  const work=!isRestDay(type);
+  const parttime=type==='parttime';
+  const wf=$('workFields'), rf=$('restFields'), th=$('takeHomeField'), af=$('averageField'), df=$('diff');
+  if(wf) wf.style.display=work?'':'none';
+  if(rf){
+    rf.classList.toggle('hidden', work);
+    rf.style.display=work?'none':'';
+  }
+  if($('salesLabel')) $('salesLabel').textContent='売上';
+  if(th){ th.classList.toggle('hidden', !parttime); th.style.display=parttime?'':'none'; }
+  if(af){ af.classList.toggle('hidden', parttime); af.style.display=parttime?'none':''; }
+  if(df){ df.classList.toggle('hidden', parttime); df.style.display=parttime?'none':''; }
+  const sg=$('salesGoalCard');
+  if(sg){ sg.style.display=parttime?'none':''; }
+}
+function getDayType(){return document.querySelector('#dayType .chip.on')?.dataset.type||'work'}
+window.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
+const saveButton=document.getElementById('saveButton');
+if(saveButton){
+  const press=()=>saveButton.classList.add('savePressed');
+  const release=()=>saveButton.classList.remove('savePressed');
+  saveButton.addEventListener('pointerdown',press);
+  saveButton.addEventListener('pointerup',release);
+  saveButton.addEventListener('pointercancel',release);
+  saveButton.addEventListener('pointerleave',release);
+  saveButton.addEventListener('click',()=>saveLog());
+}
+
+let currentConstraintMessage='';
+
+async function renderConstraintWarning(){
+  currentConstraintMessage='';
+  try{
+    const dutyDate=parseDutyDate($('date')?.textContent)||new Date();
+    const period=getDataPeriod(dutyDate);
+
+    // 繁忙期の判定は「その集計期間の締め日が属する月」で行う。
+    // 例：8月分 = 7/16〜8/15 → 8月が繁忙期設定なら繁忙期月間拘束時間を使用。
+    let monthly=Number($('monthlyConstrainedHours')?.value||0);
+    const busy=Number($('busySeasonConstrainedHours')?.value||0);
+    const busyMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
+    const periodMonth=period.end.getMonth()+1;
+    const isBusyPeriod=busyMonths.includes(periodMonth);
+    if(isBusyPeriod && busy>0) monthly=busy;
+    if(!(monthly>0)) return;
+
+    const logs=await getLogs();
+    const periodLogs=logs.filter(x=>inDataPeriod(x.date,period));
+    const durationMinutes=periodLogs.reduce((total,x)=>{
+      const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
+      if(hm){
+        return total + Math.round(Number(hm[1])*60) + Number(hm[2]||0);
+      }
+      const out=String(x.out||'');
+      const inn=String(x.in||'');
+      if(out && inn){
+        const [oh,om]=out.split(':').map(Number);
+        const [ih,im]=inn.split(':').map(Number);
+        if([oh,om,ih,im].every(Number.isFinite)){
+          let m=(ih*60+im)-(oh*60+om);
+          if(m<0)m+=24*60;
+          return total+m;
+        }
+      }
+      return total;
+    },0);
+
+    const limitMinutes=Math.round(monthly*60);
+    if(!(limitMinutes>0)) return;
+    const remainingMinutes=Math.max(0,limitMinutes-durationMinutes);
+    const ratio=durationMinutes/limitMinutes;
+    if(ratio<0.75) return;
+
+    const rh=Math.floor(remainingMinutes/60);
+    const rm=remainingMinutes%60;
+    const remainingText=rm?`${rh}時間${rm}分`:`${rh}時間`;
+    if(ratio>=0.95){
+      currentConstraintMessage=`🟥 警告\n残りの月間拘束時間が${remainingText}になっています。`;
+    }else if(ratio>=0.85){
+      currentConstraintMessage=`🟨 注意\n残りの月間拘束時間が${remainingText}になっています。`;
+    }else{
+      currentConstraintMessage=`残りの月間拘束時間が${remainingText}になっています。`;
+    }
+  }catch(e){
+    console.error(e);
+    currentConstraintMessage='';
+  }
+}
+
+async function saveLog(){
+ let dayType=getDayType();
+ let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
+ const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:(dayType==='work'||dayType==='parttime')?getRouteData():[],destination:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.destination||''):'',course:(dayType==='work'||dayType==='parttime')?(getRouteData()[0]?.course||''):'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let all=await getLogs();
+ if(editingLogId!==null){
+   log.id=editingLogId;
+   await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(log);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});
+   editingLogId=null;
+ }else{
+   let same=all.find(x=>x.date===log.date);
+   if(same){log.id=same.id;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(log);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+   else await addLog(log);
+ }
+ all=await getLogs();
+ // 非番・公休／有休・欠勤の平均売上も、保存直後に読み直して確認する。
+ if(isRestDay(dayType)){
+   const savedCheck=all.find(x=>x.date===log.date);
+   if(!savedCheck || String(savedCheck.avg??'')!==String(log.avg??'')){
+     throw new Error('休みの日の平均売上の保存確認に失敗しました');
+   }
+ }
+ await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
+ if(!isRestDay(dayType)) localStorage.removeItem('taxiDutyDate');
+ $('status').textContent='✅ 保存しました';
+ await renderConstraintWarning();
+ // 保存後はページ移動せず、現在の「今日」画面をそのまま更新する。
+ editingLogId=null;
+ await updateTotal();
+ await renderSalesGoal();
+ await renderConstraintWarning();
+ renderRouteDatabase();
+ // 拘束時間の通知がある場合は、「保存しました！」の確認ウインドウ内だけに表示する。
+ alert(currentConstraintMessage ? `保存しました！\n\n${currentConstraintMessage}` : '保存しました！');
+}
+
+async function renderRouteDatabase(){
+  const box=$('routeDbList');
+  if(!box)return;
+  let logs=[];
+  try{logs=await getLogs()}catch(e){box.innerHTML='<div class="routeDbEmpty">保存したログを読み込めませんでした。</div>';return}
+  const q=String($('routeDbSearch')?.value||'').trim().toLowerCase();
+  const rows=[];
+  logs.forEach(log=>{
+    const routes=Array.isArray(log.routes)&&log.routes.length?log.routes:
+      ((log.destination||log.course||log.photo)?[{destination:log.destination||'',course:log.course||'',photo:log.photo||''}]:[]);
+    routes.forEach((r,i)=>{
+      const destination=String(r?.destination||'').trim();
+      const course=String(r?.course||'').trim();
+      const hay=(destination+' '+course).toLowerCase();
+      if((destination||course)&&(!q||hay.includes(q)))rows.push({date:log.date||'',destination,course,photo:r?.photo||'',index:i});
+    });
+  });
+  rows.sort((a,b)=>String(b.date).localeCompare(String(a.date),'ja'));
+  box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem">
+    <div class="routeDbTitle">📍 ${escapeHtml(r.destination||'目的地なし')}</div>
+    ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
+    ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
+    <div class="routeDbMeta">記録日：${escapeHtml(r.date)}　・ 道順 ${r.index+1}</div>
+  </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する道順はありません。':'まだ道順の記録はありません。'}<br><span style="font-size:12px">毎日のログで「覚えておきたい道順」を登録すると、ここに貯まります。</span></div>`;
+}
+
+function parseDutyDate(value){
+  if(!value)return null;
+  if(value instanceof Date)return value;
+  const s=String(value);
+  const m=s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  const d=new Date(s+'T00:00:00');
+  return isNaN(d.getTime())?null:d;
+}
+async function editLog(id){
+ try{
+  const b=document.getElementById('saveButton');
+  if(b){
+    b.classList.remove('savePressed');
+    b.blur();
+  }
+  const all=await getLogs();
+  const x=all.find(v=>Number(v.id)===Number(id));
+  if(!x){
+    alert('このログが見つかりません。');
+    return;
+  }
+
+  editingLogId=x.id;
+  currentLogDetailId=x.id;
+  resetSaveButton();
+
+  const d=parseDutyDate(x.date);
+  const ymd=d
+    ? d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')
+    : todayYMD();
+
+  localStorage.setItem('taxiDutyDate',ymd);
+
+  const dateEl=$('date');
+  if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+
+  const dp=$('datePicker');
+  if(dp){
+    dp.value=ymd;
+    dp.max=todayYMD();
+  }
+
+  photoData=x.photo||'';
+
+  document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+  document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+
+  weatherPickSeq=0;
+  (Array.isArray(x.weather)?x.weather:[]).forEach(v=>{
+    const b=[...document.querySelectorAll('#weather .chip')].find(b=>b.textContent.trim()===v);
+    if(b){b.classList.add('on');b.dataset.weatherOrder=String(++weatherPickSeq);}
+  });
+  refreshWeather();
+
+  (Array.isArray(x.event)?x.event:[]).forEach(v=>{
+    const b=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()===v);
+    if(b)b.classList.add('on');
+  });
+  if(!(Array.isArray(x.event)?x.event:[]).length){
+    const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+    if(none)none.classList.add('on');
+  }
+
+  const normalizedDayType = x.dayType==='rest' ? 'rest_nonpublic' : (x.dayType||'work');
+  const typeBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type===normalizedDayType);
+  if(typeBtn) setDayType(typeBtn,normalizedDayType);
+
+  if($('out'))$('out').value=x.out||'';
+  if($('in'))$('in').value=x.in||'';
+  if($('km'))$('km').value=x.km||'';
+  if($('sales'))$('sales').value=x.sales||'';
+  if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
+  if($('tripCount'))$('tripCount').value=x.tripCount??'';
+  if($('avg'))$('avg').value=x.avg||'';
+  if($('restAvg'))$('restAvg').value=x.avg||'';
+  if($('parttimeTakeHomeInput'))$('parttimeTakeHomeInput').value=x.parttimeTakeHome||'';
+  const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
+  initRoutes(savedRoutes);
+  if($('eventNote'))$('eventNote').value=x.eventNote||'';
+
+  duration();
+
+  const preview=$('preview');
+  if(preview)preview.innerHTML=photoData?`<img src="${photoData}" alt="道順の写真">`:'';
+
+  const status=$('status');
+  if(status)status.textContent='✏️ このログを修正中です';
+
+  showToday();
+  window.scrollTo({top:0,behavior:'smooth'});
+ }catch(err){
+  console.error(err);
+  alert('ログの修正を開始できませんでした。');
+ }
+}
+
+function migrateOptionalSettings(){
+  if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
+  if(localStorage.getItem('taxiShowDistance')===null) localStorage.setItem('taxiShowDistance',localStorage.getItem('taxiShowEfficiency')==='1'?'1':'0');
+  if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
+}
+function savePersonalData(){
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
+  const data={};
+  ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
+  data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
+  const workStyle=document.querySelector('input[name="workStyle"]:checked');
+  if(workStyle)data.workStyle=workStyle.value;
+  localStorage.setItem('taxiPersonalData',JSON.stringify(data));
+  const status=$('personalDataStatus');
+  if(status)status.textContent='✓ 入力内容を保存しました';
+}
+function syncBusySeasonForDayWorker(){
+  const workStyle=document.querySelector('input[name="workStyle"]:checked');
+  const monthly=$('monthlyConstrainedHours');
+  const busy=$('busySeasonConstrainedHours');
+  if(workStyle && workStyle.value==='日勤者' && monthly && busy){
+    busy.value=monthly.value;
+  }
+  savePersonalData();
+}
+function loadPersonalData(){
+  let data={};
+  try{data=JSON.parse(localStorage.getItem('taxiPersonalData')||'{}')}catch(e){data={};}
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
+  ids.forEach(id=>{const el=$(id);if(el)el.value=data[id]||'';});
+  document.querySelectorAll('input[name="workStyle"]').forEach(r=>{r.checked=(r.value===data.workStyle);});
+  if(data.workStyle==='日勤者'){
+    const monthly=$('monthlyConstrainedHours');
+    const busy=$('busySeasonConstrainedHours');
+    if(monthly && busy) busy.value=monthly.value;
+  }
+  const busyMonths=Array.isArray(data.busySeasonMonths)?data.busySeasonMonths.map(Number):[];
+  document.querySelectorAll('.busyMonthCheck').forEach(cb=>{cb.checked=busyMonths.includes(Number(cb.value));});
+  renderFarePhoto();
+}
+function saveFarePhoto(input){
+  const file=input&&input.files&&input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){alert('画像ファイルを選択してください。');return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const maxW=1200;
+      const scale=Math.min(1,maxW/img.width);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.round(img.width*scale);
+      canvas.height=Math.round(img.height*scale);
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const dataUrl=canvas.toDataURL('image/jpeg',0.82);
+      localStorage.setItem('taxiFarePhoto',dataUrl);
+      renderFarePhoto();
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function renderFarePhoto(){
+  const box=$('farePhotoPreview');
+  if(!box)return;
+  const src=localStorage.getItem('taxiFarePhoto')||'';
+  box.innerHTML=src?`<img src="${src}" alt="運賃・料金表の写真" style="display:block;width:100%;height:auto;max-height:420px;object-fit:contain;object-position:center;border-radius:12px;border:1px solid #ddd;background:#fff">`:'<div class="small">写真はまだ登録されていません。</div>';
+}
+function clearFarePhoto(){
+  localStorage.removeItem('taxiFarePhoto');
+  const input=$('farePhotoInput');
+  if(input)input.value='';
+  renderFarePhoto();
+}
+const DEFAULT_HOLIDAYS_2026={
+  '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日',
+  '2026-03-20':'春分の日','2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日',
+  '2026-05-05':'こどもの日','2026-05-06':'振替休日','2026-07-20':'海の日','2026-08-11':'山の日',
+  '2026-09-21':'敬老の日','2026-09-22':'国民の休日','2026-09-23':'秋分の日','2026-10-12':'スポーツの日','2026-11-03':'文化の日','2026-11-23':'勤労感謝の日'
+};
+function nthWeekdayOfMonth(year,month,weekday,n){
+  const first=new Date(year,month-1,1);
+  const delta=(weekday-first.getDay()+7)%7;
+  return 1+delta+7*(n-1);
+}
+function equinoxDay(year,isAutumn){
+  // 日本の春分・秋分の日の近似式（1980〜2099年の範囲で使用）
+  const y=year-1980;
+  const v=isAutumn?23.2488:20.8431;
+  return Math.floor(v+0.242194*y-Math.floor(y/4));
+}
+function generateDefaultHolidays(year){
+  const h={};
+  const add=(month,day,name)=>{const key=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;h[key]=name;};
+  add(1,1,'元日');
+  add(1,nthWeekdayOfMonth(year,1,1,2),'成人の日');
+  add(2,11,'建国記念の日');
+  add(2,23,'天皇誕生日');
+  add(3,equinoxDay(year,false),'春分の日');
+  add(4,29,'昭和の日');
+  add(5,3,'憲法記念日');
+  add(5,4,'みどりの日');
+  add(5,5,'こどもの日');
+  add(7,nthWeekdayOfMonth(year,7,1,3),'海の日');
+  add(8,11,'山の日');
+  add(9,nthWeekdayOfMonth(year,9,1,3),'敬老の日');
+  add(9,equinoxDay(year,true),'秋分の日');
+  add(10,nthWeekdayOfMonth(year,10,1,2),'スポーツの日');
+  add(11,3,'文化の日');
+  add(11,23,'勤労感謝の日');
+
+  // 日曜日に当たる祝日の振替休日
+  const baseKeys=new Set(Object.keys(h));
+  Object.keys(h).forEach(key=>{
+    const d=new Date(key+'T00:00:00');
+    if(d.getDay()!==0)return;
+    let cur=new Date(d);cur.setDate(cur.getDate()+1);
+    while(true){
+      const k=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+      if(!h[k]){h[k]='振替休日';break;}
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+
+  // 前後を国民の祝日に挟まれた平日は「国民の休日」
+  const nationalKeys=new Set(Object.keys(h).filter(k=>h[k]!=='振替休日'));
+  for(let m=1;m<=12;m++){
+    const last=new Date(year,m,0).getDate();
+    for(let day=1;day<=last;day++){
+      const d=new Date(year,m-1,day);
+      if(d.getDay()===0||d.getDay()===6)continue;
+      const key=`${year}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      if(h[key])continue;
+      const prev=new Date(d);prev.setDate(day-1);
+      const next=new Date(d);next.setDate(day+1);
+      const pk=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}-${String(prev.getDate()).padStart(2,'0')}`;
+      const nk=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
+      if(nationalKeys.has(pk)&&nationalKeys.has(nk))h[key]='国民の休日';
+    }
+  }
+  return h;
+}
+function getHolidayData(){
+  const raw=localStorage.getItem('taxiHolidaysByYear');
+  if(raw){try{return JSON.parse(raw)||{};}catch(e){}}
+  const old=localStorage.getItem('taxiHolidays');
+  let data={};
+  if(old){try{
+    const flat=JSON.parse(old)||{};
+    Object.keys(flat).forEach(key=>{const y=key.slice(0,4);if(!data[y])data[y]={};data[y][key]=flat[key];});
+  }catch(e){}
+  }
+  if(!Object.keys(data).length)data['2026']={...DEFAULT_HOLIDAYS_2026};
+  else if(!data['2026'])data['2026']={...DEFAULT_HOLIDAYS_2026};
+  localStorage.setItem('taxiHolidaysByYear',JSON.stringify(data));
+  return data;
+}
+function setHolidayData(data){localStorage.setItem('taxiHolidaysByYear',JSON.stringify(data||{}));}
+function ensureHolidayYear(year){
+  const data=getHolidayData();
+  const key=String(year);
+  if(!data[key] || !Object.keys(data[key]).length){
+    data[key]=year===2026?{...DEFAULT_HOLIDAYS_2026}:generateDefaultHolidays(year);
+    setHolidayData(data);
+  }
+  return data[key];
+}
+function getHolidays(){
+  const data=getHolidayData(),flat={};
+  Object.values(data).forEach(yearMap=>Object.assign(flat,yearMap||{}));
+  return flat;
+}
+function getHolidayName(key){return getHolidays()[key]||'';}
+function getHolidayManageYear(){
+  const saved=Number(localStorage.getItem('taxiHolidayManageYear'));
+  return Number.isFinite(saved)&&saved>=2020&&saved<=2050?saved:new Date().getFullYear();
+}
+function setHolidayManageYear(year){localStorage.setItem('taxiHolidayManageYear',String(year));}
+function ensureHolidayYearOptions(){
+  const select=$('holidayManageYear');if(!select)return;
+  const current=getHolidayManageYear();
+  select.innerHTML='';
+  for(let y=2020;y<=2050;y++){
+    const o=document.createElement('option');o.value=y;o.textContent=y+'年';select.appendChild(o);
+  }
+  select.value=String(current);
+  ensureHolidayYear(current);
+}
+function normalizeHolidayDateInput(value, year){
+  const raw=String(value||'').trim().replace(/[.\-]/g,'/');
+  if(!raw)return null;
+  let m=raw.match(/^(?:\d{4}\/)?(\d{1,2})\/(\d{1,2})$/);
+  if(m){
+    const y=year, mo=Number(m[1]), d=Number(m[2]);
+    if(mo<1||mo>12||d<1||d>31)return null;
+    const dt=new Date(y,mo-1,d);
+    if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return null;
+    return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  }
+  m=raw.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if(m){
+    const y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]);
+    if(y!==year||mo<1||mo>12||d<1||d>31)return null;
+    const dt=new Date(y,mo-1,d);
+    if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return null;
+    return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  }
+  return null;
+}
+function addHolidaySetting(){
+  const rawDate=$('holidayDateInput')?.value||'',name=($('holidayNameInput')?.value||'').trim();
+  const year=Number($('holidayManageYear')?.value||getHolidayManageYear());
+  const date=normalizeHolidayDateInput(rawDate,year);
+  if(!rawDate||!name){alert('祝日の日付と名称を入力してください。\n例：9/23　秋分の日');return;}
+  if(!date){alert(year+'年の日付を「9/23」のように入力してください。\n年を入れる場合は「'+year+'/9/23」のように入力できます。');return;}
+  const data=getHolidayData();if(!data[String(year)])data[String(year)]={};data[String(year)][date]=name;setHolidayData(data);
+  $('holidayDateInput').value='';$('holidayNameInput').value='';renderHolidaySettings();renderWorkCalendar();
+}
+function deleteHolidaySetting(key){
+  const data=getHolidayData(),year=key.slice(0,4);
+  if(data[year]){delete data[year][key];setHolidayData(data);}
+  renderHolidaySettings();renderWorkCalendar();
+}
+function renderHolidaySettings(){
+  ensureHolidayYearOptions();
+  const box=$('holidaySettingsList');if(!box)return;
+  const year=String(getHolidayManageYear()),data=getHolidayData(),h=data[year]||{};
+  const keys=Object.keys(h).sort();
+  const count=keys.length;
+  const countText=$('holidayYearCount');if(countText)countText.textContent=year+'年：'+count+'件';
+  const dateInput=$('holidayDateInput');
+  if(dateInput){dateInput.min=year+'-01-01';dateInput.max=year+'-12-31';}
+  if(!keys.length){box.innerHTML='<div class="small">この年に登録されている祝日はありません。</div>';return;}
+  box.innerHTML=keys.map(key=>{
+    const parts=key.split('-');const label=Number(parts[1])+'月'+Number(parts[2])+'日';
+    return `<div class="holidaySettingRow"><div class="holidaySettingDate">${label}</div><div class="holidaySettingName">${String(h[key]).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div><button type="button" class="holidaySettingDelete" onclick="deleteHolidaySetting('${key}')">削除</button></div>`;
+  }).join('');
+}
+function changeHolidayManageYear(){
+  const year=Number($('holidayManageYear')?.value||new Date().getFullYear());setHolidayManageYear(year);
+  ensureHolidayYear(year);
+  const date=$('holidayDateInput');if(date){date.value='';}
+  renderHolidaySettings();
+}
+function initSettings(){
+  loadPersonalData();
+  renderHolidaySettings();
+  const select=$('closingDay');
+  if(select){
+    select.innerHTML='';
+    for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'日';select.appendChild(o)}
+    const saved=localStorage.getItem('taxiClosingDay')||'15';
+    select.value=saved;
+    $('closingStatus').textContent='現在の設定：毎月'+saved+'日締め';
+  }
+  const showTime=localStorage.getItem('taxiShowTime')==='1';
+  const showDistance=localStorage.getItem('taxiShowDistance')==='1';
+  const showRoute=localStorage.getItem('taxiShowRoute')==='1';
+  const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
+  const salesGoal=localStorage.getItem('taxiSalesGoal')||'800000';
+  if($('salesGoalInput'))$('salesGoalInput').value=salesGoal;
+  if($('salesGoalStatus'))$('salesGoalStatus').textContent='現在の目標：¥'+Number(salesGoal||0).toLocaleString();
+  if($('showTime'))$('showTime').checked=showTime;
+  if($('showDistance'))$('showDistance').checked=showDistance;
+  if($('showRoute'))$('showRoute').checked=showRoute;
+  if($('showHelpText'))$('showHelpText').checked=showHelpText;
+  applySettings();
+}
+function saveSettings(){
+  localStorage.setItem('taxiClosingDay',$('closingDay').value);
+  localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
+  localStorage.setItem('taxiShowDistance',$('showDistance').checked?'1':'0');
+  localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
+  localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
+  $('closingStatus').textContent='現在の設定：毎月'+$('closingDay').value+'日締め';
+  applySettings();
+  renderSalesGoal();
+}
+function applySettings(){
+  const timeCard=$('timeCard');
+  const distanceWidget=$('distanceField');
+  const routeCard=$('routeCard');
+  if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
+  if(distanceWidget)distanceWidget.classList.toggle('hidden',localStorage.getItem('taxiShowDistance')!=='1');
+  if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
+  const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
+  document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
+}
+function showSettings(){
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('settings').classList.remove('hidden');
+  $('settingsOverview').classList.remove('hidden');
+  $('settingsOverview').style.display='block';
+  $('holidaySettingsPanel').classList.add('hidden');
+  $('holidaySettingsPanel').style.display='none';
+  $('otherSettingsPanel').classList.add('hidden');
+  $('otherSettingsPanel').style.display='none';
+  initSettings();
+}
+function openHolidaySettings(){
+  const overview=$('settingsOverview');
+  const panel=$('holidaySettingsPanel');
+  const other=$('otherSettingsPanel');
+  if(!overview||!panel)return;
+  overview.classList.add('hidden');
+  overview.style.display='none';
+  if(other){other.classList.add('hidden');other.style.display='none';}
+  panel.classList.remove('hidden');
+  panel.style.display='block';
+  renderHolidaySettings();
+}
+function closeHolidaySettings(){
+  const overview=$('settingsOverview');
+  const panel=$('holidaySettingsPanel');
+  if(!overview||!panel)return;
+  panel.classList.add('hidden');
+  panel.style.display='none';
+  overview.classList.remove('hidden');
+  overview.style.display='block';
+}
+
+function openOtherSettings(){
+  const overview=$('settingsOverview');
+  const panel=$('otherSettingsPanel');
+  if(!overview||!panel)return;
+  overview.classList.add('hidden');
+  overview.style.display='none';
+  panel.classList.remove('hidden');
+  panel.style.display='block';
+  loadPersonalData();
+  renderFarePhoto();
+}
+function closeOtherSettings(){
+  const overview=$('settingsOverview');
+  const panel=$('otherSettingsPanel');
+  if(!overview||!panel)return;
+  panel.classList.add('hidden');
+  panel.style.display='none';
+  overview.classList.remove('hidden');
+  overview.style.display='block';
+}
+
+function getDataPeriod(baseDate){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const base=baseDate instanceof Date&&!isNaN(baseDate.getTime())?baseDate:new Date();
+  // 締め日が15日なら、16日〜翌月15日を1か月として扱う。
+  // 基準日が15日以前なら「前月16日〜当月15日」、
+  // 16日以降なら「当月16日〜翌月15日」。
+  let start,end;
+  if(base.getDate()<=closing){
+    start=new Date(base.getFullYear(),base.getMonth()-1,closing+1);
+    end=new Date(base.getFullYear(),base.getMonth(),closing);
+  }else{
+    start=new Date(base.getFullYear(),base.getMonth(),closing+1);
+    end=new Date(base.getFullYear(),base.getMonth()+1,closing);
+  }
+  return {start,end};
+}
+function dateOnly(value){
+  const d=parseDutyDate(value);
+  return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;
+}
+function inDataPeriod(value,period){
+  const d=dateOnly(value); if(!d)return false;
+  return d>=period.start && d<=period.end;
+}
+function periodLabel(period){
+  const sy=period.start.getFullYear();
+  const sm=period.start.getMonth()+1;
+  const sd=period.start.getDate();
+  const ey=period.end.getFullYear();
+  const em=period.end.getMonth()+1;
+  const ed=period.end.getDate();
+  const endText=(sy===ey)?(em+'月'+ed+'日'):(ey+'年'+em+'月'+ed+'日');
+  return sy+'年'+sm+'月'+sd+'日〜'+endText;
+}
+async function saveMonthlySnapshot(all){
+  try{
+    const p=getDataPeriod();
+    const rows=all.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    localStorage.setItem('taxiMonthlySnapshot',JSON.stringify({period:periodLabel(p),savedAt:new Date().toISOString(),count:rows.length,sales:rows.reduce((n,x)=>n+(Number(x.sales)||0),0)}));
+  }catch(e){console.warn(e)}
+}
+async function getPeriodWorkLogs(){
+  if(!db){try{await initDB()}catch(e){return []}}
+  const logs=await getLogs();
+  const p=getDataPeriod();
+  return logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+}
+function yen(v){return '¥'+Number(v||0).toLocaleString()}
+function diffText(v){return v===null?'—':(v>=0?'+':'−')+yen(Math.abs(v))}
+function renderMetricCards(work){
+  const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+  const areaRows=work.filter(x=>Number(x.avg)>0);
+  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  return `<div class="dataGrid" style="margin-top:14px">
+    <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+  </div>`;
+}
+async function renderMonthlyTop(){
+  const box=$('monthlyData'); if(!box)return;
+  let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
+  box.innerHTML='<div id="annualData"></div>';
+  await renderAnnualData();
+}
+
+function getFiscalYearStartYear(){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const now=new Date();
+  const thisStart=new Date(now.getFullYear(),2,closing+1);
+  return now>=thisStart?now.getFullYear():now.getFullYear()-1;
+}
+function getFiscalPeriods(startYear){
+  const closing=Number(localStorage.getItem('taxiClosingDay')||15);
+  const y=Number.isFinite(Number(startYear))?Number(startYear):getFiscalYearStartYear();
+  return Array.from({length:12},(_,i)=>{
+    // 売上月は「対象期間の終了月」で表示する。
+    // 例：8月分 = 7/16〜8/15、9月分 = 8/16〜9/15。
+    const start=new Date(y,2+i,closing+1);
+    const end=new Date(y,3+i,closing);
+    return {start,end,label:(start.getMonth()+1)+'月'};
+  });
+}
+function periodMonthLabel(p){
+  return p ? ((p.end.getMonth()+1)+'月') : '';
+}
+function fiscalYearLabel(startYear){return (Number.isFinite(Number(startYear))?Number(startYear):getFiscalYearStartYear())+'年度';}
+function getAvailableFiscalYears(logs){
+  const current=getFiscalYearStartYear();
+  const years=new Set();
+  // 過去5年度＋現在年度を常に選択可能にし、保存ログがある年度も追加。
+  for(let i=0;i<6;i++) years.add(current-i);
+  (logs||[]).forEach(x=>{
+    const d=parseDutyDate(x.date);
+    if(!d)return;
+    const close=Number(localStorage.getItem('taxiClosingDay')||15);
+    // 3月16日締めの場合、1〜3月15日は前年開始年度。
+    const fiscalStart=(d.getMonth()===2 && d.getDate()<=close) || d.getMonth()<2 ? d.getFullYear()-1 : d.getFullYear();
+    years.add(fiscalStart);
+  });
+  return [...years].sort((a,b)=>b-a);
+}
+function annualYearOptions(logs, selected){
+  return getAvailableFiscalYears(logs).map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}年度</option>`).join('');
+}
+async function renderAnnualData(selectedYear){
+  const box=$('annualData'); if(!box)return;
+  let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
+  const currentYear=getFiscalYearStartYear();
+  const available=getAvailableFiscalYears(logs);
+  const year=available.includes(Number(selectedYear))?Number(selectedYear):currentYear;
+  const periods=getFiscalPeriods(year);
+  const rows=periods.map((p,i)=>{
+    const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const areaRows=work.filter(x=>Number(x.avg)>0);
+    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    return {label:periodMonthLabel(p),sales,areaTotal,duties:work.length,detail:p};
+  });
+  const max=Math.max(1,...rows.map(r=>Math.max(r.sales,r.areaTotal)));
+  const totalSales=rows.reduce((n,r)=>n+r.sales,0);
+  const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
+  const active=rows.filter(r=>r.duties>0);
+  const avgSales=active.length?Math.round(totalSales/active.length):0;
+  const avgArea=active.length?Math.round(totalArea/active.length):0;
+  const graph=`<div class="annualGraphWrap">
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span><span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span></div>
+    <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div><div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div></div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
+  </div>`;
+  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div><div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div></button>`).join('')}</div>`;
+  const summary=`<div class="dataGrid annualSummary">
+    <div class="dataBox"><div class="dataLabel">自分の総売上</div><div class="dataValue">${yen(totalSales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+  </div>`;
+  box.innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="periodTitle" style="margin:0">${fiscalYearLabel(year)}</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#555">年度を選択
+        <select id="annualYearSelect" onchange="renderAnnualData(this.value)" aria-label="年度を選択" style="min-width:150px;padding:10px 12px;border:2px solid #ddd;border-radius:12px;font-size:15px;font-weight:700;background:#fafafa">${annualYearOptions(logs,year)}</select>
+      </label>
+    </div>
+    <div class="dataNote">対象期間：${periods[0].start.getFullYear()}年${periods[0].start.getMonth()+1}月${periods[0].start.getDate()}日〜${periods[11].end.getFullYear()}年${periods[11].end.getMonth()+1}月${periods[11].end.getDate()}日</div>
+    ${graph}${summary}${table}
+  </div>`;
+}
+function analysisStats(work, getter, names){
+  return names.map(name=>{
+    const rows=work.filter(x=>getter(x).includes(name));
+    const total=rows.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const avg=rows.length?Math.round(total/rows.length):0;
+    const areaRows=rows.filter(x=>Number(x.avg)>0);
+    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+    const diff=rows.length&&areaRows.length?avg-areaAvg:null;
+    return {name,rows,total,avg,areaAvg,diff};
+  });
+}
+function renderBarGraph(stats){
+  const maxGraph=Math.max(1,...stats.map(x=>Math.max(x.avg,x.areaAvg)));
+  return `<div style="margin-top:16px;padding:16px 10px 12px;background:#f7f8fa;border-radius:16px">
+    <div style="font-weight:800;font-size:15px;margin-bottom:10px">📊 自分の平均 vs エリア平均</div>
+    <div style="display:flex;justify-content:flex-end;gap:14px;font-size:12px;color:#333;margin-bottom:8px"><span><b style="color:#4d8bd8">■</b> 自分</span><span><b style="color:#aab2bd">■</b> エリア平均</span></div>
+    <div style="height:190px;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid #ddd;padding:0 2px">
+      ${stats.map(s=>{const h1=s.avg?Math.max(4,Math.round(s.avg/maxGraph*150)):0;const h2=s.areaAvg?Math.max(4,Math.round(s.areaAvg/maxGraph*150)):0;return `<div style="flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px"><div title="${s.name} 自分 ${s.avg?yen(s.avg):'—'}" style="width:22%;max-width:24px;height:${h1}px;background:#4d8bd8;border-radius:5px 5px 0 0"></div><div title="${s.name} エリア平均 ${s.areaAvg?yen(s.areaAvg):'—'}" style="width:22%;max-width:24px;height:${h2}px;background:#aab2bd;border-radius:5px 5px 0 0"></div></div>`}).join('')}
+    </div>
+    <div style="display:flex;gap:4px;margin-top:6px">${stats.map(s=>`<div style="flex:1;text-align:center;font-size:12px;font-weight:700">${s.name}</div>`).join('')}</div>
+  </div>`;
+}
+function renderAnalysisRows(stats){
+  return `<div style="margin-top:18px">${stats.map(s=>`<div style="padding:14px 0 18px;border-bottom:1px solid #eee">
+    <div style="font-weight:800;font-size:20px;margin-bottom:16px">${s.name}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:28px;row-gap:22px">
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・自分の平均</div>
+        <div style="font-weight:800;font-size:22px">${s.rows.length?yen(s.avg):'—'}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・エリア平均</div>
+        <div style="font-weight:800;font-size:22px">${s.areaAvg?yen(s.areaAvg):'—'}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・エリア平均との差</div>
+        <div style="font-weight:800;font-size:22px">${diffText(s.diff)}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・自分の売上合計</div>
+        <div style="font-weight:800;font-size:22px">${yen(s.total)}</div>
+      </div>
+    </div>
+  </div>`).join('')}</div>`;
+}
+let currentMonthYear=null;
+let currentMonthIndex=null;
+
+let selectedAnnualMonthKey='';
+function annualMonthTap(year,index,button){
+  const key=String(year)+'-'+String(index);
+  if(selectedAnnualMonthKey===key){
+    selectedAnnualMonthKey='';
+    button.classList.remove('selected');
+    showMonthlyDetail(year,index);
+    return;
+  }
+  document.querySelectorAll('.annualMonthBtn.selected').forEach(el=>el.classList.remove('selected'));
+  selectedAnnualMonthKey=key;
+  button.classList.add('selected');
+}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.annualMonthBtn');if(b)b.classList.add('pressed');});
+document.addEventListener('pointerup',e=>{const b=e.target.closest('.annualMonthBtn');if(b)setTimeout(()=>b.classList.remove('pressed'),180);});
+async function showMonthlyDetail(year,index){
+  currentMonthYear=Number(year); currentMonthIndex=Number(index);
+  $('dataSummaryView').classList.add('hidden');
+  $('dataAnalysisView').classList.add('hidden');
+  $('dataDetailView').classList.remove('hidden');
+  const periods=getFiscalPeriods(currentMonthYear);
+  const p=periods[currentMonthIndex];
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+  const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+  const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+  const ownAvg=work.length?Math.round(sales/work.length):0;
+  const areaRows=work.filter(x=>Number(x.avg)>0);
+  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  const rainyDays=periodLogs.filter(x=>Array.isArray(x.weather)&&x.weather.includes('☔')).length;
+  const paidAbsence=periodLogs.filter(x=>(x.dayType||'work')==='rest_paid'||(x.dayType||'work')==='rest_leaveabsence').length;
+  const eventCount=periodLogs.reduce((n,x)=>n+(Array.isArray(x.event)?x.event.filter(e=>e!=='なし').length:0),0);
+  // 毎日のログに保存されている「拘束時間」と「走行距離」を、この月の対象期間で合計
+  const durationMinutes=periodLogs.reduce((n,x)=>{
+    if(x.out&&x.in){
+      const [oh,om]=String(x.out).split(':').map(Number);
+      const [ih,im]=String(x.in).split(':').map(Number);
+      if(Number.isFinite(oh)&&Number.isFinite(om)&&Number.isFinite(ih)&&Number.isFinite(im)){
+        let m=(ih*60+im)-(oh*60+om);
+        if(m<0)m+=24*60;
+        return n+m;
+      }
+    }
+    const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
+    if(hm){
+      const h=Number(hm[1]);
+      const min=Number(hm[2]||0);
+      return n+Math.round(h*60)+min;
+    }
+    return n;
+  },0);
+  const totalDistance=periodLogs.reduce((n,x)=>n+(Number(x.km)||0),0);
+  const durationText=durationMinutes?`${Math.floor(durationMinutes/60)}時間${durationMinutes%60?durationMinutes%60+'分':''}`:'0時間';
+  const distanceText=totalDistance?`${totalDistance.toLocaleString(undefined,{maximumFractionDigits:1})}km`:'0km';
+  $('monthlyDetailTitle').textContent='📋 '+periodMonthLabel(p)+'の営業データ';
+  const dailyRows=work.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>{
+    const d=parseDutyDate(x.date);
+    const dayLabel=d?`${d.getMonth()+1}/${d.getDate()}`:String(x.date||'—');
+    let mins=null;
+    if(x.out&&x.in){
+      const [oh,om]=String(x.out).split(':').map(Number); const [ih,im]=String(x.in).split(':').map(Number);
+      if([oh,om,ih,im].every(Number.isFinite)){mins=(ih*60+im)-(oh*60+om);if(mins<0)mins+=24*60;}
+    }
+    if(mins===null){const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);if(hm)mins=Math.round(Number(hm[1])*60)+Number(hm[2]||0);}
+    const duration=mins===null?'—':`${Math.floor(mins/60)}時間${mins%60?String(mins%60).padStart(2,'0')+'分':''}`;
+    const rate=Number(x.loadedRate); const trips=Number(x.tripCount);
+    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td>${x.sales?yen(x.sales):'—'}</td><td>${Number(x.avg)>0?yen(x.avg):'—'}</td><td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
+  }).join('');
+  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>売上</th><th>エリア平均売上</th><th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||'<tr><td colspan="7" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>'}</tbody></table></div></div>`;
+  $('monthlyDetail').innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div>
+    <div class="dataNote">この期間のログを集計しています。</div>
+    <button type="button" class="analysisBtn btn full" onclick="toggleMonthlyDailySales()">📋 ${periodMonthLabel(p)}の日々の営業データ</button>
+    ${dailyTable}
+    <div class="dataGrid" style="margin-top:18px">
+      <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+      <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
+      <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
+      <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
+      <div class="dataBox"><div class="dataLabel">有休・欠勤回数</div><div class="dataValue">${paidAbsence}回</div></div>
+      <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
+      <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
+    </div>
+    <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})">📅 ${periodMonthLabel(p)}の曜日別比較</button>
+  </div>`;
+}
+
+function toggleMonthlyDailySales(){
+  const panel=$('monthlyDailySalesPanel');
+  if(!panel)return;
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  if(!isOpen) enableDailySalesTouchScroll();
+  const btn=panel.previousElementSibling;
+  if(btn)btn.textContent=(isOpen?'📋 ':'🔽 ')+(document.querySelector('.dailySalesTitle')?.textContent||'日々の営業データ');
+}
+
+function scrollDailySales(dir){
+  const box=$('dailySalesScroll');
+  if(!box)return;
+  const amount=Math.max(180,Math.round(box.clientWidth*0.75));
+  box.scrollBy({left:dir*amount,behavior:'smooth'});
+}
+
+function enableDailySalesTouchScroll(){
+  const box=$('dailySalesScroll');
+  if(!box || box.dataset.touchReady==='1')return;
+  box.dataset.touchReady='1';
+  let sx=0,sy=0,sl=0,dragging=false;
+  box.addEventListener('touchstart',e=>{
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; sl=box.scrollLeft; dragging=false;
+  },{passive:true});
+  box.addEventListener('touchmove',e=>{
+    const t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(!dragging && Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)) dragging=true;
+    if(dragging){ e.preventDefault(); box.scrollLeft=sl-dx; }
+  },{passive:false});
+}
+
+async function showEventBreakdown(year,index){
+  const periods=getFiscalPeriods(Number(year)), p=periods[Number(index)];
+  const logs=await getLogs();
+  const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+  const names=['⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','その他'];
+  const counts=Object.fromEntries(names.map(n=>[n,0]));
+  periodLogs.forEach(x=>{
+    (Array.isArray(x.event)?x.event:[]).forEach(e=>{
+      if(e!=='なし' && Object.prototype.hasOwnProperty.call(counts,e)) counts[e]++;
+    });
+  });
+  const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${n}</span><strong>${counts[n]}回</strong></div>`).join('');
+  $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';
+  $('eventBreakdownModal').classList.remove('hidden');
+}
+function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden')}
+
+async function showMonthWeekday(year,index){
+  currentMonthYear=Number(year); currentMonthIndex=Number(index);
+  $('dataSummaryView').classList.add('hidden');
+  $('dataDetailView').classList.add('hidden');
+  $('dataAnalysisView').classList.remove('hidden');
+  $('analysisTitle').textContent='📅 '+periodMonthLabel(getFiscalPeriods(currentMonthYear)[currentMonthIndex])+'の曜日別比較';
+  const periods=getFiscalPeriods(currentMonthYear), p=periods[currentMonthIndex];
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+  const names=['日曜','月曜','火曜','水曜','木曜','金曜','土曜'];
+  const stats=analysisStats(work,x=>{const d=parseDutyDate(x.date);return d?[names[d.getDay()]]:[]},names);
+  $('analysisContent').innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">この月の「勤務」のログだけを曜日ごとに集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+}
+
+async function showAnalysis(type){
+  $('dataSummaryView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataAnalysisView').classList.remove('hidden');
+  const work=await getPeriodWorkLogs();
+  const p=getDataPeriod();
+  const content=$('analysisContent');
+  if(type==='weekday'){
+    $('analysisTitle').textContent='📅 曜日別の売上';
+    const names=['日曜','月曜','火曜','水曜','木曜','金曜','土曜'];
+    const stats=analysisStats(work,x=>{const d=parseDutyDate(x.date);return d?[names[d.getDay()]]:[]},names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">この期間の「勤務」のログだけを曜日ごとに集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else if(type==='weather'){
+    $('analysisTitle').textContent='🌤️ 天気別の売上';
+    const names=['☀️','☁️','☔ 雨','❄️'];
+    const stats=analysisStats(work,x=>Array.isArray(x.weather)?x.weather:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">天気を選択した勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else{
+    $('analysisTitle').textContent='📅 イベント別の売上';
+    const names=['なし','⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','その他'];
+    const stats=analysisStats(work,x=>Array.isArray(x.event)?x.event:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">選択したイベントを含む勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }
+}
+async function showData(){
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('routeDb').classList.add('hidden');$('data').classList.remove('hidden');
+  $('dataSummaryView').classList.remove('hidden');$('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');
+  await renderMonthlyTop();
+}
+function showDataSummary(){
+  $('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataSummaryView').classList.remove('hidden');renderMonthlyTop();
+}
+
+async function showLogs(){$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest_nonpublic'||x.dayType==='rest'?'🏠 休（非・公）':x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+async function showLogDetail(id){
+ const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
+ await updateTotal();
+ const weather=Array.isArray(x.weather)?x.weather.join('/'):(x.weather||'');const ev=Array.isArray(x.event)?x.event.join(' '):(x.event||'');const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
+ const routeHtml=savedRoutes.length?savedRoutes.map((r,i)=>`<div class="dailyBox dailyFull"><div class="dailyLabel">🗺️ 道順 ${i+1}</div><div class="dailyValue">${r.destination||'—'}${r.course?' → '+r.course:''}</div>${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}</div>`).join(''):'';
+
+ const rest=isRestDay(x.dayType), parttime=x.dayType==='parttime';
+ $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
+ $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${x.avg?'¥'+Number(x.avg).toLocaleString():'—'}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${x.avg?'¥'+Number(x.avg).toLocaleString():'—'}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
+}
+
+async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();showLogs()}
+function resetSaveButton(){
+  const b=document.getElementById('saveButton');
+  if(b)b.classList.remove('savePressed');
+}
+function hideAllMainViews(){['today','logs','settings','data','routeDb'].forEach(id=>$(id)?.classList.add('hidden'))}
+function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings()}
+async function showRouteDatabase(){resetSaveButton();hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
+
+async function goToToday(){
+  const ymd=todayYMD();
+  localStorage.setItem('taxiDutyDate',ymd);
+  const dateEl=$('date');
+  if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+  const dp=$('datePicker');
+  if(dp){dp.value=ymd;dp.max=ymd;}
+
+  // 今日のログが保存済みなら、その内容を読み込んで続きから使う
+  try{
+    const all=await getLogs();
+    const todayLog=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      if(!d)return false;
+      return d.getFullYear()===new Date().getFullYear() && d.getMonth()===new Date().getMonth() && d.getDate()===new Date().getDate();
+    });
+    if(todayLog){
+      await editLog(todayLog.id);
+      return;
+    }
+  }catch(e){console.error(e)}
+
+  // 今日のログがなければ、新規入力画面として開く
+  editingLogId=null;
+  photoData='';
+  document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+  document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+  const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+  if(none)none.classList.add('on');
+  const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
+  if(workBtn)setDayType(workBtn,'work');
+  ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  initRoutes([]);
+  duration();
+  const preview=$('preview');
+  if(preview)preview.innerHTML='';
+  const status=$('status');
+  if(status)status.textContent='📅 今日の記録を入力します';
+  showToday();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+let workCalendarCursor=new Date();
+let workCalendarSelectedKey='';
+function getWorkPlans(){
+  try{
+    const raw=JSON.parse(localStorage.getItem('taxiWorkPlans')||'{}');
+    // 旧版の「1日1件」形式を配列形式へ自動変換
+    Object.keys(raw).forEach(k=>{ if(raw[k] && !Array.isArray(raw[k])) raw[k]=[raw[k]]; });
+    return raw;
+  }catch(e){return {}}
+}
+function setWorkPlans(v){localStorage.setItem('taxiWorkPlans',JSON.stringify(v))}
+function dateKey(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function normalizePlansForDate(p){
+  if(!p)return [];
+  return (Array.isArray(p)?p:[p]).filter(x=>x && x.type && x.type!=='rest');
+}
+function openWorkCalendar(){
+  workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
+  const modal=$('workCalendarModal');if(modal){modal.classList.remove('hidden');const sheet=modal.querySelector('.calendarSheet');if(sheet)sheet.scrollTop=0;}
+  renderWorkCalendar();
+  toggleWorkPlanFields();
+}
+function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden')}
+function changeWorkCalendarMonth(delta){workCalendarCursor.setMonth(workCalendarCursor.getMonth()+delta);renderWorkCalendar()}
+function toggleWorkPlanFields(){
+  const type=$('workPlanType')?.value||'work';
+  const timeWrap=$('workPlanTimeWrap');
+  const iconWrap=$('workPlanEventIconWrap');
+  const memoWrap=$('workPlanMemoWrap');
+  if(timeWrap)timeWrap.classList.toggle('hidden',type!=='plan'&&type!=='event');
+  if(iconWrap)iconWrap.classList.toggle('hidden',type!=='event');
+  if(memoWrap)memoWrap.querySelector('label')?.classList?.toggle('hidden',false);
+  const memo=$('workPlanMemo');
+  if(memo){
+    memo.placeholder=type==='plan'?'例：病院、出世稲荷御祈祷、食事など':type==='event'?'例：阪神戦、ライブ、花火大会など':'例：病院、旅行、出勤予定など';
+  }
+}
+function selectWorkCalendarDate(key){
+  workCalendarSelectedKey=key;
+  const plans=getWorkPlans(), arr=normalizePlansForDate(plans[key]);
+  const hasPlan=arr.some(x=>x.type==='plan');
+  const hasEvent=arr.some(x=>x.type==='event');
+  const p=arr[arr.length-1]||{};
+  $('workPlanType').value=hasPlan?'plan':hasEvent?'event':(p.type||'work');
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  const icon=$('workPlanEventIcon');if(icon)icon.value=(arr.find(x=>x.type==='event')||{}).eventIcon||'';
+  toggleWorkPlanFields();
+  renderWorkCalendar();
+}
+function planClass(type){
+  return {work:'work',paid:'paid',plan:'plan',event:'event',parttime:'parttime',other:'other',absent:'absent'}[type]||'other';
+}
+function planLabel(type){
+  return {work:'勤務',paid:'有休',plan:'予定',event:'イベント',parttime:'バイト',other:'その他',absent:'欠勤'}[type]||'予定';
+}
+function escapeHtml(value){
+  return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function renderWorkCalendar(){
+  const y=workCalendarCursor.getFullYear(),m=workCalendarCursor.getMonth();
+  $('workCalendarTitle').textContent=y+'年'+(m+1)+'月';
+  const grid=$('workCalendarGrid');if(!grid)return;
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),plans=getWorkPlans();
+  let html='';
+  for(let i=0;i<first;i++)html+='<button class="calDay empty" type="button" aria-hidden="true"></button>';
+  for(let d=1;d<=days;d++){
+    const key=dateKey(y,m,d), arr=normalizePlansForDate(plans[key]), sel=key===workCalendarSelectedKey?' selected':'';
+    const wd=new Date(y,m,d).getDay();
+    const dayCls=wd===0?'sun':wd===6?'sat':'';
+    const holidayName=getHolidayName(key);
+    const holidayCls=holidayName?' holiday':'';
+    const holidayTitle=holidayName?` title="${String(holidayName).replace(/"/g,'&quot;')}"`:'';
+    const base=`<div class="baseCube ${dayCls}${holidayCls}"${holidayTitle}><span class="baseDate">${d}</span></div>`;
+    const displayArr=[];
+    // ブロックの上下順は、同じ日の登録順をそのまま使う。
+    // 同じ種類（予定・イベントなど）の複数項目は1ブロックにまとめる。
+    const blockTypes=[];
+    arr.forEach(p=>{if(p.type && !blockTypes.includes(p.type))blockTypes.push(p.type);});
+    blockTypes.forEach(type=>{
+      const items=arr.filter(p=>p.type===type);
+      if(items.length)displayArr.push({type,memo:items[0].memo||'',eventIcon:items[0].eventIcon||''});
+    });
+    let blocks='';
+    if(displayArr.length){
+      const n=displayArr.length,gap=2,topPad=30,available=Math.max(30,100-topPad-gap*(n-1)),slot=available/n;
+      blocks=displayArr.map((p,i)=>{
+        const top=topPad+i*(slot+gap),z=i+10;
+        const label=p.type==='event'?((p.eventIcon?escapeHtml(p.eventIcon)+' ':'')+'イベント'):planLabel(p.type);
+        return `<div class="planCube ${planClass(p.type)}" style="top:${top}%;height:${slot}%;z-index:${z}" title="${escapeHtml(p.memo||'')}"><span class="cubeLabel">${label}</span></div>`;
+      }).join('');
+    }
+    html+=`<button type="button" class="calDay${arr.length?' hasPlans':''}${sel}" onclick="selectWorkCalendarDate('${key}')"><div class="calDayFace">${base}${arr.length?`<div class="planCubes">${blocks}</div>`:''}</div></button>`;
+  }
+  grid.innerHTML=html;
+  renderCalendarDetail();
+}
+function renderCalendarDetail(){
+  const head=$('calendarDetailHead'),body=$('calendarDetailBody');
+  if(!head||!body)return;
+  if(!workCalendarSelectedKey){head.textContent='日付を選択してください';body.innerHTML='';return;}
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const m=workCalendarSelectedKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const dt=m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):null;
+  const wd=dt?'（'+['日','月','火','水','木','金','土'][dt.getDay()]+'）':'';
+  const holidayName=getHolidayName(workCalendarSelectedKey);
+  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付を選択してください';
+  if(!arr.length){body.innerHTML='<div class="small">登録内容はありません</div>';return;}
+
+  const planItems=arr.filter(p=>p.type==='plan');
+  const eventItems=arr.filter(p=>p.type==='event');
+  const nonPlans=arr.filter(p=>p.type!=='plan'&&p.type!=='event');
+  let html='';
+  if(planItems.length){
+    html+=`<div class="calendarDetailSectionTitle">📌 予定</div><div class="calendarPlanList">${planItems.map((p,i)=>{
+      const time=p.time?`<span class="calendarPlanTime">${escapeHtml(p.time)}</span>`:'<span class="calendarPlanTime muted">時間なし</span>';
+      const memo=escapeHtml(p.memo||'予定');
+      return `<div class="calendarPlanItem"><div class="calendarPlanText">${time}<span class="calendarPlanMemo">${memo}</span></div><button type="button" class="calendarPlanDelete" onclick="deletePlanItem(${i})">削除</button></div>`;
+    }).join('')}</div>`;
+    html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddPlan()">＋ この日に予定を追加</button>`;
+  }
+  if(eventItems.length){
+    html+=`<div class="calendarDetailSectionTitle">🎪 イベント</div><div class="calendarPlanList eventList">${eventItems.map((p,i)=>{
+      const time=p.time?`<span class="calendarPlanTime">${escapeHtml(p.time)}</span>`:'<span class="calendarPlanTime muted">時間なし</span>';
+      const icon=p.eventIcon?`<span class="eventIconLarge">${escapeHtml(p.eventIcon)}</span>`:'';
+      const memo=escapeHtml(p.memo||'イベント');
+      return `<div class="calendarPlanItem eventItem"><div class="calendarPlanText">${icon}${time}<span class="calendarPlanMemo">${memo}</span></div><button type="button" class="calendarPlanDelete" onclick="deleteEventItem(${i})">削除</button></div>`;
+    }).join('')}</div>`;
+    html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddEvent()">＋ この日にイベントを追加</button>`;
+  }
+  if(nonPlans.length){
+    const p=nonPlans[nonPlans.length-1],cls=planClass(p.type);
+    html+=`<div class="calendarDetailRow"><div class="calendarDetailBadge ${cls}">${planLabel(p.type)}</div><div class="calendarDetailInfo">${escapeHtml(p.memo||'—')}</div><button class="calendarAddBtn" type="button" onclick="document.getElementById('workPlanType').focus()">＋ 追加</button></div>`;
+  }
+  const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
+  if(blockTypes.length===2){
+    html+=`<button class="calendarSwapBlocksBtn" type="button" onclick="swapCalendarBlocks()">↕️ ブロックの上下を入れ替える</button>`;
+  }
+  body.innerHTML=html+`<div class="calendarDetailHint">同じ日に複数の予定をまとめて登録できます</div>`;
+  const badge=body.querySelector('.calendarDetailBadge');
+  if(badge){const bg={work:'linear-gradient(145deg,#a7efff,#57c8ee)',paid:'linear-gradient(145deg,#ff9a84,#ee6b58)',plan:'linear-gradient(145deg,#fff06b,#f6c52e)',parttime:'linear-gradient(145deg,#ffc77c,#f29437)',other:'linear-gradient(145deg,#d9c2ff,#9b68e8)',absent:'linear-gradient(145deg,#d8b08a,#b47b4e)'}[badge.className.split(' ').pop()];badge.style.background=bg||'#eee';}
+}
+function swapCalendarBlocks(){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
+  if(blockTypes.length!==2)return;
+  const first=blockTypes[0],second=blockTypes[1];
+  const firstItems=arr.filter(p=>p.type===first);
+  const secondItems=arr.filter(p=>p.type===second);
+  // 各ブロック内の項目順はそのままにして、ブロック単位だけ上下を交換する。
+  plans[workCalendarSelectedKey]=[...secondItems,...firstItems];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+
+function prepareAddPlan(){
+  $('workPlanType').value='plan';
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  toggleWorkPlanFields();
+  $('workPlanMemo')?.focus();
+}
+function prepareAddEvent(){
+  $('workPlanType').value='event';
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  const icon=$('workPlanEventIcon');if(icon)icon.value='⚾️';
+  toggleWorkPlanFields();
+  $('workPlanMemo')?.focus();
+}
+function deleteEventItem(index){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const eventItems=arr.filter(p=>p.type==='event');
+  if(index<0||index>=eventItems.length)return;
+  const target=eventItems[index],targetPos=arr.indexOf(target);
+  if(targetPos>=0)arr.splice(targetPos,1);
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function deletePlanItem(index){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const planItems=arr.filter(p=>p.type==='plan');
+  if(index<0||index>=planItems.length)return;
+  const target=planItems[index];
+  const targetPos=arr.indexOf(target);
+  if(targetPos>=0)arr.splice(targetPos,1);
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function saveWorkPlan(){
+  if(!workCalendarSelectedKey){alert('登録する日付を選択してください。');return}
+  const type=$('workPlanType').value;
+  const memo=$('workPlanMemo').value||'';
+  const time=$('workPlanTime')?.value||'';
+  if((type==='plan'||type==='event') && !memo.trim()){
+    alert(type==='event'?'イベントの内容を入力してください。':'予定の内容を入力してください。');
+    return;
+  }
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  // カレンダー上のブロックは1日最大2種類まで。既存ブロックへの追加は許可する。
+  const blockTypes=[...new Set(arr.map(p=>p.type))];
+  if(!blockTypes.includes(type) && blockTypes.length>=2){
+    alert('⚠️ ブロックは2つまで登録できます。\nこれ以上追加する場合は、既存のブロックを削除してください。');
+    return;
+  }
+  const item={type,memo,updatedAt:new Date().toISOString()};
+  if(type==='plan'||type==='event')item.time=time;
+  if(type==='event')item.eventIcon=$('workPlanEventIcon')?.value||'';
+  if(type!=='plan'&&type!=='event'){
+    // 勤務・有休・バイト・その他・欠勤は従来どおり1日1件に置き換える
+    const kept=arr.filter(p=>p.type==='plan');
+    kept.push(item);
+    plans[workCalendarSelectedKey]=kept;
+  }else{
+    arr.push(item);
+    plans[workCalendarSelectedKey]=arr;
+  }
+  setWorkPlans(plans);
+  $('workPlanMemo').value='';
+  const timeInput=$('workPlanTime');if(timeInput)timeInput.value='';
+  toggleWorkPlanFields();
+  renderWorkCalendar();
+}
+function deleteWorkPlan(){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  if(!arr.length)return;
+  const type=$('workPlanType').value;
+  if(type==='plan'){
+    const idx=arr.map(p=>p.type).lastIndexOf('plan');
+    if(idx>=0)arr.splice(idx,1);
+  }else if(type==='event'){
+    const idx=arr.map(p=>p.type).lastIndexOf('event');
+    if(idx>=0)arr.splice(idx,1);
+  }else{
+    const idx=arr.map(p=>p.type).lastIndexOf(type);
+    if(idx>=0)arr.splice(idx,1);
+    else arr.pop();
+  }
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  renderWorkCalendar();
+}
+</script>
+
+<style id="calendar-block-shift-v114">
+/* v114: 予定ブロック全体を日付マス内で少し右へ */
+.planCube{
+  left:8px!important;
+  width:calc(100% - 8px)!important;
+}
+@media(max-width:430px){
+  .planCube{left:7px!important;width:calc(100% - 7px)!important;}
+}
+</style>
+<style id="holiday-settings-menu-v136">
+.holidayMenuBtn{background:#fff7f7!important;color:#c62828!important;border:1px solid #f1d1d1!important}
+.holidayMenuBtn:active{transform:scale(.99)}
+</style>
+<style id="holiday-settings-v132">
+.holidayYearRow{display:grid;grid-template-columns:auto 150px 1fr;gap:10px;align-items:center;margin-top:10px}
+.holidayYearRow label{font-weight:900;font-size:15px}
+.holidayYearRow select{width:100%;box-sizing:border-box;padding:11px 10px;border:2px solid #ddd;border-radius:12px;font-size:16px;background:#fafafa;font-weight:800}
+.holidayYearCount{font-size:13px;color:#777;font-weight:800}
+.holidayAddRow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:7px;margin-top:10px}
+.holidayAddRow input{width:100%;box-sizing:border-box;padding:11px 9px;border:2px solid #ddd;border-radius:12px;font-size:14px;background:#fff}
+.holidayAddRow button{border:0;border-radius:12px;padding:0 14px;background:#ffe7e7;color:#c62828;font-weight:900;font-size:15px}
+.holidaySettingsList{margin-top:10px}
+.holidaySettingRow{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #eee}
+.holidaySettingDate{font-weight:900;color:#c62828;font-size:14px}
+.holidaySettingName{font-weight:800;font-size:14px}
+.holidaySettingDelete{border:0;background:#f3f3f3;color:#777;border-radius:10px;padding:7px 9px;font-weight:800}
+.baseCube.holiday .baseDate{color:#df1717!important}
+@media(max-width:430px){.holidayYearRow{grid-template-columns:auto 125px 1fr;gap:7px}.holidayYearRow label{font-size:14px}.holidayYearRow select{font-size:14px}.holidayAddRow{grid-template-columns:1fr 1.3fr auto}.holidayAddRow input{font-size:13px}.holidaySettingRow{grid-template-columns:72px 1fr auto}}
+</style>
+<style id="selected-date-v121">
+/* v121: タップした日付そのものを青枠で表示。カレンダーの位置・立体感は変更しない */
+.calDay.selected{outline:none!important;}
+.calDay.selected .baseCube{outline:none!important;}
+.calDay.selected .baseCube .baseDate{
+  outline:3px solid #4aa1ff!important;
+  outline-offset:1px!important;
+  color:#1765cc!important;
+}
+</style>
+
+
+<style id="calendar-event-v140">
+.calendarLegendBox.event{background:linear-gradient(145deg,#a5efbf,#59c97d)}
+.planCube.event{background:linear-gradient(145deg,#91e9ae 0%,#55cb7a 58%,#38ad60 100%)!important;color:#fff!important}
+.calendarDetailSectionTitle{font-size:16px;font-weight:900;margin:10px 0 7px}
+.eventItem{background:#effbf3!important;border-color:#a9e1ba!important}
+.eventIconLarge{font-size:21px;margin-right:5px}
+</style>
+</body></html><style>
+/* v100: 日付の正方形を予定キューブと同じスケールに調整 */
+.calendarGrid{gap:5px}
+.calDay{height:54px!important;min-height:54px!important}
+.baseCube{height:54px!important;inset:0!important;border-radius:11px!important;padding:0 0 6px 8px!important;box-shadow:0 5px 0 #c8d5df,0 8px 11px rgba(55,80,105,.13),inset 0 1px 0 rgba(255,255,255,.95)!important}
+.baseCube .baseDate{font-size:15px!important;padding:3px 7px!important;border-radius:8px!important}
+.planCubes{top:-8px!important;bottom:4px!important;left:3px!important;right:3px!important}
+.planCube{width:92%!important;height:48px!important;min-height:48px!important;border-radius:9px 9px 7px 7px!important}
+.planCube .cubeDate{font-size:15px!important}
+.planCube .cubeLabel{font-size:11px!important;margin-top:3px!important}
+.planCube + .planCube{margin-top:-10px!important}
+@media(max-width:430px){
+  .calDay{height:52px!important;min-height:52px!important}
+  .baseCube{height:52px!important}
+  .planCube{height:46px!important;min-height:46px!important;width:94%!important}
+}
+</style>
+
+<style>
+/* v101: 予定キューブを下から順番に積む。後から登録したものが上に来る */
+.planCubes{display:flex!important;flex-direction:column-reverse!important;align-items:center!important;justify-content:flex-start!important;top:-8px!important;bottom:4px!important;}
+.planCube{position:relative!important;flex:0 0 48px!important;}
+.planCube + .planCube{margin-top:-10px!important;}
+@media(max-width:430px){.planCube{flex-basis:46px!important;height:46px!important;min-height:46px!important}.planCube + .planCube{margin-top:-10px!important}}
+</style>
+<style>
+/* v109: 予定カードを各日付マスの中だけで立体的に積む */
+.calendarGrid{gap:6px!important;align-items:stretch!important}
+.calDay{height:72px!important;min-height:72px!important;overflow:visible!important;position:relative!important}
+.calDayFace{position:absolute!important;inset:0!important;overflow:visible!important}
+.baseCube{height:72px!important;inset:0!important;padding:5px 6px!important;align-items:flex-start!important;justify-content:flex-start!important;z-index:1!important}
+.baseCube .baseDate{font-size:14px!important;padding:3px 7px!important;border-radius:8px!important;z-index:8!important}
+.planCubes{position:absolute!important;left:4px!important;right:4px!important;top:30px!important;bottom:auto!important;height:36px!important;display:block!important;z-index:6!important;pointer-events:none!important;overflow:visible!important}
+.planCube{position:absolute!important;left:0!important;top:var(--stack-top,0px)!important;width:100%!important;height:30px!important;min-height:30px!important;margin:0!important;border-radius:9px 9px 7px 7px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;z-index:var(--stack-z,10)!important;pointer-events:auto!important;padding:1px 2px!important}
+.planCube .cubeDate{font-size:13px!important;line-height:1!important}
+.planCube .cubeLabel{font-size:10px!important;line-height:1!important;margin-top:2px!important}
+.planCube:before{left:4px!important;right:-4px!important;bottom:-5px!important;height:5px!important}
+.planCube:after{right:-5px!important;top:4px!important;width:5px!important;height:calc(100% - 4px)!important}
+/* renderWorkCalendar の top 値をスタック位置として利用 */
+@media(max-width:430px){
+  .calDay{height:72px!important;min-height:72px!important}
+  .baseCube{height:72px!important}
+  .planCubes{top:30px!important;height:36px!important;left:4px!important;right:4px!important}
+  .planCube{height:30px!important;min-height:30px!important}
+}
+</style>
+<script>
+/* v109: 2件なら18px、3件なら18pxずつ重ねる。最新登録が最前面。 */
+/* v109 stack wrapper disabled by v112 fit design */
+</script>
+
+<style id="calendar-color-text-v119">
+/* v119: 色と表示文字だけ変更。位置・大きさ・3D・厚みは変更しない */
+.planCube.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;color:#10202d!important;}
+.calendarLegendBox.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;}
+</style>
+
+<style id="calendar-quick-button-v127">
+/* v127: カレンダーボタンをさらに5px左へ。サイズは現状のまま */
+.floatingCalendarBtn{
+  position:fixed;
+  left:max(6px,calc((100vw - 520px)/2 + 6px));
+  bottom:68px;
+  width:min(60%,312px);
+  min-width:0;
+  height:48px;
+  transform:none;
+  z-index:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 16px;
+  border:1px solid #b7dcff;
+  border-radius:999px;
+  background:linear-gradient(145deg,#ffffff 0%,#edf8ff 100%);
+  color:#1677d2;
+  font-size:14px;
+  font-weight:900;
+  box-shadow:0 5px 12px rgba(55,105,150,.18),inset 0 1px 0 rgba(255,255,255,.95);
+  -webkit-tap-highlight-color:transparent;
+}
+.floatingCalendarBtn:active{
+  transform:translateY(2px);
+  box-shadow:0 2px 6px rgba(55,105,150,.16),inset 0 1px 0 rgba(255,255,255,.95);
+}
+.floatingCalendarIcon{font-size:20px;line-height:1;transform:translateX(1px)}
+@media(max-width:430px){
+  .floatingCalendarBtn{
+    left:0;
+    bottom:68px;
+    width:180px;
+    height:48px;
+    font-size:13px;
+    padding:0 0 0 32px;
+    justify-content:flex-start;
+  }
+}
+</style>
+
+<style id="event-icon-none-v143">
+/* v143: アイコンなしを選んだイベントはアイコンを表示せず、イベント文字を白字にする */
+.planCube.event .cubeLabel{color:#fff!important}
+</style>
