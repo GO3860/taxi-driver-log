@@ -1686,7 +1686,7 @@ async function showMonthlyDetail(year,index){
   const durationText=durationMinutes?`${Math.floor(durationMinutes/60)}時間${durationMinutes%60?durationMinutes%60+'分':''}`:'0時間';
   const distanceText=totalDistance?`${totalDistance.toLocaleString(undefined,{maximumFractionDigits:1})}km`:'0km';
   $('monthlyDetailTitle').textContent='📋 '+periodMonthLabel(p)+'の営業データ';
-  const dailyRows=work.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>{
+  const dailyRows=work.slice().sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);if(da&&db)return da.getTime()-db.getTime();return String(a.date||'').localeCompare(String(b.date||''),undefined,{numeric:true});}).map(x=>{
     const d=parseDutyDate(x.date);
     const dayLabel=d?`${d.getMonth()+1}/${d.getDate()}`:String(x.date||'—');
     let mins=null;
