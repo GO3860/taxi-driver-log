@@ -319,7 +319,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <button class="chip" onclick="pick(this)">なし</button><button class="chip" onclick="pick(this)">⚾ 野球</button>
 <button class="chip" onclick="pick(this)">⚽ サッカー</button><button class="chip" onclick="pick(this)">🎆 花火</button>
 <button class="chip" onclick="pick(this)">🏮 まつり</button><button class="chip" onclick="pick(this)">🎤 ライブ</button>
-<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">🌧️ 大雨</button><button class="chip" onclick="pick(this)">⛄️ 大雪</button><button class="chip" onclick="pick(this)">その他</button>
+<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">⛈️ 大雨</button><button class="chip" onclick="pick(this)">⛄️ 大雪</button><button class="chip" onclick="pick(this)">その他</button>
 </div></div>
 </div>
 
@@ -1886,7 +1886,7 @@ async function showEventBreakdown(year,index){
   const periods=getFiscalPeriods(Number(year)), p=periods[Number(index)];
   const logs=await getLogs();
   const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
-  const names=['⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','その他'];
+  const names=['⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','⛈️ 大雨','❄️ 大雪','その他'];
   const counts=Object.fromEntries(names.map(n=>[n,0]));
   periodLogs.forEach(x=>{
     (Array.isArray(x.event)?x.event:[]).forEach(e=>{
@@ -1930,7 +1930,7 @@ async function showAnalysis(type){
     content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">天気を選択した勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
   }else{
     $('analysisTitle').textContent='📅 イベント別の売上';
-    const names=['なし','⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','その他'];
+    const names=['なし','⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','⛈️ 大雨','❄️ 大雪','その他'];
     const stats=analysisStats(work,x=>Array.isArray(x.event)?x.event:[],names);
     content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">選択したイベントを含む勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
   }
