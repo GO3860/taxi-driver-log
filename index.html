@@ -2831,7 +2831,7 @@ function openLoadedRateModal(){
   if(td) td.value=$('km')?.value||'';
   updateLoadedRateModalResult();
   modal.classList.remove('hidden');
-  setTimeout(()=>ld?.focus(),80);
+  setTimeout(()=>td?.focus(),80);
 }
 function closeLoadedRateModal(){
   $('loadedRateModalBackdrop')?.classList.add('hidden');
