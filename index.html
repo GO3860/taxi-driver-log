@@ -2447,8 +2447,8 @@ function saveWorkPlan(){
   const type=$('workPlanType').value;
   const memo=$('workPlanMemo').value||'';
   const time=$('workPlanTime')?.value||'';
-  if((type==='plan'||type==='event') && !memo.trim()){
-    alert(type==='event'?'イベントの内容を入力してください。':'予定の内容を入力してください。');
+  if(type==='plan' && !memo.trim()){
+    alert('予定の内容を入力してください。');
     return;
   }
   const plans=getWorkPlans();
