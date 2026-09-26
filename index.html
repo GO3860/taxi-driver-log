@@ -1561,16 +1561,21 @@ async function getPeriodWorkLogs(){
 }
 function yen(v){return '¥'+Number(v||0).toLocaleString()}
 function diffText(v){return v===null?'—':(v>=0?'+':'−')+yen(Math.abs(v))}
-function renderMetricCards(work){
+function renderMetricCards(work,periodLogs){
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
-  const areaRows=work.filter(x=>Number(x.avg)>0);
-  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
-  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  const workAreaRows=work.filter(x=>Number(x.avg)>0);
+  const workAreaTotal=workAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const workAreaAvg=workAreaRows.length?Math.round(workAreaTotal/workAreaRows.length):0;
+  const periodAreaRows=(periodLogs||[]).filter(x=>Number(x.avg)>0);
+  const periodAreaTotal=periodAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const periodAreaAvg=periodAreaRows.length?Math.round(periodAreaTotal/periodAreaRows.length):0;
   return `<div class="dataGrid" style="margin-top:14px">
     <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
     <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">勤務日のエリア売上合計</div><div class="dataValue">${workAreaRows.length?yen(workAreaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">勤務日のエリア平均</div><div class="dataValue">${workAreaRows.length?yen(workAreaAvg):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア売上合計</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア平均</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaAvg):'—'}</div></div>
   </div>`;
 }
 async function renderMonthlyTop(){
@@ -1627,28 +1632,33 @@ async function renderAnnualData(selectedYear){
   const year=available.includes(Number(selectedYear))?Number(selectedYear):currentYear;
   const periods=getFiscalPeriods(year);
   const rows=periods.map((p,i)=>{
-    const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+    const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
     const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
-    const areaRows=work.filter(x=>Number(x.avg)>0);
-    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
-    return {label:periodMonthLabel(p),sales,areaTotal,duties:work.length,detail:p};
+    const workAreaRows=work.filter(x=>Number(x.avg)>0);
+    const workAreaTotal=workAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const periodAreaRows=periodLogs.filter(x=>Number(x.avg)>0);
+    const areaTotal=periodAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaAvg=periodAreaRows.length?Math.round(areaTotal/periodAreaRows.length):0;
+    return {label:periodMonthLabel(p),sales,areaTotal,areaAvg,areaInputDays:periodAreaRows.length,workAreaTotal,workAreaInputDays:workAreaRows.length,duties:work.length,detail:p};
   });
   const max=Math.max(1,...rows.map(r=>Math.max(r.sales,r.areaTotal)));
   const totalSales=rows.reduce((n,r)=>n+r.sales,0);
   const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
   const active=rows.filter(r=>r.duties>0);
+  const areaActive=rows.filter(r=>r.areaInputDays>0);
   const avgSales=active.length?Math.round(totalSales/active.length):0;
-  const avgArea=active.length?Math.round(totalArea/active.length):0;
+  const avgArea=areaActive.length?Math.round(totalArea/areaActive.length):0;
   const graph=`<div class="annualGraphWrap">
-    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span><span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span></div>
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span><span><b style="color:#aab2bd">■</b> 期間全体のエリア売上</span></div>
     <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div><div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div></div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
   </div>`;
-  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div><div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div></button>`).join('')}</div>`;
+  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div><div><div class="dataLabel">期間全体のエリア売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div></button>`).join('')}</div>`;
   const summary=`<div class="dataGrid annualSummary">
     <div class="dataBox"><div class="dataLabel">自分の総売上</div><div class="dataValue">${yen(totalSales)}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>
     <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア月平均</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
   </div>`;
   const periodOptions=periods.map((p,i)=>`<option value="${i}">${periodMonthLabel(p)}</option>`).join('');
   box.innerHTML=`<div class="dataPeriod" style="cursor:default">
@@ -1698,16 +1708,23 @@ async function calculatePeriodAggregation(){
   if(start>end)[start,end]=[end,start];
   const selected=periods.slice(start,end+1);
   const logs=await getLogs();
-  const work=logs.filter(x=>(x.dayType||'work')==='work'&&selected.some(p=>inDataPeriod(x.date,p)));
+  const periodLogs=logs.filter(x=>selected.some(p=>inDataPeriod(x.date,p)));
+  const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
-  const areaRows=work.filter(x=>Number(x.avg)>0);
-  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const workAreaRows=work.filter(x=>Number(x.avg)>0);
+  const workAreaTotal=workAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const periodAreaRows=periodLogs.filter(x=>Number(x.avg)>0);
+  const periodAreaTotal=periodAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const periodAreaAvg=periodAreaRows.length?Math.round(periodAreaTotal/periodAreaRows.length):0;
   const avg=work.length?Math.round(sales/work.length):0;
   panel.innerHTML=`<div class="dataGrid periodAggregationGrid">
     <div class="dataBox"><div class="dataLabel">${periodMonthLabel(selected[0])}〜${periodMonthLabel(selected[selected.length-1])} 自分の売上合計</div><div class="dataValue">${sales?yen(sales):'¥0'}</div></div>
     <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
     <div class="dataBox"><div class="dataLabel">自分の平均売上</div><div class="dataValue">${avg?yen(avg):'—'}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaTotal?yen(areaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">勤務日のエリア売上合計</div><div class="dataValue">${workAreaRows.length?yen(workAreaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア売上合計</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">期間全体のエリア平均</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaAvg):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">エリア平均入力日数</div><div class="dataValue">${periodAreaRows.length}日</div></div>
   </div>`;
 }
 function analysisStats(work, getter, names){
@@ -1786,9 +1803,12 @@ async function showMonthlyDetail(year,index){
   const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
   const ownAvg=work.length?Math.round(sales/work.length):0;
-  const areaRows=work.filter(x=>Number(x.avg)>0);
-  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
-  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  const workAreaRows=work.filter(x=>Number(x.avg)>0);
+  const workAreaTotal=workAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const workAreaAvg=workAreaRows.length?Math.round(workAreaTotal/workAreaRows.length):0;
+  const periodAreaRows=periodLogs.filter(x=>Number(x.avg)>0);
+  const periodAreaTotal=periodAreaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const periodAreaAvg=periodAreaRows.length?Math.round(periodAreaTotal/periodAreaRows.length):0;
   const rainyDays=periodLogs.filter(x=>Array.isArray(x.weather)&&x.weather.includes('☔')).length;
   const paidAbsence=periodLogs.filter(x=>(x.dayType||'work')==='rest_paid'||(x.dayType||'work')==='rest_leaveabsence').length;
   const eventCount=periodLogs.reduce((n,x)=>n+(Array.isArray(x.event)?x.event.filter(e=>e!=='なし').length:0),0);
@@ -1835,8 +1855,11 @@ async function showMonthlyDetail(year,index){
     <div class="dataGrid" style="margin-top:18px">
       <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
-      <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
-      <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">勤務日のエリア売上合計</div><div class="dataValue">${workAreaRows.length?yen(workAreaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">勤務日のエリア平均</div><div class="dataValue">${workAreaRows.length?yen(workAreaAvg):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">期間全体のエリア売上合計</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">期間全体のエリア平均</div><div class="dataValue">${periodAreaRows.length?yen(periodAreaAvg):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">エリア平均入力日数</div><div class="dataValue">${periodAreaRows.length}日</div></div>
       <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
       <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
       <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
