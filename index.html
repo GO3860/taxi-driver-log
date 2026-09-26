@@ -341,8 +341,6 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="help-text">12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。</div>
     <div id="monthlyData"></div>
   </div>
-  <button type="button" class="analysisBtn btn full" onclick="openAreaAverageInput()">📊 エリア平均を後から入力</button>
-  <div id="areaAverageInputPanel" class="hidden"></div>
   <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
 </div>
 <div id="dataDetailView" class="hidden">
@@ -353,6 +351,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <button class="backData" onclick="showMonthlyDetail(currentMonthYear,currentMonthIndex)">← 月間売上に戻る</button>
   <div class="card"><div class="label" id="analysisTitle">📊 曜日別の売上</div><div id="analysisContent"></div></div>
 </div>
+</main>
+
+<main id="areaAverage" class="hidden">
+  <div class="card">
+    <div class="label">📚 エリア平均を後から入力</div>
+    <div class="help-text">勤務後に事務方から数字が出たら、該当日の欄だけ入力してください。</div>
+    <div id="areaAverageInputPanel"></div>
+  </div>
+  <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
 </main>
 
 <main id="settings" class="hidden">
@@ -1898,8 +1905,14 @@ async function showData(){
   await renderMonthlyTop();
 }
 async function openAreaAverageInputFromFloating(){
-  await showData();
+  await showAreaAveragePage();
+}
+async function showAreaAveragePage(){
+  resetSaveButton();
+  hideAllMainViews();
+  $('areaAverage').classList.remove('hidden');
   await openAreaAverageInput();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 async function openAreaAverageInput(){
   const panel=$('areaAverageInputPanel');
@@ -1969,7 +1982,7 @@ function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
 }
-function hideAllMainViews(){['today','logs','settings','data','routeDb'].forEach(id=>$(id)?.classList.add('hidden'))}
+function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAverage'].forEach(id=>$(id)?.classList.add('hidden'))}
 function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings()}
 async function showRouteDatabase(){resetSaveButton();hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
 
