@@ -288,6 +288,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .revenueTable th:first-child,.revenueTable td:first-child{text-align:left}.revenueTable th{font-size:12px;color:#666}
 .revenueInsight{margin-top:14px;padding:12px;border-radius:14px;background:#f1f7ff;line-height:1.7;font-size:13px}
 .revenueArea{margin-top:12px;padding:12px;border-radius:14px;background:#fff8e8;border:1px solid #f0dfb2;font-size:13px;line-height:1.6}
+.revenueFactors{margin-top:12px;padding:13px;border-radius:14px;background:#f7f7f7;border:1px solid #e2e5e8;font-size:13px;line-height:1.65}
+.revenueFactorsTitle{font-weight:900;font-size:15px;margin-bottom:7px}
+.revenueFactorRow{margin-top:5px}
+.revenueAdvice{margin-top:12px;padding:14px;border-radius:16px;background:#eef8ff;border:1px solid #cfe7f7;font-size:13px;line-height:1.7}
+.revenueAdviceTitle{font-weight:900;font-size:17px;margin-bottom:6px}
+.revenueAdviceIntro{margin-bottom:9px}
+.revenueAdviceList{display:flex;flex-direction:column;gap:8px}
+.revenueAdviceItem{background:#fff;border:1px solid #dce8f0;border-radius:12px;padding:10px 11px}
+.revenueAdviceItem b{display:block;margin-bottom:2px}
+.revenueAdviceFoot{margin-top:10px;font-size:12px;color:#66717b}
 </style>
 </style></head>
 <body><div class="app">
@@ -2075,11 +2085,23 @@ async function renderRevenueAnalysis(){
     if(a[1]>0&&a[2]!==null&&Math.abs(a[1]-a[2])>0.01)changes.push(a[0]+' '+(a[1]>=a[2]?'増加':'減少')+'（'+analysisSigned(a[1]-a[2],a[3],a[4])+'）');
   });
   const insight=salesDiff===null?'比較に必要な直近10勤務のデータがまだありません。':(salesDiff>=0?'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'高い日です。':'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'低い日です。')+(changes.length?' 今回は'+changes.join('、')+'という変化がありました。':'');
+  const weather=Array.isArray(selected.weather)?selected.weather.filter(Boolean):[];
+  const events=Array.isArray(selected.event)?selected.event.filter(Boolean):[];
+  const factors=[...weather,...events].filter(x=>x&&x!=='なし');
+  const factorHtml=factors.length
+    ? '<div class="revenueFactors"><div class="revenueFactorsTitle">🎲 外的要因</div><div class="revenueFactorRow">今回の勤務では <b>'+factors.map(escapeHtml).join('・')+'</b> が記録されています。</div><div class="revenueFactorRow" style="color:#66717b">これらは自分ではコントロールできない条件です。営業回数・実車率・売上が上がった場合も、まずは外的要因の影響を含めて見ます。</div></div>'
+    : '<div class="revenueFactors"><div class="revenueFactorsTitle">🎲 外的要因</div><div class="revenueFactorRow">この勤務には、天候・イベントなどの特別な要因は記録されていません。</div></div>';
+  const lowTrips=trips>0&&avgTrips!==null&&trips<avgTrips;
+  const adviceHtml=lowTrips
+    ? '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">今回は営業回数が直近10勤務平均より少なめでした。営業スタイルを大きく変える必要はありません。次の勤務では、空車になったときの「次の一手」を少し早めに考える方法を試せます。</div><div class="revenueAdviceList"><div class="revenueAdviceItem"><b>① 次の目的を決める</b>時間帯によって、休憩・給油・駅へ戻るなど「次に何をするか」を決めておく。</div><div class="revenueAdviceItem"><b>② 送迎中に次を考える</b>お客様を送っている途中で、「降ろした後はどうしよう？」と一度考えておく。</div><div class="revenueAdviceItem"><b>③ ロング後の戻り方を考える</b>ロングの後に、そのまま待つのか、戻るのか。戻るならどの戻り方が次の営業につながりそうかを考えておく。</div></div><div class="revenueAdviceFoot">全部やる必要はありません。「これなら試してみてもいい」と思うものを1つだけ。次の勤務で営業回数・実車率・売上がどう変わったか確認しましょう。</div></div>'
+    : '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">今回は営業回数が直近10勤務平均を下回っていません。大きく営業スタイルを変える必要はなさそうです。今のやり方で、どの数字が動くかをもう少し見てみましょう。</div><div class="revenueAdviceFoot">「もっと頑張る」ではなく、次の勤務で数字を1つだけ観察するくらいでOKです。😊</div></div>';
   box.innerHTML='<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">🔎 営業日を選ぶ</div><div class="revenueAnalysisNote">比較対象は、その勤務日より前の直近10勤務の平均です。</div><select class="revenueAnalysisSelect" onchange="selectRevenueAnalysis(this.value)">'+options+'</select></div>'+
     '<div class="revenueResult"><div class="revenueResultMain">今回の売上　<strong>'+analysisYen(sales)+'</strong></div><div class="revenueCompareLabel">直近10勤務平均　'+analysisYen(avgSales)+'</div><div class="revenueDiff '+(salesDiff===null?'same':salesDiff>0?'up':salesDiff<0?'down':'same')+'">'+(salesDiff===null?'比較できません':analysisSigned(salesDiff,'円',0))+'</div></div>'+
     '<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">📊 数字の変化</div><table class="revenueTable"><thead><tr><th>項目</th><th>今回</th><th>直近10勤務平均</th><th>変化</th></tr></thead><tbody>'+table+'</tbody></table></div>'+
+    factorHtml+
     (area!==null?'<div class="revenueArea"><b>🚕 乗務エリアとの売上比較</b><br>自分 '+analysisYen(sales)+'　／　エリア平均 '+analysisYen(area)+'<br><strong>'+analysisSigned(areaDiff,'円',0)+'（'+(areaPct>=0?'+':'')+areaPct.toFixed(1)+'%）</strong><br><span style="color:#777">※エリア平均は売上だけなので、実車率・営業回数などとは直接比較していません。</span></div>':'<div class="revenueArea">🚕 この勤務日のエリア平均はまだ入力されていません。</div>')+
-    '<div class="revenueInsight">💡 '+insight+'</div>';
+    '<div class="revenueInsight">💡 '+insight+'</div>'+
+    adviceHtml;
 }
 async function selectRevenueAnalysis(id){
   const box=$('revenueAnalysisContent');if(!box)return;box.dataset.selectedId=id;await renderRevenueAnalysis();
