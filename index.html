@@ -1917,7 +1917,7 @@ async function showAreaAveragePage(){
 async function openAreaAverageInput(){
   const panel=$('areaAverageInputPanel');
   if(!panel)return;
-  if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
+  panel.classList.remove('hidden');
   const logs=await getLogs();
   const rows=logs.filter(x=>(x.dayType||'work')==='work' && Number(x.sales)>0 && !(String(x.avg??'').trim()))
     .sort((a,b)=>{
