@@ -2054,50 +2054,90 @@ async function renderRevenueAnalysis(){
   let selected=work.find(x=>Number(x.id)===Number(box.dataset.selectedId));
   if(!selected)selected=work[work.length-1];
   box.dataset.selectedId=selected.id;
+
   const idx=work.findIndex(x=>Number(x.id)===Number(selected.id));
-  const base=work.slice(Math.max(0,idx-10),idx);
-  const avgSales=analysisAverage(base,'sales');
-  const avgRate=analysisAverage(base,'loadedRate');
-  const avgTrips=analysisAverage(base,'tripCount');
-  const avgKm=analysisAverage(base,'km');
-  const baseTrip=base.map(x=>Number(x.tripCount)>0?Number(x.sales)/Number(x.tripCount):null).filter(x=>Number.isFinite(x));
-  const avgTrip=baseTrip.length?baseTrip.reduce((a,b)=>a+b,0)/baseTrip.length:null;
-  const baseMin=base.map(analysisMinutes).filter(x=>x>0);
-  const avgMin=baseMin.length?baseMin.reduce((a,b)=>a+b,0)/baseMin.length:null;
+  const recent10=work.slice(Math.max(0,idx-10),idx);
+  const base30=work.slice(Math.max(0,idx-30),idx);
+  const hasRecent10=recent10.length>=10;
+  const has30=base30.length>=30;
+
+  const avgFor=function(rows,key){
+    return rows.length>=1?analysisAverage(rows,key):null;
+  };
+  const avgSales10=hasRecent10?avgFor(recent10,'sales'):null;
+  const avgRate10=hasRecent10?avgFor(recent10,'loadedRate'):null;
+  const avgTrips10=hasRecent10?avgFor(recent10,'tripCount'):null;
+  const avgKm10=hasRecent10?avgFor(recent10,'km'):null;
+  const trip10=hasRecent10?recent10.map(x=>Number(x.tripCount)>0?Number(x.sales)/Number(x.tripCount):null).filter(x=>Number.isFinite(x)):[];
+  const avgTrip10=trip10.length?trip10.reduce((a,b)=>a+b,0)/trip10.length:null;
+  const min10=hasRecent10?recent10.map(analysisMinutes).filter(x=>x>0):[];
+  const avgMin10=min10.length?min10.reduce((a,b)=>a+b,0)/min10.length:null;
+
+  const avgSales30=has30?avgFor(base30,'sales'):null;
+  const avgRate30=has30?avgFor(base30,'loadedRate'):null;
+  const avgTrips30=has30?avgFor(base30,'tripCount'):null;
+  const avgKm30=has30?avgFor(base30,'km'):null;
+  const trip30=has30?base30.map(x=>Number(x.tripCount)>0?Number(x.sales)/Number(x.tripCount):null).filter(x=>Number.isFinite(x)):[];
+  const avgTrip30=trip30.length?trip30.reduce((a,b)=>a+b,0)/trip30.length:null;
+  const min30=has30?base30.map(analysisMinutes).filter(x=>x>0):[];
+  const avgMin30=min30.length?min30.reduce((a,b)=>a+b,0)/min30.length:null;
+
   const sales=Number(selected.sales)||0,rate=Number(selected.loadedRate)||0,trips=Number(selected.tripCount)||0,km=Number(selected.km)||0;
   const tripSales=trips>0?sales/trips:null;
   const mins=analysisMinutes(selected);
   const options=work.slice().reverse().map(x=>'<option value="'+x.id+'" '+(Number(x.id)===Number(selected.id)?'selected':'')+'>'+escapeHtml(x.date)+'</option>').join('');
-  const row=function(label,cur,avg,unit,dec){
-    if(!(cur>0)||avg===null)return '<tr><td>'+label+'</td><td>'+(cur>0?(dec?cur.toFixed(dec):Math.round(cur).toLocaleString())+unit:'—')+'</td><td>'+ (avg===null?'—':(dec?avg.toFixed(dec):Math.round(avg).toLocaleString())+unit)+'</td><td>—</td></tr>';
-    const d=cur-avg;
-    return '<tr><td>'+label+'</td><td>'+ (dec?cur.toFixed(dec):Math.round(cur).toLocaleString())+unit+'</td><td>'+ (dec?avg.toFixed(dec):Math.round(avg).toLocaleString())+unit+'</td><td class="'+(d>=0?'revenuePositive':'revenueNegative')+'">'+analysisSigned(d,unit,dec)+'</td></tr>';
+
+  const fmt=function(v,unit,dec){
+    if(v===null||!Number.isFinite(v))return '—';
+    return (dec?v.toFixed(dec):Math.round(v).toLocaleString())+unit;
   };
-  let table=row('売上',sales,avgSales,'円',0)+row('実車率',rate,avgRate,'%',1)+row('営業回数',trips,avgTrips,'回',0)+row('走行距離',km,avgKm,'km',1);
-  table+='<tr><td>1回平均売上</td><td>'+analysisYen(tripSales)+'</td><td>'+analysisYen(avgTrip)+'</td><td class="'+(tripSales!==null&&avgTrip!==null&&(tripSales-avgTrip)>=0?'revenuePositive':'revenueNegative')+'">'+(tripSales!==null&&avgTrip!==null?analysisSigned(tripSales-avgTrip,'円',0):'—')+'</td></tr>';
-  table+='<tr><td>拘束時間</td><td>'+(mins? (mins/60).toFixed(1)+'時間':'—')+'</td><td>'+(avgMin?(avgMin/60).toFixed(1)+'時間':'—')+'</td><td>'+(mins&&avgMin?analysisSigned((mins-avgMin)/60,'時間',1):'—')+'</td></tr>';
+  const row=function(label,cur,avg10,avg30,unit,dec){
+    const d=cur>0&&avg30!==null?cur-avg30:null;
+    return '<tr><td>'+label+'</td><td>'+(cur>0?fmt(cur,unit,dec):'—')+'</td><td>'+fmt(avg10,unit,dec)+'</td><td>'+fmt(avg30,unit,dec)+'</td><td>'+(d===null?'—':'<span class="'+(d>=0?'revenuePositive':'revenueNegative')+'">'+analysisSigned(d,unit,dec)+'</span>')+'</td></tr>';
+  };
+
+  let table=row('売上',sales,avgSales10,avgSales30,'円',0)+row('実車率',rate,avgRate10,avgRate30,'%',1)+row('営業回数',trips,avgTrips10,avgTrips30,'回',0)+row('走行距離',km,avgKm10,avgKm30,'km',1);
+  const tripDiff=tripSales!==null&&avgTrip30!==null?tripSales-avgTrip30:null;
+  table+='<tr><td>1回平均売上</td><td>'+analysisYen(tripSales)+'</td><td>'+analysisYen(avgTrip10)+'</td><td>'+analysisYen(avgTrip30)+'</td><td>'+(tripDiff===null?'—':'<span class="'+(tripDiff>=0?'revenuePositive':'revenueNegative')+'">'+analysisSigned(tripDiff,'円',0)+'</span>')+'</td></tr>';
+  const minDiff=mins&&avgMin30?mins-avgMin30:null;
+  table+='<tr><td>拘束時間</td><td>'+(mins?(mins/60).toFixed(1)+'時間':'—')+'</td><td>'+(avgMin10?(avgMin10/60).toFixed(1)+'時間':'—')+'</td><td>'+(avgMin30?(avgMin30/60).toFixed(1)+'時間':'—')+'</td><td>'+(minDiff===null?'—':'<span class="'+(minDiff>=0?'revenuePositive':'revenueNegative')+'">'+analysisSigned(minDiff/60,'時間',1)+'</span>')+'</td></tr>';
+
   const area=Number(selected.avg)>0?Number(selected.avg):null;
   const areaDiff=area!==null?sales-area:null;
   const areaPct=area>0?areaDiff/area*100:null;
-  const salesDiff=avgSales!==null?sales-avgSales:null;
+  const salesDiff30=avgSales30!==null?sales-avgSales30:null;
+  const salesDiff10=avgSales10!==null?sales-avgSales10:null;
+
   let changes=[];
-  [['実車率',rate,avgRate,'pt',1],['営業回数',trips,avgTrips,'回',0],['走行距離',km,avgKm,'km',0]].forEach(function(a){
+  [['実車率',rate,avgRate30,'pt',1],['営業回数',trips,avgTrips30,'回',0],['走行距離',km,avgKm30,'km',0]].forEach(function(a){
     if(a[1]>0&&a[2]!==null&&Math.abs(a[1]-a[2])>0.01)changes.push(a[0]+' '+(a[1]>=a[2]?'増加':'減少')+'（'+analysisSigned(a[1]-a[2],a[3],a[4])+'）');
   });
-  const insight=salesDiff===null?'比較に必要な直近10勤務のデータがまだありません。':(salesDiff>=0?'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'高い日です。':'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'低い日です。')+(changes.length?' 今回は'+changes.join('、')+'という変化がありました。':'');
+  let insight;
+  if(!has30){
+    insight='過去30勤務のデータがまだそろっていないため、長期的な基準での良し悪しはまだ判断しません。';
+  }else{
+    insight=(salesDiff30>=0?'売上は過去30勤務平均より'+analysisYen(Math.abs(salesDiff30))+'高い日です。':'売上は過去30勤務平均より'+analysisYen(Math.abs(salesDiff30))+'低い日です。')+(hasRecent10?(salesDiff10>=0?' 最近10勤務平均よりも'+analysisYen(Math.abs(salesDiff10))+'高いです。':' 最近10勤務平均よりも'+analysisYen(Math.abs(salesDiff10))+'低いです。'):'')+(changes.length?' 今回は'+changes.join('、')+'という変化がありました。':'');
+  }
+
   const weather=Array.isArray(selected.weather)?selected.weather.filter(Boolean):[];
   const events=Array.isArray(selected.event)?selected.event.filter(Boolean):[];
   const factors=[...weather,...events].filter(x=>x&&x!=='なし');
   const factorHtml=factors.length
     ? '<div class="revenueFactors"><div class="revenueFactorsTitle">🎲 外的要因</div><div class="revenueFactorRow">今回の勤務では <b>'+factors.map(escapeHtml).join('・')+'</b> が記録されています。</div><div class="revenueFactorRow" style="color:#66717b">これらは自分ではコントロールできない条件です。営業回数・実車率・売上が上がった場合も、まずは外的要因の影響を含めて見ます。</div></div>'
     : '<div class="revenueFactors"><div class="revenueFactorsTitle">🎲 外的要因</div><div class="revenueFactorRow">この勤務には、天候・イベントなどの特別な要因は記録されていません。</div></div>';
-  const lowTrips=trips>0&&avgTrips!==null&&trips<avgTrips;
+
+  const lowTrips=has30&&trips>0&&avgTrips30!==null&&trips<avgTrips30;
   const adviceHtml=lowTrips
-    ? '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">今回は営業回数が直近10勤務平均より少なめでした。営業スタイルを大きく変える必要はありません。次の勤務では、空車になったときの「次の一手」を少し早めに考える方法を試せます。</div><div class="revenueAdviceList"><div class="revenueAdviceItem"><b>① 次の目的を決める</b>時間帯によって、休憩・給油・駅へ戻るなど「次に何をするか」を決めておく。</div><div class="revenueAdviceItem"><b>② 送迎中に次を考える</b>お客様を送っている途中で、「降ろした後はどうしよう？」と一度考えておく。</div><div class="revenueAdviceItem"><b>③ ロング後の戻り方を考える</b>ロングの後に、そのまま待つのか、戻るのか。戻るならどの戻り方が次の営業につながりそうかを考えておく。</div></div><div class="revenueAdviceFoot">全部やる必要はありません。「これなら試してみてもいい」と思うものを1つだけ。次の勤務で営業回数・実車率・売上がどう変わったか確認しましょう。</div></div>'
-    : '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">今回は営業回数が直近10勤務平均を下回っていません。大きく営業スタイルを変える必要はなさそうです。今のやり方で、どの数字が動くかをもう少し見てみましょう。</div><div class="revenueAdviceFoot">「もっと頑張る」ではなく、次の勤務で数字を1つだけ観察するくらいでOKです。😊</div></div>';
-  box.innerHTML='<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">🔎 営業日を選ぶ</div><div class="revenueAnalysisNote">比較対象は、その勤務日より前の直近10勤務の平均です。</div><select class="revenueAnalysisSelect" onchange="selectRevenueAnalysis(this.value)">'+options+'</select></div>'+
-    '<div class="revenueResult"><div class="revenueResultMain">今回の売上　<strong>'+analysisYen(sales)+'</strong></div><div class="revenueCompareLabel">直近10勤務平均　'+analysisYen(avgSales)+'</div><div class="revenueDiff '+(salesDiff===null?'same':salesDiff>0?'up':salesDiff<0?'down':'same')+'">'+(salesDiff===null?'比較できません':analysisSigned(salesDiff,'円',0))+'</div></div>'+
-    '<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">📊 数字の変化</div><table class="revenueTable"><thead><tr><th>項目</th><th>今回</th><th>直近10勤務平均</th><th>変化</th></tr></thead><tbody>'+table+'</tbody></table></div>'+
+    ? '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">今回は営業回数が過去30勤務平均より少なめでした。営業スタイルを大きく変える必要はありません。次の勤務では、空車になったときの「次の一手」を少し早めに考える方法を試せます。</div><div class="revenueAdviceList"><div class="revenueAdviceItem"><b>① 次の目的を決める</b>時間帯によって、休憩・給油・駅へ戻るなど「次に何をするか」を決めておく。</div><div class="revenueAdviceItem"><b>② 送迎中に次を考える</b>お客様を送っている途中で、「降ろした後はどうしよう？」と一度考えておく。</div><div class="revenueAdviceItem"><b>③ ロング後の戻り方を考える</b>ロングの後に、そのまま待つのか、戻るのか。戻るならどの戻り方が次の営業につながりそうかを考えておく。</div></div><div class="revenueAdviceFoot">全部やる必要はありません。「これなら試してみてもいい」と思うものを1つだけ。次の勤務で営業回数・実車率・売上がどう変わったか確認しましょう。</div></div>'
+    : '<div class="revenueAdvice"><div class="revenueAdviceTitle">🧪 ちょっと試してみませんか？</div><div class="revenueAdviceIntro">'+(has30?'今回は営業回数が過去30勤務平均を下回っていません。大きく営業スタイルを変える必要はなさそうです。':'まだ過去30勤務のデータがそろっていないため、営業回数の良し悪しは判断しません。')+' 今のやり方で、どの数字が動くかをもう少し見てみましょう。</div><div class="revenueAdviceFoot">「もっと頑張る」ではなく、次の勤務で数字を1つだけ観察するくらいでOKです。😊</div></div>';
+
+  const baselineNote=has30
+    ? '過去30勤務＝自分の基本的な営業パターン、直近10勤務＝最近の状態として表示します。'
+    : '過去30勤務分のデータがたまるまでは、長期的な良し悪しは判断しません。直近10勤務も10回分たまってから比較します。';
+
+  box.innerHTML='<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">🔎 営業日を選ぶ</div><div class="revenueAnalysisNote">'+baselineNote+'</div><select class="revenueAnalysisSelect" onchange="selectRevenueAnalysis(this.value)">'+options+'</select></div>'+
+    '<div class="revenueResult"><div class="revenueResultMain">今回の売上　<strong>'+analysisYen(sales)+'</strong></div><div class="revenueCompareLabel">過去30勤務平均　'+analysisYen(avgSales30)+'　／　直近10勤務平均　'+analysisYen(avgSales10)+'</div><div class="revenueDiff '+(salesDiff30===null?'same':salesDiff30>0?'up':salesDiff30<0?'down':'same')+'">'+(salesDiff30===null?'30勤務分たまるまで比較しません':analysisSigned(salesDiff30,'円',0))+'</div></div>'+
+    '<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">📊 数字の変化</div><table class="revenueTable"><thead><tr><th>項目</th><th>今回</th><th>最近10</th><th>過去30</th><th>変化※</th></tr></thead><tbody>'+table+'</tbody></table><div class="revenueAnalysisNote">※「変化」は今回と過去30勤務平均の差です。</div></div>'+
     factorHtml+
     (area!==null?'<div class="revenueArea"><b>🚕 乗務エリアとの売上比較</b><br>自分 '+analysisYen(sales)+'　／　エリア平均 '+analysisYen(area)+'<br><strong>'+analysisSigned(areaDiff,'円',0)+'（'+(areaPct>=0?'+':'')+areaPct.toFixed(1)+'%）</strong><br><span style="color:#777">※エリア平均は売上だけなので、実車率・営業回数などとは直接比較していません。</span></div>':'<div class="revenueArea">🚕 この勤務日のエリア平均はまだ入力されていません。</div>')+
     '<div class="revenueInsight">💡 '+insight+'</div>'+
