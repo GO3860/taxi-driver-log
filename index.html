@@ -2285,13 +2285,16 @@ function renderWorkCalendar(){
   $('workCalendarTitle').textContent=y+'年'+(m+1)+'月';
   const grid=$('workCalendarGrid');if(!grid)return;
   const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),plans=getWorkPlans();
+  // 祝日データは日付ごとに取得すると、毎回localStorageの読み書きが発生して
+  // iPhone Safariでカレンダーを開く際に処理が重くなることがあるため、月単位で1回だけ取得する。
+  const holidays=getHolidays();
   let html='';
   for(let i=0;i<first;i++)html+='<button class="calDay empty" type="button" aria-hidden="true"></button>';
   for(let d=1;d<=days;d++){
     const key=dateKey(y,m,d), arr=normalizePlansForDate(plans[key]), sel=key===workCalendarSelectedKey?' selected':'';
     const wd=new Date(y,m,d).getDay();
     const dayCls=wd===0?'sun':wd===6?'sat':'';
-    const holidayName=getHolidayName(key);
+    const holidayName=holidays[key]||'';
     const holidayCls=holidayName?' holiday':'';
     const holidayTitle=holidayName?` title="${String(holidayName).replace(/"/g,'&quot;')}"`:'';
     const base=`<div class="baseCube ${dayCls}${holidayCls}"${holidayTitle}><span class="baseDate">${d}</span></div>`;
