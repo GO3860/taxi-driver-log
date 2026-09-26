@@ -247,6 +247,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   .dailySalesTable td:nth-child(2),.dailySalesTable td:nth-child(3),.dailySalesTable td:nth-child(4){font-size:10px!important}
 }
 </style>
+<style id="sales-data-layout-v165">
+.salesDataGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.salesDataGrid>#distanceField{display:block}
+.salesDataGrid>div:nth-child(3){grid-column:1}
+</style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -275,14 +280,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
 <div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
-<div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—</div></div><div id="distanceField"><div class="small">走行距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
+<div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—</div></div></div></div>
 
 <div class="card"><div class="label">💰 売上</div><div class="grid">
 <div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
-<div class="card"><div class="label">📊 営業データ</div><div class="grid">
+<div class="card"><div class="label">📊 営業データ</div><div class="grid salesDataGrid">
 <div><div class="small">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="タップして計算" readonly onclick="openLoadedRateModal()" onfocus="this.blur()"><div class="small" style="margin-top:4px">%</div></div>
+<div id="distanceField"><div class="small">走行距離 km</div><input id="km" type="number" inputmode="decimal"></div>
 <div><div class="small">営業回</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="例：30"><div class="small" style="margin-top:4px">回</div></div>
 </div></div>
 
