@@ -252,6 +252,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .salesDataGrid>#distanceField{display:block}
 .salesDataGrid>div:nth-child(3){grid-column:1}
 </style>
+<style id="period-aggregation-v166">
+.periodAggregationPanel{margin-top:10px}
+.periodAggregationCard{padding:14px;border:1px solid #e1e5ea;border-radius:16px;background:#f8fafc}
+.periodAggregationTitle{font-size:17px;font-weight:900;margin-bottom:6px}
+.periodAggregationNote{font-size:11px;color:#777;line-height:1.5;margin-bottom:12px}
+.periodAggregationSelects{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:7px;margin-bottom:12px}
+.periodAggregationSelects label{font-size:12px;font-weight:800;color:#666}
+.periodAggregationSelects select{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:10px 8px;border:2px solid #ddd;border-radius:10px;background:#fff;font-size:15px;font-weight:800}
+.periodAggregationSelects>span{padding-bottom:10px;font-weight:900;color:#777}
+.periodAggregationGrid{margin-top:0}
+</style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -1577,6 +1588,7 @@ async function renderAnnualData(selectedYear){
     <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
     <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
   </div>`;
+  const periodOptions=periods.map((p,i)=>`<option value="${i}">${periodMonthLabel(p)}</option>`).join('');
   box.innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
       <div class="periodTitle" style="margin:0">${fiscalYearLabel(year)}</div>
@@ -1586,6 +1598,54 @@ async function renderAnnualData(selectedYear){
     </div>
     <div class="dataNote">対象期間：${periods[0].start.getFullYear()}年${periods[0].start.getMonth()+1}月${periods[0].start.getDate()}日〜${periods[11].end.getFullYear()}年${periods[11].end.getMonth()+1}月${periods[11].end.getDate()}日</div>
     ${graph}${summary}${table}
+    <button type="button" class="analysisBtn btn full" onclick="togglePeriodAggregation()">📊 期間を指定して集計</button>
+    <div id="periodAggregationPanel" class="periodAggregationPanel hidden"></div>
+  </div>`;
+}
+
+async function togglePeriodAggregation(){
+  const panel=$('periodAggregationPanel');
+  if(!panel)return;
+  if(!panel.classList.contains('hidden')){panel.classList.add('hidden');return;}
+  const year=Number($('annualYearSelect')?.value||getFiscalYearStartYear());
+  const periods=getFiscalPeriods(year);
+  const options=periods.map((p,i)=>`<option value="${i}">${periodMonthLabel(p)}</option>`).join('');
+  panel.innerHTML=`<div class="periodAggregationCard">
+    <div class="periodAggregationTitle">📊 期間集計</div>
+    <div class="periodAggregationNote">開始月と終了月を選ぶと、その期間の売上を合計します。タクログの「○月」は締め日までの集計期間です。</div>
+    <div class="periodAggregationSelects">
+      <label>開始月<select id="periodAggStart" onchange="calculatePeriodAggregation()">${options}</select></label>
+      <span>〜</span>
+      <label>終了月<select id="periodAggEnd" onchange="calculatePeriodAggregation()">${options}</select></label>
+    </div>
+    <div id="periodAggregationResult"></div>
+  </div>`;
+  panel.classList.remove('hidden');
+  const s=$('periodAggStart'),e=$('periodAggEnd');
+  if(s)s.value='2';
+  if(e)e.value='8';
+  calculatePeriodAggregation();
+}
+
+async function calculatePeriodAggregation(){
+  const panel=$('periodAggregationResult');
+  if(!panel)return;
+  const year=Number($('annualYearSelect')?.value||getFiscalYearStartYear());
+  const periods=getFiscalPeriods(year);
+  let start=Number($('periodAggStart')?.value||0),end=Number($('periodAggEnd')?.value||0);
+  if(start>end)[start,end]=[end,start];
+  const selected=periods.slice(start,end+1);
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&selected.some(p=>inDataPeriod(x.date,p)));
+  const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+  const areaRows=work.filter(x=>Number(x.avg)>0);
+  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const avg=work.length?Math.round(sales/work.length):0;
+  panel.innerHTML=`<div class="dataGrid periodAggregationGrid">
+    <div class="dataBox"><div class="dataLabel">${periodMonthLabel(selected[0])}〜${periodMonthLabel(selected[selected.length-1])} 自分の売上合計</div><div class="dataValue">${sales?yen(sales):'¥0'}</div></div>
+    <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の平均売上</div><div class="dataValue">${avg?yen(avg):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaTotal?yen(areaTotal):'—'}</div></div>
   </div>`;
 }
 function analysisStats(work, getter, names){
