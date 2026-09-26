@@ -274,6 +274,21 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .areaAverageSave{border:0;border-radius:10px;padding:10px 12px;background:#2580ee;color:#fff;font-weight:800;white-space:nowrap}
 .areaAverageEmpty{margin-top:10px;padding:14px;border-radius:14px;background:#f5f7f9;text-align:center;color:#666;font-size:13px}
 @media(max-width:430px){.areaAverageRow{grid-template-columns:1fr 1.35fr auto;gap:5px}.areaAverageSave{padding:10px 9px;font-size:12px}.areaAverageDate{font-size:13px}}
+<style id="revenue-analysis-v168">
+.revenueAnalysisCard{margin-top:10px;padding:16px;border:1px solid #dfe5eb;border-radius:18px;background:#f8fafc}
+.revenueAnalysisTitle{font-size:20px;font-weight:900;margin-bottom:6px}
+.revenueAnalysisNote{font-size:12px;color:#666;line-height:1.6;margin-bottom:12px}
+.revenueAnalysisSelect{width:100%;box-sizing:border-box;padding:12px;border:2px solid #ddd;border-radius:12px;background:#fff;font-size:16px;font-weight:800}
+.revenueResult{margin-top:14px;padding:14px;border-radius:16px;background:#fff;border:1px solid #e3e7eb}
+.revenueResultMain{font-size:15px;color:#555}.revenueResultMain strong{font-size:28px;color:#111}
+.revenueDiff{font-size:18px;font-weight:900;margin-top:4px}.revenueDiff.up,.revenuePositive{color:#168447}.revenueDiff.down,.revenueNegative{color:#c43d3d}.revenueDiff.same{color:#555}
+.revenueCompareLabel{font-size:12px;color:#777;margin-top:4px}
+.revenueTable{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.revenueTable th,.revenueTable td{padding:10px 5px;border-top:1px solid #e8ebef;text-align:right;white-space:nowrap}
+.revenueTable th:first-child,.revenueTable td:first-child{text-align:left}.revenueTable th{font-size:12px;color:#666}
+.revenueInsight{margin-top:14px;padding:12px;border-radius:14px;background:#f1f7ff;line-height:1.7;font-size:13px}
+.revenueArea{margin-top:12px;padding:12px;border-radius:14px;background:#fff8e8;border:1px solid #f0dfb2;font-size:13px;line-height:1.6}
+</style>
 </style></head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -341,6 +356,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="help-text">12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。</div>
     <div id="monthlyData"></div>
   </div>
+  <button type="button" class="analysisBtn btn full" onclick="showRevenueAnalysis()">📊 営収を分解して見る</button>
   <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
 </div>
 <div id="dataDetailView" class="hidden">
@@ -351,6 +367,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <button class="backData" onclick="showMonthlyDetail(currentMonthYear,currentMonthIndex)">← 月間売上に戻る</button>
   <div class="card"><div class="label" id="analysisTitle">📊 曜日別の売上</div><div id="analysisContent"></div></div>
 </div>
+</main>
+
+<main id="revenueAnalysis" class="hidden">
+  <div class="card">
+    <div class="label">📊 営収を分解して見る</div>
+    <div class="help-text">選んだ勤務日の売上を、直近10勤務の自分の平均と比べて、どの数字が変化していたかを確認します。エリア平均は売上だけを別に比較します。</div>
+    <div id="revenueAnalysisContent"></div>
+  </div>
+  <button class="btn full" onclick="showData()">← データに戻る</button>
 </main>
 
 <main id="areaAverage" class="hidden">
@@ -1982,8 +2007,84 @@ function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
 }
-function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAverage'].forEach(id=>$(id)?.classList.add('hidden'))}
+function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAverage','revenueAnalysis'].forEach(id=>$(id)?.classList.add('hidden'))}
 function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings()}
+function analysisMinutes(log){
+  const hm=String(log?.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
+  if(hm)return Math.round(Number(hm[1])*60)+Number(hm[2]||0);
+  const out=String(log?.out||''),inn=String(log?.in||'');
+  if(out&&inn){
+    const a=out.split(':').map(Number),b=inn.split(':').map(Number);
+    if(a.length===2&&b.length===2&&a.concat(b).every(Number.isFinite)){
+      let m=(b[0]*60+b[1])-(a[0]*60+a[1]);if(m<0)m+=1440;return m;
+    }
+  }
+  return 0;
+}
+function analysisAverage(rows,key){
+  const v=rows.map(x=>Number(x?.[key])).filter(x=>Number.isFinite(x)&&x>0);
+  return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+}
+function analysisSigned(v,unit,dec){
+  if(v===null||!Number.isFinite(v))return '—';
+  const n=dec?Math.abs(v).toFixed(dec):Math.round(Math.abs(v)).toLocaleString();
+  return (v>=0?'+':'−')+n+unit;
+}
+function analysisYen(v){return v===null?'—':'¥'+Math.round(v).toLocaleString();}
+async function showRevenueAnalysis(){
+  resetSaveButton();hideAllMainViews();$('revenueAnalysis').classList.remove('hidden');
+  await renderRevenueAnalysis();window.scrollTo({top:0,behavior:'smooth'});
+}
+async function renderRevenueAnalysis(){
+  const box=$('revenueAnalysisContent');if(!box)return;
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&Number(x.sales)>0)
+    .sort((a,b)=>(parseDutyDate(a.date)?.getTime()||0)-(parseDutyDate(b.date)?.getTime()||0));
+  if(!work.length){box.innerHTML='<div class="revenueAnalysisNote">まだ勤務データがありません。</div>';return;}
+  let selected=work.find(x=>Number(x.id)===Number(box.dataset.selectedId));
+  if(!selected)selected=work[work.length-1];
+  box.dataset.selectedId=selected.id;
+  const idx=work.findIndex(x=>Number(x.id)===Number(selected.id));
+  const base=work.slice(Math.max(0,idx-10),idx);
+  const avgSales=analysisAverage(base,'sales');
+  const avgRate=analysisAverage(base,'loadedRate');
+  const avgTrips=analysisAverage(base,'tripCount');
+  const avgKm=analysisAverage(base,'km');
+  const baseTrip=base.map(x=>Number(x.tripCount)>0?Number(x.sales)/Number(x.tripCount):null).filter(x=>Number.isFinite(x));
+  const avgTrip=baseTrip.length?baseTrip.reduce((a,b)=>a+b,0)/baseTrip.length:null;
+  const baseMin=base.map(analysisMinutes).filter(x=>x>0);
+  const avgMin=baseMin.length?baseMin.reduce((a,b)=>a+b,0)/baseMin.length:null;
+  const sales=Number(selected.sales)||0,rate=Number(selected.loadedRate)||0,trips=Number(selected.tripCount)||0,km=Number(selected.km)||0;
+  const tripSales=trips>0?sales/trips:null;
+  const mins=analysisMinutes(selected);
+  const options=work.slice().reverse().map(x=>'<option value="'+x.id+'" '+(Number(x.id)===Number(selected.id)?'selected':'')+'>'+escapeHtml(x.date)+'</option>').join('');
+  const row=function(label,cur,avg,unit,dec){
+    if(!(cur>0)||avg===null)return '<tr><td>'+label+'</td><td>'+(cur>0?(dec?cur.toFixed(dec):Math.round(cur).toLocaleString())+unit:'—')+'</td><td>'+ (avg===null?'—':(dec?avg.toFixed(dec):Math.round(avg).toLocaleString())+unit)+'</td><td>—</td></tr>';
+    const d=cur-avg;
+    return '<tr><td>'+label+'</td><td>'+ (dec?cur.toFixed(dec):Math.round(cur).toLocaleString())+unit+'</td><td>'+ (dec?avg.toFixed(dec):Math.round(avg).toLocaleString())+unit+'</td><td class="'+(d>=0?'revenuePositive':'revenueNegative')+'">'+analysisSigned(d,unit,dec)+'</td></tr>';
+  };
+  let table=row('売上',sales,avgSales,'円',0)+row('実車率',rate,avgRate,'%',1)+row('営業回数',trips,avgTrips,'回',0)+row('走行距離',km,avgKm,'km',1);
+  table+='<tr><td>1回平均売上</td><td>'+analysisYen(tripSales)+'</td><td>'+analysisYen(avgTrip)+'</td><td class="'+(tripSales!==null&&avgTrip!==null&&(tripSales-avgTrip)>=0?'revenuePositive':'revenueNegative')+'">'+(tripSales!==null&&avgTrip!==null?analysisSigned(tripSales-avgTrip,'円',0):'—')+'</td></tr>';
+  table+='<tr><td>拘束時間</td><td>'+(mins? (mins/60).toFixed(1)+'時間':'—')+'</td><td>'+(avgMin?(avgMin/60).toFixed(1)+'時間':'—')+'</td><td>'+(mins&&avgMin?analysisSigned((mins-avgMin)/60,'時間',1):'—')+'</td></tr>';
+  const area=Number(selected.avg)>0?Number(selected.avg):null;
+  const areaDiff=area!==null?sales-area:null;
+  const areaPct=area>0?areaDiff/area*100:null;
+  const salesDiff=avgSales!==null?sales-avgSales:null;
+  let changes=[];
+  [['実車率',rate,avgRate,'pt',1],['営業回数',trips,avgTrips,'回',0],['走行距離',km,avgKm,'km',0]].forEach(function(a){
+    if(a[1]>0&&a[2]!==null&&Math.abs(a[1]-a[2])>0.01)changes.push(a[0]+' '+(a[1]>=a[2]?'増加':'減少')+'（'+analysisSigned(a[1]-a[2],a[3],a[4])+'）');
+  });
+  const insight=salesDiff===null?'比較に必要な直近10勤務のデータがまだありません。':(salesDiff>=0?'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'高い日です。':'売上は直近10勤務平均より'+analysisYen(Math.abs(salesDiff))+'低い日です。')+(changes.length?' 今回は'+changes.join('、')+'という変化がありました。':'');
+  box.innerHTML='<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">🔎 営業日を選ぶ</div><div class="revenueAnalysisNote">比較対象は、その勤務日より前の直近10勤務の平均です。</div><select class="revenueAnalysisSelect" onchange="selectRevenueAnalysis(this.value)">'+options+'</select></div>'+
+    '<div class="revenueResult"><div class="revenueResultMain">今回の売上　<strong>'+analysisYen(sales)+'</strong></div><div class="revenueCompareLabel">直近10勤務平均　'+analysisYen(avgSales)+'</div><div class="revenueDiff '+(salesDiff===null?'same':salesDiff>0?'up':salesDiff<0?'down':'same')+'">'+(salesDiff===null?'比較できません':analysisSigned(salesDiff,'円',0))+'</div></div>'+
+    '<div class="revenueAnalysisCard"><div class="revenueAnalysisTitle">📊 数字の変化</div><table class="revenueTable"><thead><tr><th>項目</th><th>今回</th><th>直近10勤務平均</th><th>変化</th></tr></thead><tbody>'+table+'</tbody></table></div>'+
+    (area!==null?'<div class="revenueArea"><b>🚕 乗務エリアとの売上比較</b><br>自分 '+analysisYen(sales)+'　／　エリア平均 '+analysisYen(area)+'<br><strong>'+analysisSigned(areaDiff,'円',0)+'（'+(areaPct>=0?'+':'')+areaPct.toFixed(1)+'%）</strong><br><span style="color:#777">※エリア平均は売上だけなので、実車率・営業回数などとは直接比較していません。</span></div>':'<div class="revenueArea">🚕 この勤務日のエリア平均はまだ入力されていません。</div>')+
+    '<div class="revenueInsight">💡 '+insight+'</div>';
+}
+async function selectRevenueAnalysis(id){
+  const box=$('revenueAnalysisContent');if(!box)return;box.dataset.selectedId=id;await renderRevenueAnalysis();
+}
+
 async function showRouteDatabase(){resetSaveButton();hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
 
 async function goToToday(){
