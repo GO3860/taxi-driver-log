@@ -578,6 +578,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 <div id="workCalendarModal" class="calendarModal hidden" onclick="if(event.target===this)closeWorkCalendar()">
   <div class="calendarSheet">
+    <button type="button" class="calendarCloseTop" onclick="closeWorkCalendar()" aria-label="カレンダーを閉じる">✕ 閉じる</button>
     <div class="calendarHead">
       <button type="button" onclick="changeWorkCalendarMonth(-1)">‹ 前月</button>
       <button type="button" id="workCalendarTitle" class="calendarTitle calendarTitleBtn" onclick="openMonthFromCalendar()" aria-label="この月のデータを見る"></button>
@@ -2486,6 +2487,30 @@ function deleteWorkPlan(){
 }
 @media(max-width:430px){
   .planCube{left:7px!important;width:calc(100% - 7px)!important;}
+}
+</style>
+<style id="calendar-close-button-v165">
+/* v165: iPhone Safariの下部ブラウザUIに隠れないよう、カレンダーの閉じるボタンを上部に固定 */
+.calendarCloseTop{
+  position:sticky;
+  top:0;
+  z-index:30;
+  display:block;
+  width:92px;
+  height:38px;
+  margin:0 0 5px auto;
+  border:1px solid #c9d8e5;
+  border-radius:999px;
+  background:rgba(255,255,255,.96);
+  color:#4b5965;
+  font-size:14px;
+  font-weight:800;
+  box-shadow:0 3px 9px rgba(40,70,90,.14);
+  -webkit-tap-highlight-color:transparent;
+}
+.calendarCloseTop:active{
+  transform:translateY(2px);
+  background:#eef3f7;
 }
 </style>
 <style id="holiday-settings-menu-v136">
