@@ -2313,7 +2313,7 @@ function renderWorkCalendar(){
         return `<div class="planCube ${planClass(p.type)}" style="top:${top}%;height:${slot}%;z-index:${z}" title="${escapeHtml(p.memo||'')}"><span class="cubeLabel">${label}</span></div>`;
       }).join('');
     }
-    html+=`<button type="button" class="calDay${arr.length?' hasPlans':''}${sel}" onclick="openCalendarDateLog('${key}')"><div class="calDayFace">${base}${arr.length?`<div class="planCubes">${blocks}</div>`:''}</div></button>`;
+    html+=`<button type="button" class="calDay${arr.length?' hasPlans':''}${sel}" onclick="selectWorkCalendarDate('${key}')"><div class="calDayFace">${base}${arr.length?`<div class="planCubes">${blocks}</div>`:''}</div></button>`;
   }
   grid.innerHTML=html;
   renderCalendarDetail();
@@ -2359,7 +2359,7 @@ function renderCalendarDetail(){
   if(blockTypes.length===2){
     html+=`<button class="calendarSwapBlocksBtn" type="button" onclick="swapCalendarBlocks()">↕️ ブロックの上下を入れ替える</button>`;
   }
-  body.innerHTML=html+`<div class="calendarDetailHint">同じ日に複数の予定をまとめて登録できます</div>`;
+  body.innerHTML=html+`<div class="calendarDetailHint">同じ日に複数の予定をまとめて登録できます</div>`+(workCalendarSelectedKey?'<button type="button" class="calendarLogJumpBtn" onclick="openCalendarDateLog(\''+workCalendarSelectedKey+'\')">📋 この日のログを見る</button>':'');
   const badge=body.querySelector('.calendarDetailBadge');
   if(badge){const bg={work:'linear-gradient(145deg,#a7efff,#57c8ee)',paid:'linear-gradient(145deg,#ff9a84,#ee6b58)',plan:'linear-gradient(145deg,#fff06b,#f6c52e)',parttime:'linear-gradient(145deg,#ffc77c,#f29437)',other:'linear-gradient(145deg,#d9c2ff,#9b68e8)',absent:'linear-gradient(145deg,#d8b08a,#b47b4e)'}[badge.className.split(' ').pop()];badge.style.background=bg||'#eee';}
 }
