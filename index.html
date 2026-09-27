@@ -347,6 +347,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
 
 <div id="salesGoalCard" class="salesGoalCard"></div>
+<div id="restAdviceCard" class="restAdviceCard"><div class="restAdviceTitle">🌿 休み方アドバイス</div><div id="restAdviceContent"></div></div>
 
 </div>
 
@@ -698,7 +699,7 @@ function formatDutyDate(date){
 function todayYMD(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
 function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
 function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
-function changeDutyDate(value){if(!value)return;localStorage.setItem('taxiDutyDate',value);const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}$('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';if(window.db)renderConstraintWarning();}
+function changeDutyDate(value){if(!value)return;localStorage.setItem('taxiDutyDate',value);const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}$('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';if(window.db){renderConstraintWarning();renderRestAdvice();}}
 function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
 document.addEventListener('DOMContentLoaded',()=>{
   startDutyDate();
@@ -706,7 +707,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   migrateOptionalSettings();
   initSettings();
   initRoutes();
-  initDB().then(()=>Promise.all([updateTotal(),renderSalesGoal(),renderConstraintWarning()])).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
+  initDB().then(()=>Promise.all([updateTotal(),renderSalesGoal(),renderConstraintWarning(),renderRestAdvice()])).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
 });
 
 let routeData=[];
@@ -1037,6 +1038,7 @@ async function saveLog(){
  if(!isRestDay(dayType)) localStorage.removeItem('taxiDutyDate');
  $('status').textContent='✅ 保存しました';
  await renderConstraintWarning();
+ await renderRestAdvice();
  // 保存後はページ移動せず、現在の「今日」画面をそのまま更新する。
  editingLogId=null;
  await updateTotal();
@@ -2043,7 +2045,7 @@ function resetSaveButton(){
   if(b)b.classList.remove('savePressed');
 }
 function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAverage','revenueAnalysis'].forEach(id=>$(id)?.classList.add('hidden'))}
-function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings()}
+async function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings();await renderRestAdvice()}
 function analysisMinutes(log){
   const hm=String(log?.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
   if(hm)return Math.round(Number(hm[1])*60)+Number(hm[2]||0);
@@ -2866,4 +2868,143 @@ function confirmLoadedRateModal(){
 ['loadedDistanceModal','totalDistanceModal'].forEach(id=>{
   document.getElementById(id)?.addEventListener('input',updateLoadedRateModalResult);
 });
+</script>
+
+<style id="rest-advice-v1">
+.restAdviceCard{background:linear-gradient(145deg,#f5fff8,#ffffff);border:1px solid #cfe9d8;border-radius:20px;padding:16px;margin:12px 0;box-shadow:0 3px 12px rgba(40,100,60,.07)}
+.restAdviceTitle{font-size:20px;font-weight:900;margin-bottom:10px}
+.restAdviceLead{font-size:14px;line-height:1.65;margin-bottom:12px}
+.restAdviceStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:12px}
+.restAdviceStat{background:#f4f7f5;border-radius:12px;padding:9px 7px;text-align:center}
+.restAdviceStatLabel{font-size:10px;color:#777}
+.restAdviceStatValue{font-size:17px;font-weight:900;margin-top:3px}
+.restAdviceSection{margin-top:12px;padding-top:12px;border-top:1px solid #e5eee8}
+.restAdviceSectionTitle{font-size:14px;font-weight:900;margin-bottom:7px}
+.restAdviceCandidate{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#f7fbf8;border-radius:12px;padding:10px 11px;margin-top:7px}
+.restAdviceCandidateDate{font-weight:900}
+.restAdviceCandidateReason{font-size:11px;color:#6c756f;text-align:right;line-height:1.4}
+.restAdviceNote{font-size:11px;color:#777;line-height:1.5;margin-top:8px}
+.restAdviceBadge{display:inline-block;font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;background:#e5f6ea;color:#28733a;margin-bottom:7px}
+@media(max-width:430px){.restAdviceStats{gap:5px}.restAdviceStatValue{font-size:15px}.restAdviceCandidate{padding:9px}.restAdviceCandidateReason{font-size:10px}}
+</style>
+<script id="rest-advice-v1">
+function restAdviceDateKey(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function restAdviceMinutes(log){
+  if(!log)return 0;
+  const hm=String(log.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
+  if(hm)return Math.round(Number(hm[1])*60)+Number(hm[2]||0);
+  const out=String(log.out||''),inn=String(log.in||'');
+  if(out&&inn){
+    const a=out.split(':').map(Number),b=inn.split(':').map(Number);
+    if(a.length===2&&b.length===2&&a.concat(b).every(Number.isFinite)){
+      let m=(b[0]*60+b[1])-(a[0]*60+a[1]);if(m<0)m+=1440;return m;
+    }
+  }
+  return 0;
+}
+function restAdviceFmtMinutes(m){
+  if(!(m>0))return '—';
+  const h=Math.floor(m/60),mm=m%60;
+  return mm?(h+'時間'+mm+'分'):(h+'時間');
+}
+function restAdviceHistoricalAverage(targetDate,workLogs){
+  const month=targetDate.getMonth(),weekday=targetDate.getDay();
+  const sameMonth=workLogs.filter(x=>{
+    const d=parseDutyDate(x.date);return d&&d.getMonth()===month&&d.getDay()===weekday&&Number(x.sales)>0;
+  });
+  const source=sameMonth.length>=2?sameMonth:workLogs.filter(x=>{
+    const d=parseDutyDate(x.date);return d&&d.getDay()===weekday&&Number(x.sales)>0;
+  });
+  if(source.length<2)return null;
+  return source.reduce((s,x)=>s+Number(x.sales),0)/source.length;
+}
+async function renderRestAdvice(){
+  const box=$('restAdviceContent');if(!box)return;
+  try{
+    const logs=await getLogs();
+    const work=logs.filter(x=>(x.dayType||'work')==='work'&&Number(x.sales)>0)
+      .sort((a,b)=>(parseDutyDate(a.date)?.getTime()||0)-(parseDutyDate(b.date)?.getTime()||0));
+    const recent14=work.filter(x=>{
+      const d=parseDutyDate(x.date);if(!d)return false;
+      const now=new Date();now.setHours(23,59,59,999);
+      const from=new Date(now);from.setDate(from.getDate()-13);from.setHours(0,0,0,0);
+      return d>=from&&d<=now;
+    });
+    const recent5=work.slice(-5);
+    const avgMin=recent5.map(restAdviceMinutes).filter(x=>x>0);
+    const avgMinutes=avgMin.length?Math.round(avgMin.reduce((a,b)=>a+b,0)/avgMin.length):0;
+
+    let streak=0;
+    if(work.length){
+      const dates=new Set(work.map(x=>restAdviceDateKey(parseDutyDate(x.date))).filter(Boolean));
+      const d=parseDutyDate(work[work.length-1].date);
+      if(d){
+        let cur=new Date(d);
+        while(dates.has(restAdviceDateKey(cur))){
+          streak++;
+          cur.setDate(cur.getDate()-1);
+        }
+      }
+    }
+
+    const plans=getWorkPlans();
+    const candidates=[];
+    const base=new Date();base.setHours(0,0,0,0);
+    for(let n=0;n<90;n++){
+      const d=new Date(base);d.setDate(base.getDate()+n);
+      const key=restAdviceDateKey(d);
+      if(normalizePlansForDate(plans[key]).length)continue;
+      const avg=restAdviceHistoricalAverage(d,work);
+      if(avg!==null)candidates.push({d,avg});
+    }
+    candidates.sort((a,b)=>a.avg-b.avg);
+    const picked=[];
+    for(const cand of candidates){
+      if(picked.every(x=>Math.abs((cand.d-x.d)/86400000)>=7)){
+        picked.push(cand);
+        if(picked.length>=3)break;
+      }
+    }
+
+    let lead='',caution=false;
+    if(currentConstraintMessage){
+      lead='今は月間の拘束時間にも注意したい時期です。休みを入れる候補を早めに見ておきましょう。';
+      caution=true;
+    }else if(streak>=4){
+      lead=streak+'日続けて勤務しています。次の休みを1日入れる候補を考えてみましょう。';
+      caution=true;
+    }else if(avgMinutes>=900){
+      lead='最近の勤務は拘束時間が長めです。次の勤務との間に、しっかり休める日を確保することを優先してみましょう。';
+      caution=true;
+    }else if(work.length<5){
+      lead='まだ記録が少ないので、今は無理に判断しません。勤務と休みを記録していくと、自分に合う休み方が見えてきます。';
+    }else{
+      lead='今の記録では大きな偏りはありません。無理に勤務を増やすより、先の休みを早めに決めておく使い方がおすすめです。';
+    }
+
+    const candidateHtml=picked.length
+      ? picked.map(x=>{
+          const wd=['日','月','火','水','木','金','土'][x.d.getDay()];
+          return '<div class="restAdviceCandidate"><div class="restAdviceCandidateDate">'+(x.d.getMonth()+1)+'/'+x.d.getDate()+'（'+wd+'）</div><div class="restAdviceCandidateReason">過去の同じ曜日など<br>平均 ¥'+Math.round(x.avg).toLocaleString()+'</div></div>';
+        }).join('')
+      : '<div class="restAdviceNote">まだ比較できる過去データが十分ではありません。記録が増えると、今後3か月の休暇候補を表示できます。</div>';
+
+    box.innerHTML=
+      (caution?'<div class="restAdviceBadge">💡 今は休み方を意識するタイミング</div>':'')+
+      '<div class="restAdviceLead">'+lead+'</div>'+
+      '<div class="restAdviceStats">'+
+        '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近14日勤務</div><div class="restAdviceStatValue">'+recent14.length+'日</div></div>'+
+        '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近5勤務 平均拘束</div><div class="restAdviceStatValue">'+restAdviceFmtMinutes(avgMinutes)+'</div></div>'+
+        '<div class="restAdviceStat"><div class="restAdviceStatLabel">連続勤務</div><div class="restAdviceStatValue">'+streak+'日</div></div>'+
+      '</div>'+
+      '<div class="restAdviceSection"><div class="restAdviceSectionTitle">🏖️ 今後3か月の休暇候補</div>'+
+      candidateHtml+
+      '<div class="restAdviceNote">候補は過去の売上傾向から「休みを入れても大きく落としにくそうな日」を探すための目安です。将来の売上を保証するものではありません。</div></div>';
+  }catch(e){
+    console.error(e);
+    box.innerHTML='<div class="restAdviceNote">休み方アドバイスを読み込めませんでした。</div>';
+  }
+}
 </script>
