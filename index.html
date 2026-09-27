@@ -1984,20 +1984,31 @@ async function openAreaAverageInput(){
   const panel=$('areaAverageInputPanel');
   if(!panel)return;
   panel.classList.remove('hidden');
+
+  // 「後から入力」は今日ではなく、今日より前の勤務分だけを対象にする。
+  // 休みの日にアプリを開かなくても、前回までの未入力分は翌日以降も残しておく。
+  const today=new Date();
+  today.setHours(0,0,0,0);
+
   const logs=await getLogs();
-  const rows=logs.filter(x=>(x.dayType||'work')==='work' && Number(x.sales)>0 && !(String(x.avg??'').trim()))
-    .sort((a,b)=>{
-      const da=parseDutyDate(a.date),db=parseDutyDate(b.date);
-      return (db?db.getTime():0)-(da?da.getTime():0);
-    });
+  const rows=logs.filter(x=>{
+    if((x.dayType||'work')!=='work' || !(Number(x.sales)>0) || String(x.avg??'').trim()) return false;
+    const d=parseDutyDate(x.date);
+    return d && d.getTime()<today.getTime();
+  }).sort((a,b)=>{
+    const da=parseDutyDate(a.date),db=parseDutyDate(b.date);
+    return (db?db.getTime():0)-(da?da.getTime():0);
+  });
+
   if(!rows.length){
-    panel.innerHTML='<div class="areaAverageEmpty">未入力のエリア平均はありません。👍</div>';
+    panel.innerHTML='<div class="areaAverageEmpty">昨日までの未入力のエリア平均はありません。👍</div>';
     panel.classList.remove('hidden');
     return;
   }
+
   panel.innerHTML=`<div class="areaAverageCard">
     <div class="areaAverageTitle">📊 エリア平均を後から入力</div>
-    <div class="areaAverageNote">勤務後に事務方から数字が出たら、該当日の欄だけ入力してください。</div>
+    <div class="areaAverageNote">勤務した日のエリア平均は、翌日以降に入力できます。休みの日にログを入力しなくても、未入力の勤務分は残ります。</div>
     <div id="areaAverageRows">${rows.map(x=>{
       const d=parseDutyDate(x.date);
       const dateLabel=d?((d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）'):x.date;
