@@ -580,11 +580,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   </div>
 
   <div class="fareFields two" style="margin-top:14px">
-    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間</span><input id="dailyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間（会社規定）</span><input id="dailyCompanyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
-  </div>
-
-  <div class="fareFields two" style="margin-top:14px">
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の休憩時間</span><input id="dailyBreakTime" class="fareNum" type="text" inputmode="text" placeholder="例：2時間20分" oninput="savePersonalData()"><span>例：2時間20分</span></label>
   </div>
 
@@ -1202,7 +1198,7 @@ function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
 }
 function savePersonalData(){
-  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','dailyBreakTime','dailyBreakHours','dailyBreakMinutes'];
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','dailyBreakTime'];
   const data={};
   ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
   data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
@@ -1238,7 +1234,7 @@ function syncBusySeasonForDayWorker(){
 function loadPersonalData(){
   let data={};
   try{data=JSON.parse(localStorage.getItem('taxiPersonalData')||'{}')}catch(e){data={};}
-  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
   ids.forEach(id=>{const el=$(id);if(el)el.value=data[id]||'';});
   document.querySelectorAll('input[name="workStyle"]').forEach(r=>{r.checked=(r.value===data.workStyle);});
   if(data.workStyle==='日勤者'){
