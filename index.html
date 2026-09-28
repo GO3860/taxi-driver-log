@@ -579,9 +579,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の走行距離</span><input id="dailyDrivingDistance" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>km</span></label>
   </div>
 
-  <div class="fareFields two" style="margin-top:14px">
+  <div style="margin-top:14px">
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間（会社規定）</span><input id="dailyCompanyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
-    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の休憩時間</span><input id="dailyBreakTime" class="fareNum" type="text" inputmode="text" placeholder="例：2時間20分" oninput="savePersonalData()"><span>例：2時間20分</span></label>
   </div>
 
 <div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
@@ -1198,7 +1197,7 @@ function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
 }
 function savePersonalData(){
-  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','dailyBreakTime'];
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
   const data={};
   ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
   data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
@@ -1207,13 +1206,6 @@ function savePersonalData(){
   localStorage.setItem('taxiPersonalData',JSON.stringify(data));
   const status=$('personalDataStatus');
   if(status)status.textContent='✓ 入力内容を保存しました';
-}
-function getBreakBenchmarkMinutes(){
-  const text=String($('dailyBreakTime')?.value||'').trim();
-  if(!text)return 0;
-  const hm=text.match(/(?:(\d+)\s*時間)?\s*(?:(\d+)\s*分)?$/);
-  if(!hm || (!hm[1]&&!hm[2]))return 0;
-  return Math.max(0,Number(hm[1]||0)*60+Number(hm[2]||0));
 }
 function formatMinutesJapanese(total){
   total=Math.max(0,Math.round(Number(total)||0));
@@ -3150,13 +3142,6 @@ async function renderRestAdvice(){
     const recent5=work.slice(-5);
     const avgMin=recent5.map(restAdviceMinutes).filter(x=>x>0);
     const avgMinutes=avgMin.length?Math.round(avgMin.reduce((a,b)=>a+b,0)/avgMin.length):0;
-    const breakTotals=recent5.map(log=>{
-      const rows=Array.isArray(log.breaks)?log.breaks:[];
-      return rows.reduce((sum,row)=>sum+breakMinutes(row),0);
-    }).filter(x=>x>0);
-    const avgBreakMinutes=breakTotals.length?Math.round(breakTotals.reduce((a,b)=>a+b,0)/breakTotals.length):0;
-    const breakBenchmarkMinutes=getBreakBenchmarkMinutes();
-
     let streak=0;
     if(work.length){
       const dates=new Set(work.map(x=>restAdviceDateKey(parseDutyDate(x.date))).filter(Boolean));
@@ -3195,9 +3180,6 @@ async function renderRestAdvice(){
       caution=true;
     }else if(streak>=4){
       lead=streak+'日続けて勤務しています。次の休みを1日入れる候補を考えてみましょう。';
-      caution=true;
-    }else if(breakBenchmarkMinutes>0 && avgBreakMinutes>0 && avgBreakMinutes<breakBenchmarkMinutes){
-      lead='直近の休憩時間が、設定した「1日の休憩時間（目安）」より短めです。休憩の取り方も一つの働き方の目安として見ていきましょう。';
       caution=true;
     }else if(avgMinutes>=900){
       lead='最近の勤務は拘束時間が長めです。次の勤務との間に、しっかり休める日を確保することを優先してみましょう。';
