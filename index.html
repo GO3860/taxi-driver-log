@@ -585,8 +585,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   </div>
 
   <div class="fareFields two" style="margin-top:14px">
-    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の休憩時間（目安）</span><input id="dailyBreakHours" class="fareNum" type="number" min="0" step="1" placeholder="例：2" oninput="savePersonalData()"><span>時間</span></label>
-    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">休憩の追加分</span><input id="dailyBreakMinutes" class="fareNum" type="number" min="0" max="59" step="1" placeholder="例：20" oninput="savePersonalData()"><span>分　（例：2時間20分）</span></label>
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の休憩時間（目安）</span><input id="dailyBreakTime" class="fareNum" type="text" inputmode="text" placeholder="例：2時間20分" oninput="savePersonalData()"><span>例：2時間20分</span></label>
   </div>
 
 <div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
@@ -1203,7 +1202,7 @@ function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
 }
 function savePersonalData(){
-  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','dailyBreakHours','dailyBreakMinutes','dailyBreakHours','dailyBreakMinutes'];
+  const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','dailyBreakTime','dailyBreakHours','dailyBreakMinutes'];
   const data={};
   ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
   data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
@@ -1214,10 +1213,11 @@ function savePersonalData(){
   if(status)status.textContent='✓ 入力内容を保存しました';
 }
 function getBreakBenchmarkMinutes(){
-  const h=Number($('dailyBreakHours')?.value||0);
-  const m=Number($('dailyBreakMinutes')?.value||0);
-  if(!(h>0||m>0))return 0;
-  return Math.max(0,Math.round(h*60)+Math.max(0,Math.min(59,m)));
+  const text=String($('dailyBreakTime')?.value||'').trim();
+  if(!text)return 0;
+  const hm=text.match(/(?:(\d+)\s*時間)?\s*(?:(\d+)\s*分)?$/);
+  if(!hm || (!hm[1]&&!hm[2]))return 0;
+  return Math.max(0,Number(hm[1]||0)*60+Number(hm[2]||0));
 }
 function formatMinutesJapanese(total){
   total=Math.max(0,Math.round(Number(total)||0));
