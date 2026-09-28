@@ -274,6 +274,14 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .areaAverageSave{border:0;border-radius:10px;padding:10px 12px;background:#2580ee;color:#fff;font-weight:800;white-space:nowrap}
 .areaAverageEmpty{margin-top:10px;padding:14px;border-radius:14px;background:#f5f7f9;text-align:center;color:#666;font-size:13px}
 @media(max-width:430px){.areaAverageRow{grid-template-columns:1fr 1.35fr auto;gap:5px}.areaAverageSave{padding:10px 9px;font-size:12px}.areaAverageDate{font-size:13px}}
+<style id="area-average-calendar-confirm-v1">
+.areaAverageConfirm{padding:12px 0;border-top:1px solid #e8ebef}
+.areaAverageConfirmText{font-size:12px;color:#666;line-height:1.5;margin-top:5px}
+.areaAverageConfirmBtns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.areaAverageConfirmBtns button{border:0;border-radius:10px;padding:10px;font-size:14px;font-weight:800}
+.areaAverageWorkBtn{background:#dff7ff;color:#16718f}
+.areaAverageRestBtn{background:#f2f4f6;color:#555}
+</style>
 <style id="revenue-analysis-v168">
 .revenueAnalysisCard{margin-top:10px;padding:16px;border:1px solid #dfe5eb;border-radius:18px;background:#f8fafc}
 .revenueAnalysisTitle{font-size:20px;font-weight:900;margin-bottom:6px}
@@ -1030,6 +1038,8 @@ async function saveLog(){
    else await addLog(log);
  }
  all=await getLogs();
+ // 勤務・バイトのログを登録した日は、カレンダーにも勤務ブロックを自動追加する。
+ await syncCalendarWorkBlockFromLog(log);
  // 非番・公休／有休・欠勤の平均売上も、保存直後に読み直して確認する。
  if(isRestDay(dayType)){
    const savedCheck=all.find(x=>x.date===log.date);
@@ -1980,25 +1990,74 @@ async function showAreaAveragePage(){
   await openAreaAverageInput();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function getRestAreaAverages(){
+  try{return JSON.parse(localStorage.getItem('taxiRestAreaAverages')||'{}')}catch(e){return {}}
+}
+function setRestAreaAverages(v){localStorage.setItem('taxiRestAreaAverages',JSON.stringify(v))}
+function areaAverageDateLabel(d){
+  return d?((d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）'):'';
+}
+function getCalendarDayStatus(key,plans){
+  const arr=normalizePlansForDate(plans[key]);
+  const hasWork=arr.some(x=>x.type==='work');
+  const hasParttime=arr.some(x=>x.type==='parttime');
+  const hasPaid=arr.some(x=>x.type==='paid');
+  if(hasWork&&hasPaid)return 'confirm';
+  if(hasWork||hasParttime)return 'work';
+  return 'rest';
+}
+let areaAverageDayDecisions={};
+function chooseAreaAverageDay(key,status){
+  areaAverageDayDecisions[key]=status;
+  openAreaAverageInput();
+}
 async function openAreaAverageInput(){
   const panel=$('areaAverageInputPanel');
   if(!panel)return;
   panel.classList.remove('hidden');
 
-  // 「後から入力」は今日ではなく、今日より前の勤務分だけを対象にする。
-  // 休みの日にアプリを開かなくても、前回までの未入力分は翌日以降も残しておく。
   const today=new Date();
   today.setHours(0,0,0,0);
-
   const logs=await getLogs();
-  const rows=logs.filter(x=>{
-    if((x.dayType||'work')!=='work' || !(Number(x.sales)>0) || String(x.avg??'').trim()) return false;
+  const plans=getWorkPlans();
+  const savedRest=getRestAreaAverages();
+  const rows=[];
+  const usedDates=new Set();
+
+  // 実際に保存された勤務ログの未入力分。
+  logs.forEach(x=>{
+    if((x.dayType||'work')!=='work' || !(Number(x.sales)>0) || String(x.avg??'').trim())return;
     const d=parseDutyDate(x.date);
-    return d && d.getTime()<today.getTime();
-  }).sort((a,b)=>{
-    const da=parseDutyDate(a.date),db=parseDutyDate(b.date);
-    return (db?db.getTime():0)-(da?da.getTime():0);
+    if(!d || d.getTime()>=today.getTime())return;
+    const key=restAdviceDateKey(d);
+    usedDates.add(key);
+    rows.push({kind:'log',id:x.id,date:d,label:'勤務',sales:Number(x.sales)||0});
   });
+
+  // カレンダー上で「勤務ブロックがない」過去90日を、休みの日の候補にする。
+  // バイトは勤務扱い。勤務＋有休だけは自動判定せず、ユーザーに確認してもらう。
+  for(let n=1;n<=90;n++){
+    const d=new Date(today);
+    d.setDate(today.getDate()-n);
+    const key=restAdviceDateKey(d);
+    if(usedDates.has(key))continue;
+    const dayLogs=logs.filter(x=>{
+      const ld=parseDutyDate(x.date);
+      return ld&&restAdviceDateKey(ld)===key;
+    });
+    if(dayLogs.length)continue;
+
+    const status=areaAverageDayDecisions[key]||getCalendarDayStatus(key,plans);
+    if(status==='work')continue;
+    if(status==='confirm'){
+      rows.push({kind:'confirm',key,date:d});
+      continue;
+    }
+    if(String(savedRest[key]??'').trim())continue;
+    rows.push({kind:'rest',key,date:d});
+  }
+
+  rows.sort((a,b)=>b.date.getTime()-a.date.getTime());
 
   if(!rows.length){
     panel.innerHTML='<div class="areaAverageEmpty">昨日までの未入力のエリア平均はありません。👍</div>';
@@ -2008,32 +2067,50 @@ async function openAreaAverageInput(){
 
   panel.innerHTML=`<div class="areaAverageCard">
     <div class="areaAverageTitle">📊 エリア平均を後から入力</div>
-    <div class="areaAverageNote">勤務した日のエリア平均は、翌日以降に入力できます。休みの日にログを入力しなくても、未入力の勤務分は残ります。</div>
+    <div class="areaAverageNote">勤務ログを登録した日は未入力のエリア平均が残ります。カレンダーで勤務・バイトがない過去の日は、休みの日として入力できます。</div>
     <div id="areaAverageRows">${rows.map(x=>{
-      const d=parseDutyDate(x.date);
-      const dateLabel=d?((d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）'):x.date;
+      const dateLabel=areaAverageDateLabel(x.date);
+      if(x.kind==='confirm'){
+        return `<div class="areaAverageConfirm">
+          <div class="areaAverageDate">${dateLabel}</div>
+          <div class="areaAverageConfirmText">⚠️ 勤務と有休が重なっています。どう扱いますか？</div>
+          <div class="areaAverageConfirmBtns">
+            <button type="button" class="areaAverageWorkBtn" onclick="chooseAreaAverageDay('${x.key}','work')">🩵 勤務</button>
+            <button type="button" class="areaAverageRestBtn" onclick="chooseAreaAverageDay('${x.key}','rest')">🏠 休み</button>
+          </div>
+        </div>`;
+      }
+      const isRest=x.kind==='rest';
       return `<div class="areaAverageRow">
-        <div class="areaAverageDate">${dateLabel}<span>売上 ${yen(x.sales)}</span></div>
-        <div class="areaAverageInputWrap"><input id="areaAvg_${x.id}" type="number" inputmode="numeric" min="0" placeholder="エリア平均"><span>円</span></div>
-        <button type="button" class="areaAverageSave" onclick="saveAreaAverage(${x.id})">登録</button>
+        <div class="areaAverageDate">${dateLabel}<span>${isRest?'🏠 休み':'🚕 勤務'}${isRest?'':'　売上 '+yen(x.sales)}</span></div>
+        <div class="areaAverageInputWrap"><input id="areaAvg_${x.kind}_${x.kind==='rest'?x.key:x.id}" type="number" inputmode="numeric" min="0" placeholder="エリア平均"><span>円</span></div>
+        <button type="button" class="areaAverageSave" onclick="saveAreaAverage('${x.kind}','${x.kind==='rest'?x.key:x.id}')">登録</button>
       </div>`;
     }).join('')}</div>
   </div>`;
   panel.classList.remove('hidden');
 }
-async function saveAreaAverage(id){
-  const input=$('areaAvg_'+id);
+async function saveAreaAverage(kind,target){
+  const inputId='areaAvg_'+kind+'_'+target;
+  const input=$(inputId);
   const value=String(input?.value??'').trim();
   if(!(Number(value)>0)){alert('エリア平均売上を入力してください。');return;}
-  const logs=await getLogs();
-  const log=logs.find(x=>Number(x.id)===Number(id));
-  if(!log){alert('対象の勤務ログが見つかりません。');return;}
-  log.avg=value;
-  await new Promise((resolve,reject)=>{
-    const tx=db.transaction(STORE,'readwrite');
-    const req=tx.objectStore(STORE).put(log);
-    req.onsuccess=resolve; req.onerror=()=>reject(req.error);
-  });
+
+  if(kind==='rest'){
+    const saved=getRestAreaAverages();
+    saved[target]=value;
+    setRestAreaAverages(saved);
+  }else{
+    const logs=await getLogs();
+    const log=logs.find(x=>Number(x.id)===Number(target));
+    if(!log){alert('対象の勤務ログが見つかりません。');return;}
+    log.avg=value;
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE,'readwrite');
+      const req=tx.objectStore(STORE).put(log);
+      req.onsuccess=resolve; req.onerror=()=>reject(req.error);
+    });
+  }
   await saveMonthlySnapshot(await getLogs());
   await openAreaAverageInput();
   await renderMonthlyTop();
@@ -2236,6 +2313,20 @@ async function goToToday(){
 
 let workCalendarCursor=new Date();
 let workCalendarSelectedKey='';
+function syncCalendarWorkBlockFromLog(log){
+  if(!log)return;
+  const type=log.dayType==='parttime'?'parttime':(log.dayType==='work'?'work':'');
+  if(!type)return;
+  const d=parseDutyDate(log.date);
+  if(!d)return;
+  const key=dateKey(d.getFullYear(),d.getMonth(),d.getDate());
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[key]);
+  if(arr.some(p=>p.type==='work'||p.type==='parttime'))return;
+  arr.push({type,memo:'ログ登録から自動追加',updatedAt:new Date().toISOString()});
+  plans[key]=arr;
+  setWorkPlans(plans);
+}
 function getWorkPlans(){
   try{
     const raw=JSON.parse(localStorage.getItem('taxiWorkPlans')||'{}');
