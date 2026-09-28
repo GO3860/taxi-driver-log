@@ -282,6 +282,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .areaAverageWorkBtn{background:#dff7ff;color:#16718f}
 .areaAverageRestBtn{background:#f2f4f6;color:#555}
 </style>
+<style id="calendar-other-multi-v1">
+.otherList{margin-bottom:4px}
+.otherItem .calendarPlanText{min-width:0}
+.otherItem .calendarPlanMemo{display:block;white-space:normal;word-break:break-word}
+</style>
 <style id="revenue-analysis-v168">
 .revenueAnalysisCard{margin-top:10px;padding:16px;border:1px solid #dfe5eb;border-radius:18px;background:#f8fafc}
 .revenueAnalysisTitle{font-size:20px;font-weight:900;margin-bottom:6px}
@@ -2487,9 +2492,19 @@ function renderCalendarDetail(){
     }).join('')}</div>`;
     html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddEvent()">＋ この日にイベントを追加</button>`;
   }
-  if(nonPlans.length){
-    const p=nonPlans[nonPlans.length-1],cls=planClass(p.type);
+  const otherItems=arr.filter(p=>p.type==='other');
+  const singleNonPlans=nonPlans.filter(p=>p.type!=='other');
+  if(singleNonPlans.length){
+    const p=singleNonPlans[singleNonPlans.length-1],cls=planClass(p.type);
     html+=`<div class="calendarDetailRow"><div class="calendarDetailBadge ${cls}">${planLabel(p.type)}</div><div class="calendarDetailInfo">${escapeHtml(p.memo||'—')}</div><button class="calendarAddBtn" type="button" onclick="document.getElementById('workPlanType').focus()">＋ 追加</button></div>`;
+  }
+  if(otherItems.length){
+    html+=`<div class="calendarDetailSectionTitle">🟪 その他</div><div class="calendarPlanList otherList">${otherItems.map((p,i)=>{
+      const memo=escapeHtml(p.memo||'その他');
+      const realIndex=arr.indexOf(p);
+      return `<div class="calendarPlanItem otherItem"><div class="calendarPlanText"><span class="calendarPlanMemo">${memo}</span></div><button type="button" class="calendarPlanDelete" onclick="deleteOtherItem(${realIndex})">削除</button></div>`;
+    }).join('')}</div>`;
+    html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddOther()">＋ この日にその他を追加</button>`;
   }
   const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
   if(blockTypes.length===2){
@@ -2571,12 +2586,17 @@ function saveWorkPlan(){
   const item={type,memo,updatedAt:new Date().toISOString()};
   if(type==='plan'||type==='event')item.time=time;
   if(type==='event')item.eventIcon=$('workPlanEventIcon')?.value||'';
-  if(type!=='plan'&&type!=='event'){
-    // 勤務・有休・バイト・その他・欠勤は従来どおり1日1件に置き換える
-    const kept=arr.filter(p=>p.type==='plan');
+  if(type==='other'){
+    // 「その他」はイベントと同じように、同じ日に複数内容を登録できる。
+    arr.push(item);
+    plans[workCalendarSelectedKey]=arr;
+  }else if(type!=='plan'&&type!=='event'){
+    // 勤務・有休・バイト・欠勤は1日1件。
+    const kept=arr.filter(p=>p.type==='plan'||p.type==='event'||p.type==='other');
     kept.push(item);
     plans[workCalendarSelectedKey]=kept;
   }else{
+    // 予定・イベントは同じ日に複数内容を登録できる。
     arr.push(item);
     plans[workCalendarSelectedKey]=arr;
   }
@@ -2584,6 +2604,23 @@ function saveWorkPlan(){
   $('workPlanMemo').value='';
   const timeInput=$('workPlanTime');if(timeInput)timeInput.value='';
   toggleWorkPlanFields();
+  renderWorkCalendar();
+}
+function prepareAddOther(){
+  if(!workCalendarSelectedKey)return;
+  $('workPlanType').value='other';
+  $('workPlanMemo').value='';
+  toggleWorkPlanFields();
+  $('workPlanMemo')?.focus();
+}
+function deleteOtherItem(index){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  if(index<0||index>=arr.length||arr[index].type!=='other')return;
+  arr.splice(index,1);
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
   renderWorkCalendar();
 }
 function deleteWorkPlan(){
