@@ -3199,8 +3199,7 @@ async function renderRestAdvice(){
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近14日勤務</div><div class="restAdviceStatValue">'+recent14.length+'日</div></div>'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近5勤務 平均拘束</div><div class="restAdviceStatValue">'+restAdviceFmtMinutes(avgMinutes)+'</div></div>'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">連続勤務</div><div class="restAdviceStatValue">'+streak+'日</div></div>'+
-        (breakBenchmarkMinutes>0?'<div class="restAdviceStat"><div class="restAdviceStatLabel">休憩の目安</div><div class="restAdviceStatValue">'+formatMinutesJapanese(breakBenchmarkMinutes)+'</div></div>':'')+
-        (avgBreakMinutes>0?'<div class="restAdviceStat"><div class="restAdviceStatLabel">直近5勤務 平均休憩</div><div class="restAdviceStatValue">'+formatMinutesJapanese(avgBreakMinutes)+'</div></div>':'')+
+
       '</div>'+
       '<div class="restAdviceSection"><div class="restAdviceSectionTitle">🏖️ 今後3か月の休暇候補</div>'+
       candidateHtml+
