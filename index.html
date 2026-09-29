@@ -3183,17 +3183,12 @@ async function renderRestAdvice(){
         }).join('')
       : '<div class="restAdviceNote">まだ比較できる過去データが十分ではありません。記録が増えると、今後3か月の休暇候補を表示できます。</div>';
 
-    const paidHtml=remainingPaid===null
-      ? '<div class="restAdviceStat"><div class="restAdviceStatLabel">残有休数</div><div class="restAdviceStatValue">未設定</div></div>'
-      : '<div class="restAdviceStat"><div class="restAdviceStatLabel">残有休数</div><div class="restAdviceStatValue">'+remainingPaid+'日</div></div>';
-
     box.innerHTML=
       (caution?'<div class="restAdviceBadge">💡 今は休み方を意識するタイミング</div>':'')+
       '<div class="restAdviceLead">'+lead+'</div>'+
       '<div class="restAdviceStats">'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近14日勤務</div><div class="restAdviceStatValue">'+recent14.length+'日</div></div>'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近5勤務 平均拘束</div><div class="restAdviceStatValue">'+restAdviceFmtMinutes(avgMinutes)+'</div></div>'+
-        paidHtml+
       '</div>'+
       '<div class="restAdviceSection"><div class="restAdviceSectionTitle">🏖️ 今後3か月の休暇候補</div>'+
       candidateHtml+
