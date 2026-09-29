@@ -2144,8 +2144,48 @@ async function saveAreaAverage(kind,target){
   if(!(Number(value)>0)){alert('エリア平均売上を入力してください。');return;}
 
   if(kind==='rest'){
+    // 後から入力でエリア平均を登録した日は、別保存だけにせず
+    // 「休（非・公）」のログとしても残す。これでログ一覧・データ集計にも反映される。
+    const logs=await getLogs();
+    const dutyDate=formatDutyDate(new Date(target+'T00:00:00'));
+    let log=logs.find(x=>String(x.date)===dutyDate);
+    if(!log){
+      log={
+        date:dutyDate,
+        dayType:'rest_nonpublic',
+        weather:[],
+        event:[],
+        out:'',
+        in:'',
+        hours:'',
+        breaks:[],
+        km:'',
+        sales:'',
+        loadedRate:'',
+        loadedDistance:'',
+        tripCount:'',
+        avg:value,
+        routes:[],
+        destination:'',
+        course:'',
+        eventNote:'',
+        photo:'',
+        parttimeTakeHome:0,
+        paidLeave:null,
+        leaveAbsenceKind:'',
+        savedAt:new Date().toISOString()
+      };
+      await addLog(log);
+    }else{
+      log.avg=value;
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        const req=tx.objectStore(STORE).put(log);
+        req.onsuccess=resolve; req.onerror=()=>reject(req.error);
+      });
+    }
     const saved=getRestAreaAverages();
-    saved[target]=value;
+    delete saved[target];
     setRestAreaAverages(saved);
   }else if(kind==='planned'){
     // カレンダーの「勤務」を先に登録していたが、当日の営業ログがまだない場合。
