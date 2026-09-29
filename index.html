@@ -225,6 +225,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .hoursWarning.yellow{background:rgba(255,220,70,.62);border:2px solid rgba(220,170,0,.7);color:#4a3a00}
 .hoursWarning.red{background:rgba(255,75,75,.55);border:2px solid rgba(210,0,0,.7);color:#5a0000}
 @media(max-width:430px){.hoursWarning{font-size:12px;padding:6px 7px}}
+
+/* v165: エリア平均を後から入力する専用画面 */
+.areaAvgModal{position:fixed;inset:0;background:rgba(232,242,252,.88);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:1050;display:flex;align-items:flex-start;justify-content:center;padding:10px 0}.areaAvgModal.hidden{display:none}.areaAvgSheet{width:100%;max-width:720px;background:linear-gradient(180deg,#fbfeff 0%,#eef7ff 100%);border-radius:28px;padding:14px;box-sizing:border-box;max-height:96vh;overflow:auto;box-shadow:0 12px 42px rgba(45,90,130,.18)}.areaAvgHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 12px}.areaAvgTitle{font-size:22px;font-weight:900;color:#111}.areaAvgClose{border:0;border-radius:999px;background:#fff;padding:9px 13px;font-weight:800;color:#666}.areaAvgHelp{background:#fff;border:1px solid #d5e4f0;border-radius:16px;padding:12px;font-size:13px;line-height:1.55;margin-bottom:12px}.areaAvgPeriod{display:flex;align-items:center;gap:8px;margin-bottom:10px}.areaAvgPeriod button{border:2px solid #b7dcff;background:#fff;color:#1677d2;border-radius:999px;padding:8px 12px;font-weight:900}.areaAvgPeriod strong{flex:1;text-align:center;font-size:18px}.areaAvgList{display:flex;flex-direction:column;gap:9px}.areaAvgRow{display:grid;grid-template-columns:78px 1fr 120px;gap:8px;align-items:center;background:#fff;border:1px solid #d7e5ef;border-radius:15px;padding:9px 10px;box-shadow:0 3px 8px rgba(60,100,130,.07)}.areaAvgDate{font-weight:900;font-size:15px}.areaAvgStatus{font-size:11px;color:#777}.areaAvgInput{width:100%;box-sizing:border-box;padding:10px;border:2px solid #ddd;border-radius:11px;font-size:17px;text-align:right}.areaAvgSaved{background:#effbf2!important;border-color:#9ed6ad!important}.areaAvgSave{border:0;border-radius:11px;padding:10px 8px;background:#e8f1ff;color:#1670d2;font-weight:900}.areaAvgEmpty{background:#fff;border:1px dashed #c9d9e5;border-radius:16px;padding:18px;text-align:center;color:#666}.areaAvgFooter{margin-top:12px;color:#777;font-size:12px;text-align:center}@media(max-width:430px){.areaAvgRow{grid-template-columns:70px 1fr 92px}.areaAvgInput{font-size:16px}.areaAvgSave{font-size:13px;padding:9px 5px}}
 </style>
 </head>
 <body><div class="app">
@@ -483,6 +486,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </main>
 
 
+<div id="areaAverageModal" class="areaAvgModal hidden" onclick="if(event.target===this)closeAreaAverageInput()">
+  <div class="areaAvgSheet">
+    <div class="areaAvgHead"><div class="areaAvgTitle">📚 エリア平均を後から入力</div><button type="button" class="areaAvgClose" onclick="closeAreaAverageInput()">閉じる</button></div>
+    <div class="areaAvgHelp">会社からエリア平均の数字が出たあとに、ここから日付ごとに入力できます。<br>勤務日のログがある日は自動で表示されます。カレンダーで「勤務」を予定登録した日も入力できます。</div>
+    <div class="areaAvgPeriod"><button type="button" onclick="changeAreaAverageMonth(-1)">‹ 前月</button><strong id="areaAverageTitle"></strong><button type="button" onclick="changeAreaAverageMonth(1)">次月 ›</button></div>
+    <div id="areaAverageList" class="areaAvgList"></div>
+    <div class="areaAvgFooter">入力した数字は、その日の乗務ログの「エリア平均」に反映されます。</div>
+  </div>
+</div>
+
 <div id="workCalendarModal" class="calendarModal hidden" onclick="if(event.target===this)closeWorkCalendar()">
   <div class="calendarSheet">
     <div class="calendarHead">
@@ -568,10 +581,14 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   </div>
 </div>
 
+<div class="floatingQuickBtns">
 <button type="button" class="floatingCalendarBtn" onclick="openWorkCalendar()" aria-label="カレンダーを開く">
-  <span class="floatingCalendarIcon">📆</span>
-  <span>カレンダー</span>
+  <span class="floatingCalendarIcon">📆</span><span>カレンダー</span>
 </button>
+<button type="button" class="floatingAreaAvgBtn" onclick="openAreaAverageInput()" aria-label="エリア平均を後から入力">
+  <span>📚</span><span>エリア平均入力</span>
+</button>
+</div>
 <nav><button class="navbtn" onclick="goToToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn routeNav" onclick="showRouteDatabase()"><span class="navIcon">🛣️</span><span class="navLabel">道ログ</span></button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
 </div>
 
@@ -1911,6 +1928,29 @@ function normalizePlansForDate(p){
   if(!p)return [];
   return (Array.isArray(p)?p:[p]).filter(x=>x && x.type && x.type!=='rest');
 }
+let areaAverageCursor=new Date();
+function openAreaAverageInput(){areaAverageCursor=new Date();areaAverageCursor.setDate(1);const modal=$('areaAverageModal');if(modal)modal.classList.remove('hidden');renderAreaAverageInput();}
+function closeAreaAverageInput(){const modal=$('areaAverageModal');if(modal)modal.classList.add('hidden')}
+function changeAreaAverageMonth(delta){areaAverageCursor.setMonth(areaAverageCursor.getMonth()+delta);renderAreaAverageInput()}
+function areaAverageDateKeyFromDate(dt){return dateKey(dt.getFullYear(),dt.getMonth(),dt.getDate())}
+async function renderAreaAverageInput(){
+ const y=areaAverageCursor.getFullYear(),m=areaAverageCursor.getMonth(),title=$('areaAverageTitle'),box=$('areaAverageList');if(title)title.textContent=y+'年'+(m+1)+'月';if(!box)return;
+ let logs=[];try{logs=await getLogs()}catch(e){box.innerHTML='<div class="areaAvgEmpty">ログを読み込めませんでした。</div>';return}
+ const plans=getWorkPlans(),byKey={};
+ logs.forEach(x=>{const d=parseDutyDate(x.date);if(!d)return;const key=areaAverageDateKeyFromDate(d);if(d.getFullYear()===y&&d.getMonth()===m&&(x.dayType||'work')==='work')byKey[key]=x});
+ Object.keys(plans).forEach(key=>{const p=normalizePlansForDate(plans[key]);if(!p.some(x=>x.type==='work'))return;const mm=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!mm||Number(mm[1])!==y||Number(mm[2])!==m+1)return;if(!byKey[key])byKey[key]={_plannedOnly:true}});
+ const keys=Object.keys(byKey).sort();
+ if(!keys.length){box.innerHTML='<div class="areaAvgEmpty">この月の勤務データはありません。<br>カレンダーで「勤務」を登録すると、ここにも表示されます。</div>';return}
+ box.innerHTML=keys.map(key=>{const x=byKey[key],parts=key.split('-'),d=Number(parts[2]),wd=['日','月','火','水','木','金','土'][new Date(y,m,d).getDay()],val=Number(x.avg)>0?Number(x.avg):'',status=x._plannedOnly?'勤務予定':'勤務ログ';return `<div class="areaAvgRow"><div><div class="areaAvgDate">${m+1}/${d}（${wd}）</div><div class="areaAvgStatus">${status}</div></div><input class="areaAvgInput${val!==''?' areaAvgSaved':''}" id="areaAvg_${key}" type="number" inputmode="numeric" min="0" step="100" value="${val}" placeholder="円"><button type="button" class="areaAvgSave" onclick="saveAreaAverageForDate('${key}')">登録</button></div>`}).join('');
+}
+async function saveAreaAverageForDate(key){
+ const input=$('areaAvg_'+key);if(!input)return;const value=String(input.value??'').trim();if(value!==''&&(!Number.isFinite(Number(value))||Number(value)<0)){alert('エリア平均売上を正しく入力してください。');return}
+ const logs=await getLogs(),d=parseDutyDate(key);let existing=logs.find(x=>{const xd=parseDutyDate(x.date);return xd&&d&&xd.getFullYear()===d.getFullYear()&&xd.getMonth()===d.getMonth()&&xd.getDate()===d.getDate()});
+ if(existing){existing.avg=value;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(existing);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+ else{await addLog({date:d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日',dayType:'work',weather:[],event:[],out:'',in:'',hours:'',km:'',sales:'',loadedRate:'',tripCount:'',avg:value,routes:[],destination:'',course:'',eventNote:'',photo:'',parttimeTakeHome:0,savedAt:new Date().toISOString()})}
+ const all=await getLogs();await saveMonthlySnapshot(all);await renderSalesGoal();input.classList.toggle('areaAvgSaved',value!=='');const status=input.parentElement.querySelector('.areaAvgStatus');if(status)status.textContent=value!==''?'入力済み':'未入力';input.blur();
+}
+
 function openWorkCalendar(){
   workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
   const modal=$('workCalendarModal');if(modal){modal.classList.remove('hidden');const sheet=modal.querySelector('.calendarSheet');if(sheet)sheet.scrollTop=0;}
@@ -2256,6 +2296,12 @@ function deleteWorkPlan(){
 </style>
 
 <style id="calendar-quick-button-v127">
+/* v165: カレンダーとエリア平均入力を横並び */
+.floatingQuickBtns{position:fixed;left:max(6px,calc((100vw - 520px)/2 + 6px));bottom:68px;z-index:900;display:flex;gap:6px;width:min(94vw,520px)}
+.floatingQuickBtns .floatingCalendarBtn,.floatingQuickBtns .floatingAreaAvgBtn{position:static!important;left:auto!important;bottom:auto!important;transform:none!important;width:auto!important;min-width:0!important;height:48px;flex:1;padding:0 10px!important}
+.floatingAreaAvgBtn{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid #b7dcff;border-radius:999px;background:linear-gradient(145deg,#fff,#eef8ff);color:#1677d2;font-size:13px;font-weight:900;box-shadow:0 5px 12px rgba(55,105,150,.18),inset 0 1px 0 rgba(255,255,255,.95);-webkit-tap-highlight-color:transparent}
+.floatingAreaAvgBtn:active{transform:translateY(2px)!important}
+@media(max-width:430px){.floatingQuickBtns{left:4px;right:4px;width:auto;gap:5px}.floatingQuickBtns .floatingCalendarBtn,.floatingQuickBtns .floatingAreaAvgBtn{height:46px;font-size:12px;padding:0 6px!important}.floatingQuickBtns .floatingCalendarIcon{font-size:18px}}
 /* v127: カレンダーボタンをさらに5px左へ。サイズは現状のまま */
 .floatingCalendarBtn{
   position:fixed;
