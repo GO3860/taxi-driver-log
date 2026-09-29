@@ -312,7 +312,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .revenueAdviceItem b{display:block;margin-bottom:2px}
 .revenueAdviceFoot{margin-top:10px;font-size:12px;color:#66717b}
 </style>
-</style></head>
+</style><style id="area-average-delete-v168">
+.areaAverageActions{display:flex;gap:5px;align-items:center}
+.areaAverageActions button{border:0;border-radius:10px;padding:10px 10px;font-weight:800;white-space:nowrap}
+.areaAverageDelete{background:#eef0f3;color:#666}
+.areaAverageDelete:active{transform:translateY(1px);background:#e2e5e8}
+@media(max-width:430px){
+  .areaAverageActions{gap:4px}
+  .areaAverageActions button{padding:10px 8px;font-size:13px}
+}
+</style>
+</head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
 
@@ -2022,6 +2032,13 @@ function chooseAreaAverageDay(key,status){
   areaAverageDayDecisions[key]=status;
   openAreaAverageInput();
 }
+function getAreaAverageDeletedDates(){
+  try{return JSON.parse(localStorage.getItem('taxiAreaAverageDeletedDates')||'{}')}catch(e){return {}}
+}
+function setAreaAverageDeletedDates(v){localStorage.setItem('taxiAreaAverageDeletedDates',JSON.stringify(v||{}))}
+function areaAverageDateLabel(d){
+  return d?((d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）'):'';
+}
 async function openAreaAverageInput(){
   const panel=$('areaAverageInputPanel');
   if(!panel)return;
@@ -2030,45 +2047,35 @@ async function openAreaAverageInput(){
   const today=new Date();
   today.setHours(0,0,0,0);
   const logs=await getLogs();
-  const plans=getWorkPlans();
   const savedRest=getRestAreaAverages();
+  const deleted=getAreaAverageDeletedDates();
   const rows=[];
-  const usedDates=new Set();
 
-  // 実際に保存された勤務ログの未入力分。
-  logs.forEach(x=>{
-    if((x.dayType||'work')!=='work' || !(Number(x.sales)>0) || String(x.avg??'').trim())return;
-    const d=parseDutyDate(x.date);
-    if(!d || d.getTime()>=today.getTime())return;
-    const key=restAdviceDateKey(d);
-    usedDates.add(key);
-    rows.push({kind:'log',id:x.id,date:d,label:'勤務',sales:Number(x.sales)||0});
-  });
-
-  // カレンダー上で「勤務ブロックがない」過去90日を、休みの日の候補にする。
-  // バイトは勤務扱い。勤務＋有休だけは自動判定せず、ユーザーに確認してもらう。
+  // カレンダーの勤務ブロックは判定に使わず、「昨日までの日付」を順番に追加する。
+  // 過去90日を対象にし、エリア平均を登録するか削除するまで一覧に残す。
   for(let n=1;n<=90;n++){
     const d=new Date(today);
     d.setDate(today.getDate()-n);
     const key=restAdviceDateKey(d);
-    if(usedDates.has(key))continue;
+    if(deleted[key])continue;
+
     const dayLogs=logs.filter(x=>{
       const ld=parseDutyDate(x.date);
       return ld&&restAdviceDateKey(ld)===key;
     });
-    if(dayLogs.length)continue;
 
-    const status=areaAverageDayDecisions[key]||getCalendarDayStatus(key,plans);
-    if(status==='work')continue;
-    if(status==='confirm'){
-      rows.push({kind:'confirm',key,date:d});
+    // その日に勤務ログがあれば、そのログへエリア平均を保存する。
+    const workLog=dayLogs.find(x=>(x.dayType||'work')==='work');
+    if(workLog){
+      if(String(workLog.avg??'').trim())continue;
+      rows.push({kind:'log',id:workLog.id,date:d,label:'勤務',sales:Number(workLog.sales)||0});
       continue;
     }
-    if(String(savedRest[key]??'').trim())continue;
-    rows.push({kind:'rest',key,date:d});
-  }
 
-  rows.sort((a,b)=>b.date.getTime()-a.date.getTime());
+    // 勤務ログがない日は、休みの日としてエリア平均を別保存する。
+    if(String(savedRest[key]??'').trim())continue;
+    rows.push({kind:'rest',key,date:d,label:'休み'});
+  }
 
   if(!rows.length){
     panel.innerHTML='<div class="areaAverageEmpty">昨日までの未入力のエリア平均はありません。👍</div>';
@@ -2078,28 +2085,30 @@ async function openAreaAverageInput(){
 
   panel.innerHTML=`<div class="areaAverageCard">
     <div class="areaAverageTitle">📊 エリア平均を後から入力</div>
-    <div class="areaAverageNote">勤務ログを登録した日は未入力のエリア平均が残ります。カレンダーで勤務・バイトがない過去の日は、休みの日として入力できます。</div>
+    <div class="areaAverageNote">日付が変わると、昨日までの日付が順番に追加されます。カレンダーの「勤務」ブロックの有無は関係ありません。入力しない日や不要な日は「削除」で一覧から外せます。</div>
     <div id="areaAverageRows">${rows.map(x=>{
       const dateLabel=areaAverageDateLabel(x.date);
-      if(x.kind==='confirm'){
-        return `<div class="areaAverageConfirm">
-          <div class="areaAverageDate">${dateLabel}</div>
-          <div class="areaAverageConfirmText">⚠️ 勤務と有休が重なっています。どう扱いますか？</div>
-          <div class="areaAverageConfirmBtns">
-            <button type="button" class="areaAverageWorkBtn" onclick="chooseAreaAverageDay('${x.key}','work')">🩵 勤務</button>
-            <button type="button" class="areaAverageRestBtn" onclick="chooseAreaAverageDay('${x.key}','rest')">🏠 休み</button>
-          </div>
-        </div>`;
-      }
       const isRest=x.kind==='rest';
+      const target=x.kind==='rest'?x.key:x.id;
       return `<div class="areaAverageRow">
         <div class="areaAverageDate">${dateLabel}<span>${isRest?'🏠 休み':'🚕 勤務'}${isRest?'':'　売上 '+yen(x.sales)}</span></div>
-        <div class="areaAverageInputWrap"><input id="areaAvg_${x.kind}_${x.kind==='rest'?x.key:x.id}" type="number" inputmode="numeric" min="0" placeholder="エリア平均"><span>円</span></div>
-        <button type="button" class="areaAverageSave" onclick="saveAreaAverage('${x.kind}','${x.kind==='rest'?x.key:x.id}')">登録</button>
+        <div class="areaAverageInputWrap"><input id="areaAvg_${x.kind}_${target}" type="number" inputmode="numeric" min="0" placeholder="エリア平均"><span>円</span></div>
+        <div class="areaAverageActions">
+          <button type="button" class="areaAverageSave" onclick="saveAreaAverage('${x.kind}','${target}')">登録</button>
+          <button type="button" class="areaAverageDelete" onclick="deleteAreaAverageRow('${x.kind}','${target}','${x.date.getFullYear()}-${String(x.date.getMonth()+1).padStart(2,'0')}-${String(x.date.getDate()).padStart(2,'0')}')">削除</button>
+        </div>
       </div>`;
     }).join('')}</div>
   </div>`;
   panel.classList.remove('hidden');
+}
+function deleteAreaAverageRow(kind,target,key){
+  if(!key)return;
+  if(!confirm(key.replace(/-/g,'/')+' のエリア平均入力を一覧から削除しますか？'))return;
+  const deleted=getAreaAverageDeletedDates();
+  deleted[key]=new Date().toISOString();
+  setAreaAverageDeletedDates(deleted);
+  openAreaAverageInput();
 }
 async function saveAreaAverage(kind,target){
   const inputId='areaAvg_'+kind+'_'+target;
