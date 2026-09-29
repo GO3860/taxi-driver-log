@@ -3125,26 +3125,6 @@ function restAdviceHistoricalAverage(targetDate,workLogs){
   if(source.length<2)return null;
   return source.reduce((s,x)=>s+Number(x.sales),0)/source.length;
 }
-function getAnnualPaidLeaveDays(){
-  try{
-    const data=JSON.parse(localStorage.getItem('taxiPersonalData')||'{}');
-    return Math.max(0,Math.floor(Number(data.annualPaidLeaveDays)||0));
-  }catch(e){return 0}
-}
-async function getUsedPaidLeaveDays(year){
-  const plans=getWorkPlans();
-  const today=new Date(); today.setHours(0,0,0,0);
-  const y=Number(year)||today.getFullYear();
-  const used=new Set();
-  Object.keys(plans).forEach(key=>{
-    const m=String(key).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(!m||Number(m[1])!==y)return;
-    const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
-    if(d>today)return;
-    if(normalizePlansForDate(plans[key]).some(p=>p.type==='paid'))used.add(key);
-  });
-  return used.size;
-}
 async function renderRestAdvice(){
   const box=$('restAdviceContent');if(!box)return;
   try{
