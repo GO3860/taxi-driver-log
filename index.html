@@ -588,8 +588,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .floatingQuickBtns button{flex:1 1 0;width:0;min-width:0;height:48px;border:1px solid #b7dcff;border-radius:999px;background:linear-gradient(145deg,#fff 0%,#edf8ff 100%);color:#1677d2;font-size:14px;font-weight:900;box-shadow:0 5px 12px rgba(55,105,150,.18),inset 0 1px 0 rgba(255,255,255,.95);-webkit-tap-highlight-color:transparent}.floatingQuickBtns .floatingCalendarBtn{position:static;left:auto;bottom:auto;width:auto;flex:1 1 0;padding:0;justify-content:center}.floatingQuickBtns button:active{transform:translateY(2px)}
 .floatingAreaAvgBtn{display:flex;align-items:center;justify-content:center;gap:7px;padding:0 8px}
 .areaAvgBack{width:100%;border:0;border-radius:999px;background:#eef1f4;color:#2580ee;padding:12px;font-size:15px;font-weight:700;margin-bottom:10px}.areaAvgCard{padding:16px 12px}.areaAvgInner{margin-top:12px;border:1px solid #dfe4ea;border-radius:22px;padding:16px 12px;background:#fff}.areaAvgTitle{font-size:21px;font-weight:900;margin-bottom:8px}.areaAvgExplain{font-size:13px;line-height:1.6;color:#666;padding-bottom:14px;border-bottom:1px solid #eee}.areaAvgRows{margin-top:4px}
-.areaAvgRow{display:grid;grid-template-columns:1fr 150px 70px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.areaAvgRow:last-child{border-bottom:0}.areaAvgDate{display:flex;flex-direction:column;gap:3px;min-width:0}.areaAvgDate strong{font-size:18px}.areaAvgDate span{font-size:13px;color:#666}.areaAvgInputWrap{display:flex;align-items:center;gap:5px;min-width:0}.areaAvgInputWrap input{font-size:17px;padding:12px 9px;text-align:right;min-width:0}.areaAvgInputWrap span{font-size:13px;white-space:nowrap;color:#666}.areaAvgRegister{border:0;border-radius:12px;background:#2580ee;color:#fff;padding:13px 10px;font-size:15px;font-weight:900}
-@media(max-width:430px){.floatingQuickBtns{left:0;bottom:68px;width:100%;gap:8px}.floatingQuickBtns button{height:48px;font-size:13px}.areaAvgCard{padding:14px 8px}.areaAvgInner{padding:15px 9px}.areaAvgTitle{font-size:20px}.areaAvgRow{grid-template-columns:1fr 128px 64px;gap:6px;padding:11px 0}.areaAvgDate strong{font-size:17px}.areaAvgInputWrap input{font-size:16px;padding:11px 7px}.areaAvgRegister{padding:12px 8px}}@media screen and (orientation:landscape){.floatingQuickBtns{display:none}}
+.areaAvgRow{display:grid;grid-template-columns:1fr 150px 70px;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}.areaAvgRow:last-child{border-bottom:0}.areaAvgDate{display:flex;flex-direction:column;gap:3px;min-width:0}.areaAvgDate strong{font-size:18px}.areaAvgDate span{font-size:13px;color:#666}.areaAvgInputWrap{display:flex;align-items:center;gap:5px;min-width:0}.areaAvgInputWrap input{font-size:17px;padding:12px 9px;text-align:right;min-width:0}.areaAvgInputWrap span{font-size:13px;white-space:nowrap;color:#666}.areaAvgActionBtns{display:flex;gap:5px;min-width:0}.areaAvgActionBtns button{flex:1;min-width:0;border:0;border-radius:12px;padding:13px 6px;font-size:14px;font-weight:900}.areaAvgRegister{background:#2580ee;color:#fff}.areaAvgDelete{background:#e8e8e8;color:#555}
+@media(max-width:430px){.floatingQuickBtns{left:0;bottom:68px;width:100%;gap:8px}.floatingQuickBtns button{height:48px;font-size:13px}.areaAvgCard{padding:14px 8px}.areaAvgInner{padding:15px 9px}.areaAvgTitle{font-size:20px}.areaAvgRow{grid-template-columns:1fr 128px 64px;gap:6px;padding:11px 0}.areaAvgDate strong{font-size:17px}.areaAvgInputWrap input{font-size:16px;padding:11px 7px}.areaAvgActionBtns{gap:4px}.areaAvgActionBtns button{padding:12px 5px;font-size:13px}.areaAvgRegister{padding:12px 5px}}@media screen and (orientation:landscape){.floatingQuickBtns{display:none}}
 </style>
 <script>
 const $=id=>document.getElementById(id);
@@ -1835,10 +1835,18 @@ async function showAreaAvgLater(){
   $('areaAvgLater').classList.remove('hidden');
   await renderAreaAvgLater();
 }
-async function updateLogAreaAverage(id,value,dayType){
+function getAreaAvgHiddenDates(){
+  try{return JSON.parse(localStorage.getItem('taxiAreaAvgHiddenDates')||'[]')}catch(e){return[]}
+}
+function setAreaAvgHiddenDate(key){
+  const list=getAreaAvgHiddenDates();
+  if(!list.includes(key)){list.push(key);localStorage.setItem('taxiAreaAvgHiddenDates',JSON.stringify(list))}
+}
+async function updateLogAreaAverage(id,value,dayType,key){
+  const avg=String(value??'').trim();
+  if(!avg){alert('エリア平均を入力してください。');return}
   const all=await getLogs();
   const existing=all.find(x=>Number(x.id)===Number(id));
-  const avg=String(value??'').trim();
   if(existing){
     existing.avg=avg;
     existing.savedAt=new Date().toISOString();
@@ -1848,11 +1856,18 @@ async function updateLogAreaAverage(id,value,dayType){
   }
   const after=await getLogs();
   await saveMonthlySnapshot(after);
+  setAreaAvgHiddenDate(key);
   await renderAreaAvgLater();
+}
+function deleteAreaAvgEntry(key){
+  if(!confirm('この日のエリア平均入力を一覧から削除しますか？'))return;
+  setAreaAvgHiddenDate(key);
+  renderAreaAvgLater();
 }
 async function renderAreaAvgLater(){
   const box=$('areaAvgRows');
   if(!box)return;
+  const hiddenDates=new Set(getAreaAvgHiddenDates());
   const logs=await getLogs();
   const byDate=new Map();
   logs.forEach(x=>{const d=parseDutyDate(x.date);if(d)byDate.set(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),x)});
@@ -1866,7 +1881,7 @@ async function renderAreaAvgLater(){
     let type=log?.dayType||'';
     if(!type){const arr=normalizePlansForDate(plans[key]);const p=arr[arr.length-1];type=p?.type||'rest_nonpublic';}
     const label=type==='work'?'🚕 勤務':type==='parttime'?'💰 バイト':type==='paid'?'🌸 有休':type==='absent'?'🟫 欠勤':type==='other'?'🟪 その他':'🏠 休み';
-    rows.push({d,key,log,type,label,existingAvg:log?String(log.avg??'').trim():''});
+    if(!hiddenDates.has(key)) rows.push({d,key,log,type,label,existingAvg:log?String(log.avg??'').trim():''});
   }
   box.innerHTML=rows.map(r=>{
     const dateText=`${r.d.getMonth()+1}/${r.d.getDate()}（${['日','月','火','水','木','金','土'][r.d.getDay()]}）`;
@@ -1875,7 +1890,10 @@ async function renderAreaAvgLater(){
     return `<div class="areaAvgRow">
       <div class="areaAvgDate"><strong>${dateText}</strong><span>${r.label}</span></div>
       <div class="areaAvgInputWrap"><input id="${inputId}" type="number" inputmode="numeric" placeholder="エリア平均" value="${escapeHtml(r.existingAvg)}"><span>円</span></div>
-      <button type="button" class="areaAvgRegister" onclick="updateLogAreaAverage('${escapeHtml(recordId)}',document.getElementById('${inputId}').value,'${r.type}')">登録</button>
+      <div class="areaAvgActionBtns">
+        <button type="button" class="areaAvgRegister" onclick="updateLogAreaAverage('${escapeHtml(recordId)}',document.getElementById('${inputId}').value,'${r.type}','${r.key}')">登録</button>
+        <button type="button" class="areaAvgDelete" onclick="deleteAreaAvgEntry('${r.key}')">削除</button>
+      </div>
     </div>`;
   }).join('');
 }
