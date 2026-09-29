@@ -2087,7 +2087,17 @@ async function openAreaAverageInput(){
       continue;
     }
 
-    // 勤務ログがない日は、休みの日としてエリア平均を別保存する。
+    // 勤務ログがまだなくても、カレンダーに「勤務」が登録されていれば
+    // 「後から入力」でエリア平均を登録した時に、最低限の勤務ログを自動作成できるようにする。
+    const plans=getWorkPlans();
+    const planArr=normalizePlansForDate(plans[key]);
+    const plannedType=planArr.some(x=>x.type==='work')?'work':(planArr.some(x=>x.type==='parttime')?'parttime':'');
+    if(plannedType){
+      rows.push({kind:'planned',key,date:d,label:'勤務予定',sales:0,plannedType});
+      continue;
+    }
+
+    // 勤務予定も勤務ログもない日は、休みの日としてエリア平均を別保存する。
     if(String(savedRest[key]??'').trim())continue;
     rows.push({kind:'rest',key,date:d,label:'休み'});
   }
@@ -2104,9 +2114,11 @@ async function openAreaAverageInput(){
     <div id="areaAverageRows">${rows.map(x=>{
       const dateLabel=areaAverageDateLabel(x.date);
       const isRest=x.kind==='rest';
-      const target=x.kind==='rest'?x.key:x.id;
+      const target=x.kind==='rest'?x.key:(x.kind==='planned'?x.key:x.id);
+      const badge=x.kind==='rest'?'🏠 休み':(x.kind==='planned'?'🚕 勤務予定':'🚕 勤務');
+      const salesText=x.kind==='log'?'　売上 '+yen(x.sales):'';
       return `<div class="areaAverageRow">
-        <div class="areaAverageDate">${dateLabel}<span>${isRest?'🏠 休み':'🚕 勤務'}${isRest?'':'　売上 '+yen(x.sales)}</span></div>
+        <div class="areaAverageDate">${dateLabel}<span>${badge}${salesText}</span></div>
         <div class="areaAverageInputWrap"><input id="areaAvg_${x.kind}_${target}" type="number" inputmode="numeric" min="0" placeholder="エリア平均"><span>円</span></div>
         <div class="areaAverageActions">
           <button type="button" class="areaAverageSave" onclick="saveAreaAverage('${x.kind}','${target}')">登録</button>
@@ -2134,6 +2146,52 @@ async function saveAreaAverage(kind,target){
   if(kind==='rest'){
     const saved=getRestAreaAverages();
     saved[target]=value;
+    setRestAreaAverages(saved);
+  }else if(kind==='planned'){
+    // カレンダーの「勤務」を先に登録していたが、当日の営業ログがまだない場合。
+    // エリア平均を登録した時点で、日付だけの勤務ログを作成し、後から通常のログ編集ができるようにする。
+    const logs=await getLogs();
+    let log=logs.find(x=>String(x.date)===String(formatDutyDate(new Date(target+'T00:00:00'))));
+    if(!log){
+      const plans=getWorkPlans();
+      const planArr=normalizePlansForDate(plans[target]);
+      const dayType=planArr.some(x=>x.type==='work')?'work':'parttime';
+      log={
+        date:formatDutyDate(new Date(target+'T00:00:00')),
+        dayType,
+        weather:[],
+        event:[],
+        out:'',
+        in:'',
+        hours:'',
+        breaks:[],
+        km:'',
+        sales:'',
+        loadedRate:'',
+        loadedDistance:'',
+        tripCount:'',
+        avg:value,
+        routes:[],
+        destination:'',
+        course:'',
+        eventNote:'',
+        photo:'',
+        parttimeTakeHome:0,
+        paidLeave:null,
+        leaveAbsenceKind:'',
+        savedAt:new Date().toISOString()
+      };
+      await addLog(log);
+    }else{
+      log.avg=value;
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        const req=tx.objectStore(STORE).put(log);
+        req.onsuccess=resolve; req.onerror=()=>reject(req.error);
+      });
+    }
+    const saved=getRestAreaAverages();
+    delete saved[target];
     setRestAreaAverages(saved);
   }else{
     const logs=await getLogs();
