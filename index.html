@@ -3126,7 +3126,10 @@ function restAdviceHistoricalAverage(targetDate,workLogs){
   return source.reduce((s,x)=>s+Number(x.sales),0)/source.length;
 }
 function getAnnualPaidLeaveDays(){
-  return Math.max(0,Math.floor(Number(localStorage.getItem('taxiAnnualPaidLeaveDays')||0)));
+  try{
+    const data=JSON.parse(localStorage.getItem('taxiPersonalData')||'{}');
+    return Math.max(0,Math.floor(Number(data.annualPaidLeaveDays)||0));
+  }catch(e){return 0}
 }
 async function getUsedPaidLeaveDays(year){
   const plans=getWorkPlans();
