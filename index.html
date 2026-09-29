@@ -592,6 +592,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <div style="margin-top:14px">
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">1日の拘束時間（会社規定）</span><input id="dailyCompanyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
   </div>
+  <div style="margin-top:14px">
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">今年の有給休暇日数</span><input id="annualPaidLeaveDays" class="fareNum" type="number" min="0" step="1" oninput="savePersonalData()"><span>日</span></label>
+  </div>
 
 <div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
 </div>
@@ -3122,6 +3125,23 @@ function restAdviceHistoricalAverage(targetDate,workLogs){
   if(source.length<2)return null;
   return source.reduce((s,x)=>s+Number(x.sales),0)/source.length;
 }
+function getAnnualPaidLeaveDays(){
+  return Math.max(0,Math.floor(Number(localStorage.getItem('taxiAnnualPaidLeaveDays')||0)));
+}
+async function getUsedPaidLeaveDays(year){
+  const plans=getWorkPlans();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const y=Number(year)||today.getFullYear();
+  const used=new Set();
+  Object.keys(plans).forEach(key=>{
+    const m=String(key).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m||Number(m[1])!==y)return;
+    const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+    if(d>today)return;
+    if(normalizePlansForDate(plans[key]).some(p=>p.type==='paid'))used.add(key);
+  });
+  return used.size;
+}
 async function renderRestAdvice(){
   const box=$('restAdviceContent');if(!box)return;
   try{
@@ -3137,18 +3157,9 @@ async function renderRestAdvice(){
     const recent5=work.slice(-5);
     const avgMin=recent5.map(restAdviceMinutes).filter(x=>x>0);
     const avgMinutes=avgMin.length?Math.round(avgMin.reduce((a,b)=>a+b,0)/avgMin.length):0;
-    let streak=0;
-    if(work.length){
-      const dates=new Set(work.map(x=>restAdviceDateKey(parseDutyDate(x.date))).filter(Boolean));
-      const d=parseDutyDate(work[work.length-1].date);
-      if(d){
-        let cur=new Date(d);
-        while(dates.has(restAdviceDateKey(cur))){
-          streak++;
-          cur.setDate(cur.getDate()-1);
-        }
-      }
-    }
+    const annualPaid=getAnnualPaidLeaveDays();
+    const usedPaid=await getUsedPaidLeaveDays(new Date().getFullYear());
+    const remainingPaid=annualPaid>0?Math.max(annualPaid-usedPaid,0):null;
 
     const plans=getWorkPlans();
     const candidates=[];
@@ -3173,9 +3184,6 @@ async function renderRestAdvice(){
     if(currentConstraintMessage){
       lead='今は月間の拘束時間にも注意したい時期です。休みを入れる候補を早めに見ておきましょう。';
       caution=true;
-    }else if(streak>=4){
-      lead=streak+'日続けて勤務しています。次の休みを1日入れる候補を考えてみましょう。';
-      caution=true;
     }else if(avgMinutes>=900){
       lead='最近の勤務は拘束時間が長めです。次の勤務との間に、しっかり休める日を確保することを優先してみましょう。';
       caution=true;
@@ -3192,14 +3200,17 @@ async function renderRestAdvice(){
         }).join('')
       : '<div class="restAdviceNote">まだ比較できる過去データが十分ではありません。記録が増えると、今後3か月の休暇候補を表示できます。</div>';
 
+    const paidHtml=remainingPaid===null
+      ? '<div class="restAdviceStat"><div class="restAdviceStatLabel">残有休数</div><div class="restAdviceStatValue">未設定</div></div>'
+      : '<div class="restAdviceStat"><div class="restAdviceStatLabel">残有休数</div><div class="restAdviceStatValue">'+remainingPaid+'日</div></div>';
+
     box.innerHTML=
       (caution?'<div class="restAdviceBadge">💡 今は休み方を意識するタイミング</div>':'')+
       '<div class="restAdviceLead">'+lead+'</div>'+
       '<div class="restAdviceStats">'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近14日勤務</div><div class="restAdviceStatValue">'+recent14.length+'日</div></div>'+
         '<div class="restAdviceStat"><div class="restAdviceStatLabel">直近5勤務 平均拘束</div><div class="restAdviceStatValue">'+restAdviceFmtMinutes(avgMinutes)+'</div></div>'+
-        '<div class="restAdviceStat"><div class="restAdviceStatLabel">連続勤務</div><div class="restAdviceStatValue">'+streak+'日</div></div>'+
-
+        paidHtml+
       '</div>'+
       '<div class="restAdviceSection"><div class="restAdviceSectionTitle">🏖️ 今後3か月の休暇候補</div>'+
       candidateHtml+
