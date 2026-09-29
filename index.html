@@ -2018,20 +2018,6 @@ function setRestAreaAverages(v){localStorage.setItem('taxiRestAreaAverages',JSON
 function areaAverageDateLabel(d){
   return d?((d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）'):'';
 }
-function getCalendarDayStatus(key,plans){
-  const arr=normalizePlansForDate(plans[key]);
-  const hasWork=arr.some(x=>x.type==='work');
-  const hasParttime=arr.some(x=>x.type==='parttime');
-  const hasPaid=arr.some(x=>x.type==='paid');
-  if(hasWork&&hasPaid)return 'confirm';
-  if(hasWork||hasParttime)return 'work';
-  return 'rest';
-}
-let areaAverageDayDecisions={};
-function chooseAreaAverageDay(key,status){
-  areaAverageDayDecisions[key]=status;
-  openAreaAverageInput();
-}
 function getAreaAverageDeletedDates(){
   try{return JSON.parse(localStorage.getItem('taxiAreaAverageDeletedDates')||'{}')}catch(e){return {}}
 }
