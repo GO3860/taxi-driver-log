@@ -1941,13 +1941,13 @@ async function renderAreaAverageInput(){
  Object.keys(plans).forEach(key=>{const p=normalizePlansForDate(plans[key]);if(!p.some(x=>x.type==='work'))return;const mm=key.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!mm||Number(mm[1])!==y||Number(mm[2])!==m+1)return;if(!byKey[key])byKey[key]={_plannedOnly:true}});
  const keys=Object.keys(byKey).sort();
  if(!keys.length){box.innerHTML='<div class="areaAvgEmpty">この月の勤務データはありません。<br>カレンダーで「勤務」を登録すると、ここにも表示されます。</div>';return}
- box.innerHTML=keys.map(key=>{const x=byKey[key],parts=key.split('-'),d=Number(parts[2]),wd=['日','月','火','水','木','金','土'][new Date(y,m,d).getDay()],val=Number(x.avg)>0?Number(x.avg):'',status=x._plannedOnly?'勤務予定':'勤務ログ';return `<div class="areaAvgRow"><div><div class="areaAvgDate">${m+1}/${d}（${wd}）</div><div class="areaAvgStatus">${status}</div></div><input class="areaAvgInput${val!==''?' areaAvgSaved':''}" id="areaAvg_${key}" type="number" inputmode="numeric" min="0" step="100" value="${val}" placeholder="円"><button type="button" class="areaAvgSave" onclick="saveAreaAverageForDate('${key}')">登録</button></div>`}).join('');
+ box.innerHTML=keys.map(key=>{const x=byKey[key],parts=key.split('-'),d=Number(parts[2]),wd=['日','月','火','水','木','金','土'][new Date(y,m,d).getDay()],val=Number(x.areaAvgLater)>0?Number(x.areaAvgLater):'',status=x._plannedOnly?'勤務予定':'勤務ログ';return `<div class="areaAvgRow"><div><div class="areaAvgDate">${m+1}/${d}（${wd}）</div><div class="areaAvgStatus">${status}</div></div><input class="areaAvgInput${val!==''?' areaAvgSaved':''}" id="areaAvg_${key}" type="number" inputmode="numeric" min="0" step="100" value="${val}" placeholder="円"><button type="button" class="areaAvgSave" onclick="saveAreaAverageForDate('${key}')">登録</button></div>`}).join('');
 }
 async function saveAreaAverageForDate(key){
  const input=$('areaAvg_'+key);if(!input)return;const value=String(input.value??'').trim();if(value!==''&&(!Number.isFinite(Number(value))||Number(value)<0)){alert('エリア平均売上を正しく入力してください。');return}
  const logs=await getLogs(),d=parseDutyDate(key);let existing=logs.find(x=>{const xd=parseDutyDate(x.date);return xd&&d&&xd.getFullYear()===d.getFullYear()&&xd.getMonth()===d.getMonth()&&xd.getDate()===d.getDate()});
- if(existing){existing.avg=value;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(existing);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
- else{await addLog({date:d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日',dayType:'work',weather:[],event:[],out:'',in:'',hours:'',km:'',sales:'',loadedRate:'',tripCount:'',avg:value,routes:[],destination:'',course:'',eventNote:'',photo:'',parttimeTakeHome:0,savedAt:new Date().toISOString()})}
+ if(existing){existing.areaAvgLater=value;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(existing);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+ else{await addLog({date:d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日',dayType:'work',weather:[],event:[],out:'',in:'',hours:'',km:'',sales:'',loadedRate:'',tripCount:'',avg:'',areaAvgLater:value,routes:[],destination:'',course:'',eventNote:'',photo:'',parttimeTakeHome:0,savedAt:new Date().toISOString()})}
  const all=await getLogs();await saveMonthlySnapshot(all);await renderSalesGoal();input.classList.toggle('areaAvgSaved',value!=='');const status=input.parentElement.querySelector('.areaAvgStatus');if(status)status.textContent=value!==''?'入力済み':'未入力';input.blur();
 }
 
@@ -2296,6 +2296,7 @@ function deleteWorkPlan(){
 </style>
 
 <style id="calendar-quick-button-v127">
+/* v166: 後から入力するエリア平均を当日入力のavgから分離。既存avgは表示しない。 */
 /* v165: カレンダーとエリア平均入力を横並び */
 .floatingQuickBtns{position:fixed;left:max(6px,calc((100vw - 520px)/2 + 6px));bottom:68px;z-index:900;display:flex;gap:6px;width:min(94vw,520px)}
 .floatingQuickBtns .floatingCalendarBtn,.floatingQuickBtns .floatingAreaAvgBtn{position:static!important;left:auto!important;bottom:auto!important;transform:none!important;width:auto!important;min-width:0!important;height:48px;flex:1;padding:0 10px!important}
