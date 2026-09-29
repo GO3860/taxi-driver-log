@@ -595,6 +595,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <div style="margin-top:14px">
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">今年の有給休暇日数</span><input id="annualPaidLeaveDays" class="fareNum" type="number" min="0" step="1" oninput="savePersonalData()"><span>日</span></label>
   </div>
+  <div style="margin-top:18px">
+    <button type="button" class="btn full" onclick="openPaidLeaveModal()">🏖️ 有休を使ったときに登録</button>
+    <div id="paidLeaveSummary" class="small" style="margin-top:8px">有休の使用状況は手入力で管理します。</div>
+    <div id="paidLeaveHistory" style="margin-top:8px"></div>
+  </div>
 
 <div class="small" id="personalDataStatus">入力内容は自動保存されます。</div>
 </div>
@@ -1214,6 +1219,7 @@ function savePersonalData(){
   const data={};
   ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
   data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
+  setTimeout(renderPaidLeaveLedger,0);
   const workStyle=document.querySelector('input[name="workStyle"]:checked');
   if(workStyle)data.workStyle=workStyle.value;
   localStorage.setItem('taxiPersonalData',JSON.stringify(data));
@@ -1242,7 +1248,8 @@ function loadPersonalData(){
   const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours','annualPaidLeaveDays'];
   ids.forEach(id=>{const el=$(id);if(el)el.value=data[id]||'';});
   document.querySelectorAll('input[name="workStyle"]').forEach(r=>{r.checked=(r.value===data.workStyle);});
-  if(data.workStyle==='日勤者'){
+  setTimeout(renderPaidLeaveLedger,0);
+    if(data.workStyle==='日勤者'){
     const monthly=$('monthlyConstrainedHours');
     const busy=$('busySeasonConstrainedHours');
     if(monthly && busy) busy.value=monthly.value;
@@ -1501,6 +1508,7 @@ function applySettings(){
   document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
 function showSettings(){
+  setTimeout(renderPaidLeaveLedger,0);
   $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('settings').classList.remove('hidden');
   $('settingsOverview').classList.remove('hidden');
   $('settingsOverview').style.display='block';
@@ -2943,6 +2951,10 @@ function deleteWorkPlan(){
 }
 </style>
 
+<style id="paid-leave-ledger-v1">
+.paidLeaveHistoryItem{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;background:#f7f8fa;border-radius:11px;margin-top:6px;font-size:12px}
+.paidLeaveHistoryItem button{border:0;border-radius:8px;background:#eee;color:#666;padding:5px 8px}
+</style>
 <style id="loaded-rate-calculator-v164">
 .loadedRateModalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
 .loadedRateModalBackdrop.hidden{display:none}
@@ -2960,6 +2972,42 @@ function deleteWorkPlan(){
 .loadedRateCancel{background:#eef1f4;color:#555}
 .loadedRateConfirm{background:#2580ee;color:#fff}
 </style>
+<div id="paidLeaveModalBackdrop" class="loadedRateModalBackdrop hidden" onclick="if(event.target===this)closePaidLeaveModal()">
+  <div class="loadedRateModal">
+    <div class="loadedRateModalTitle">🏖️ 有休の使用を登録</div>
+    <div class="loadedRateModalSub">カレンダーとは別に、実際に使った有休だけを手入力します。</div>
+    <div class="loadedRateModalRow">
+      <div class="loadedRateModalLabel">使用日</div>
+      <input id="paidLeaveUseDate" class="loadedRateModalInput" type="date">
+    </div>
+    <div class="loadedRateModalRow">
+      <div class="loadedRateModalLabel">種類</div>
+      <select id="paidLeaveUseType" class="loadedRateModalInput" onchange="togglePaidLeaveAmountFields()">
+        <option value="first">前半有休（1日消費）</option>
+        <option value="second">後半有休（1日消費）</option>
+        <option value="full">1日有休（2日消費）</option>
+        <option value="hour">時間有休</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div id="paidLeaveHourFields" class="loadedRateModalRow hidden">
+      <div class="loadedRateModalLabel">何時間使いましたか？</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input id="paidLeaveUseHours" class="loadedRateModalInput" type="number" min="0" step="1" inputmode="numeric" placeholder="例：3">
+        <input id="paidLeaveUseMinutes" class="loadedRateModalInput" type="number" min="0" max="59" step="1" inputmode="numeric" placeholder="分">
+      </div>
+    </div>
+    <div id="paidLeaveOtherFields" class="loadedRateModalRow hidden">
+      <div class="loadedRateModalLabel">何日分消費しましたか？</div>
+      <input id="paidLeaveOtherDays" class="loadedRateModalInput" type="number" min="0" step="0.01" inputmode="decimal" placeholder="例：1">
+    </div>
+    <div id="paidLeaveUseNote" class="loadedRateModalSub" style="margin-top:4px;margin-bottom:12px"></div>
+    <div class="loadedRateModalActions">
+      <button type="button" class="loadedRateCancel" onclick="closePaidLeaveModal()">キャンセル</button>
+      <button type="button" class="loadedRateConfirm" onclick="savePaidLeaveUse()">登録</button>
+    </div>
+  </div>
+</div>
 <div id="loadedRateModalBackdrop" class="loadedRateModalBackdrop hidden" onclick="if(event.target===this)closeLoadedRateModal()">
   <div class="loadedRateModal">
     <div class="loadedRateModalTitle">📊 実車率を計算</div>
@@ -3092,6 +3140,104 @@ function formatBreaks(rows){
   return detail+'<br><strong>合計：'+total+'分</strong>';
 }
 </script>
+<script id="paid-leave-ledger-v1">
+function getPaidLeaveRecords(){
+  try{
+    const x=JSON.parse(localStorage.getItem('taxiPaidLeaveRecords')||'[]');
+    return Array.isArray(x)?x:[];
+  }catch(e){return [];}
+}
+function setPaidLeaveRecords(rows){
+  localStorage.setItem('taxiPaidLeaveRecords',JSON.stringify(rows||[]));
+}
+function paidLeaveUsedDays(year){
+  return getPaidLeaveRecords().filter(x=>String(x.date||'').slice(0,4)===String(year))
+    .reduce((sum,x)=>sum+Number(x.consumedDays||0),0);
+}
+function getPaidLeaveHoursPerDay(){
+  const raw=prompt('時間有休で「1日分」とする時間数を入力してください。\n例：8時間なら 8 と入力します。');
+  if(raw===null)return null;
+  const n=Number(raw);
+  if(!(n>0))return null;
+  localStorage.setItem('taxiPaidLeaveHoursPerDay',String(n));
+  return n;
+}
+function paidLeaveHoursPerDay(){
+  const n=Number(localStorage.getItem('taxiPaidLeaveHoursPerDay')||'0');
+  return n>0?n:0;
+}
+function openPaidLeaveModal(){
+  const m=$('paidLeaveModalBackdrop'); if(!m)return;
+  $('paidLeaveUseDate').value=new Date().toISOString().slice(0,10);
+  $('paidLeaveUseType').value='first';
+  $('paidLeaveUseHours').value='';
+  $('paidLeaveUseMinutes').value='';
+  $('paidLeaveOtherDays').value='';
+  togglePaidLeaveAmountFields();
+  m.classList.remove('hidden');
+}
+function closePaidLeaveModal(){$('paidLeaveModalBackdrop')?.classList.add('hidden')}
+function togglePaidLeaveAmountFields(){
+  const type=$('paidLeaveUseType')?.value;
+  $('paidLeaveHourFields')?.classList.toggle('hidden',type!=='hour');
+  $('paidLeaveOtherFields')?.classList.toggle('hidden',type!=='other');
+  const note=$('paidLeaveUseNote');
+  if(!note)return;
+  if(type==='hour'){
+    const h=paidLeaveHoursPerDay();
+    note.textContent=h?('現在の設定：'+h+'時間で1日分'): '時間有休は、初回登録時に「1日分＝何時間か」を設定します。';
+  }else if(type==='other'){
+    note.textContent='会社のルールに合わせて、消費する日数を入力します。';
+  }else if(type==='full'){
+    note.textContent='1日有休は2日分を消費として記録します（ごうさんの会社のルール）。';
+  }else{
+    note.textContent='前半・後半有休は1日分を消費として記録します（ごうさんの会社のルール）。';
+  }
+}
+function savePaidLeaveUse(){
+  const date=$('paidLeaveUseDate')?.value;
+  const type=$('paidLeaveUseType')?.value;
+  if(!date||!type){alert('使用日と種類を入力してください。');return;}
+  let consumed=0, detail='';
+  if(type==='first'){consumed=1;detail='前半有休';}
+  else if(type==='second'){consumed=1;detail='後半有休';}
+  else if(type==='full'){consumed=2;detail='1日有休';}
+  else if(type==='hour'){
+    const h=Number($('paidLeaveUseHours')?.value||0),m=Number($('paidLeaveUseMinutes')?.value||0);
+    const totalMinutes=h*60+m;
+    const perDay=paidLeaveHoursPerDay()||getPaidLeaveHoursPerDay();
+    if(!(totalMinutes>0)||!(perDay>0)){alert('使用時間と「1日分＝何時間か」を入力してください。');return;}
+    consumed=totalMinutes/(perDay*60);
+    detail='時間有休 '+h+'時間'+(m?m+'分':'');
+  }else{
+    consumed=Number($('paidLeaveOtherDays')?.value||0);
+    if(!(consumed>0)){alert('消費する日数を入力してください。');return;}
+    detail='その他';
+  }
+  const rows=getPaidLeaveRecords();
+  rows.push({id:Date.now(),date,type,detail,consumedDays:Math.round(consumed*100)/100});
+  rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  setPaidLeaveRecords(rows);
+  closePaidLeaveModal();
+  renderPaidLeaveLedger();
+  if(typeof renderRestAdvice==='function')renderRestAdvice();
+}
+function deletePaidLeaveUse(id){
+  if(!confirm('この有休記録を削除しますか？'))return;
+  setPaidLeaveRecords(getPaidLeaveRecords().filter(x=>Number(x.id)!==Number(id)));
+  renderPaidLeaveLedger();
+  if(typeof renderRestAdvice==='function')renderRestAdvice();
+}
+function renderPaidLeaveLedger(){
+  const box=$('paidLeaveHistory'),sum=$('paidLeaveSummary'); if(!box||!sum)return;
+  const year=new Date().getFullYear(), annual=Number($('annualPaidLeaveDays')?.value||0);
+  const rows=getPaidLeaveRecords().filter(x=>String(x.date||'').slice(0,4)===String(year));
+  const used=rows.reduce((s,x)=>s+Number(x.consumedDays||0),0);
+  const remain=annual>0?Math.max(annual-used,0):null;
+  sum.textContent=annual>0?('今年の有休：'+annual+'日 ／ 使用：'+used+'日 ／ 残り：'+remain+'日'):('今年の有休の使用：'+used+'日');
+  box.innerHTML=rows.length?rows.map(x=>'<div class="paidLeaveHistoryItem"><div><strong>'+escapeHtml(x.date)+'</strong>　'+escapeHtml(x.detail)+'<br>消費：'+Number(x.consumedDays||0)+'日</div><button type="button" onclick="deletePaidLeaveUse('+Number(x.id)+')">削除</button></div>').join(''):'';
+}
+</script>
 <script id="rest-advice-v1">
 function restAdviceDateKey(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -3140,10 +3286,6 @@ async function renderRestAdvice(){
     const recent5=work.slice(-5);
     const avgMin=recent5.map(restAdviceMinutes).filter(x=>x>0);
     const avgMinutes=avgMin.length?Math.round(avgMin.reduce((a,b)=>a+b,0)/avgMin.length):0;
-    const annualPaid=getAnnualPaidLeaveDays();
-    const usedPaid=await getUsedPaidLeaveDays(new Date().getFullYear());
-    const remainingPaid=annualPaid>0?Math.max(annualPaid-usedPaid,0):null;
-
     const plans=getWorkPlans();
     const candidates=[];
     const base=new Date();base.setHours(0,0,0,0);
