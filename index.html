@@ -269,12 +269,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="salesDataCalcGrid">
   <div class="salesDataCalcField"><div class="small">走行距離</div><input id="salesDataRunDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
   <div class="salesDataCalcField"><div class="small">乗車距離</div><input id="salesDataRideDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
-  <div class="salesDataCalcField"><div class="small">実車距離</div><input id="salesDataLoadedDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">実車率</div><div class="salesDataCalculatedBox"><strong id="loadedRateCalcResult">—</strong><span>%</span></div></div>
   <div class="salesDataCalcField"><div class="small">営業回数</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="回"></div>
 </div>
-<div class="loadedRateCalcResult salesDataRateResult">実車率 <strong id="loadedRateCalcResult">—</strong> %</div>
 <input id="loadedRate" type="hidden">
-<div class="salesDataCalcFormula">実車率 ＝ 実車距離 ÷ 走行距離 × 100</div>
+<div class="salesDataCalcFormula">実車率 ＝ 乗車距離 ÷ 走行距離 × 100</div>
 </div>
 
 <div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
@@ -865,12 +864,12 @@ function showLoadedRateFormula(){
   el.classList.toggle('hidden');
 }
 function updateLoadedRateCalc(){
-  const loaded=Number($('salesDataLoadedDistance')?.value||0);
+  const ride=Number($('salesDataRideDistance')?.value||0);
   const total=Number($('salesDataRunDistance')?.value||0);
   const result=$('loadedRateCalcResult');
   if(!result)return;
-  if(total>0 && loaded>=0){
-    const rate=Math.min(100,(loaded/total)*100);
+  if(total>0 && ride>=0){
+    const rate=Math.min(100,(ride/total)*100);
     result.textContent=rate.toFixed(1);
     const input=$('loadedRate');
     if(input)input.value=rate.toFixed(1);
@@ -2534,7 +2533,7 @@ function deleteWorkPlan(){
   renderWorkCalendar();
 }
 document.addEventListener('input',function(e){
-  if(e.target && (e.target.id==='salesDataLoadedDistance'||e.target.id==='salesDataRunDistance')) updateLoadedRateCalc();
+  if(e.target && (e.target.id==='salesDataRideDistance'||e.target.id==='salesDataRunDistance')) updateLoadedRateCalc();
   if(e.target && e.target.id==='salesDataRunDistance'){
     const km=$('km'); if(km)km.value=e.target.value;
   }
@@ -2595,6 +2594,11 @@ document.addEventListener('input',function(e){
 </style>
 <style id="rest-learning-details-v166">
 .restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
+</style>
+<style id="sales-data-calc-v173">
+.salesDataCalculatedBox{height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;background:#fafafa;display:flex;align-items:center;justify-content:center;gap:4px;font-size:17px}
+.salesDataCalculatedBox strong{font-size:22px;color:#1677b7}
+.salesDataCalculatedBox span{font-size:16px;color:#555}
 </style>
 <style id="sales-data-calc-v172">
 .salesDataCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;margin-top:2px}
