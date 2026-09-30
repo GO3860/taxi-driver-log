@@ -266,7 +266,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
 <div class="card"><div class="label">📊 営業データ</div><div class="grid">
-<div><div class="small loadedRateHelp" onclick="showLoadedRateFormula()">実車率 ⓘ</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div><div id="loadedRateFormula" class="loadedRateFormula hidden">
+<div><div class="small loadedRateHelp">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div>
+<div id="loadedRateFormula" class="loadedRateFormula">
   <div>実車率 ＝ 実車距離 ÷ 走行距離 × 100</div>
   <div class="loadedRateCalc">
     <div class="loadedRateCalcTitle">🧮 実車率を計算</div>
@@ -2609,7 +2610,7 @@ document.addEventListener('input',function(e){
 </style>
 <style id="loaded-rate-formula-v169">
 .loadedRateHelp{cursor:pointer;color:#1677b7;text-decoration:underline;text-underline-offset:2px}
-.loadedRateFormula{margin-top:8px;padding:9px 10px;border-radius:10px;background:#eef7ff;border:1px solid #cfe5f7;color:#17608d;font-size:13px;font-weight:700;line-height:1.5}
+.loadedRateFormula{display:block!important;margin-top:8px;padding:9px 10px;border-radius:10px;background:#eef7ff;border:1px solid #cfe5f7;color:#17608d;font-size:13px;font-weight:700;line-height:1.5}
 .loadedRateCalc{margin-top:10px;padding:11px;border-radius:12px;background:#fff;border:1px solid #d7e7f3}
 .loadedRateCalcTitle{font-size:13px;font-weight:900;margin-bottom:8px;color:#17608d}
 .loadedRateCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
