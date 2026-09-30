@@ -558,6 +558,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="label">🌿 休み方アドバイス</div>
     <div class="help-text">自分の営業データから、エリア平均が低くなりやすい条件を学習し、休暇候補を表示します。</div>
     <div id="restAdviceContent"></div>
+    <button type="button" class="restLearningBtn" onclick="toggleRestLearningDetails()">🧠 学習状況を見る</button>
+    <div id="restLearningDetails" class="hidden"></div>
   </div>
 </main>
 <main id="areaAvgLater" class="hidden">
@@ -1873,6 +1875,7 @@ async function showRestAdvice(){
   resetSaveButton();
   hideAllMainViews();
   $('restAdvice').classList.remove('hidden');
+  if($('restLearningDetails'))$('restLearningDetails').classList.add('hidden');
   await renderRestAdvice();
 }
 
@@ -1933,6 +1936,47 @@ function restHistoricalFactors(log){
   (Array.isArray(log.weather)?log.weather:[]).forEach(x=>{if(x)factors.push('天気：'+String(x).trim())});
   (Array.isArray(log.event)?log.event:[]).forEach(x=>{if(x)factors.push('イベント：'+String(x).trim())});
   return [...new Set(factors)];
+}
+function restFactorCatalog(){
+  return [
+    {key:'曜日',label:'📅 曜日',prefix:'曜日：'},
+    {key:'月',label:'🗓️ 月・時期',prefix:'月：'},
+    {key:'週末',label:'🏖️ 週末',prefix:'週末'},
+    {key:'祝日',label:'🎌 祝日',prefix:'祝日'},
+    {key:'給料日前後',label:'💰 給料日前後',prefix:'給料日前後：'},
+    {key:'年金支給日前後',label:'👴 年金支給日前後',prefix:'年金支給日前後：'},
+    {key:'大型連休',label:'🎌 大型連休',prefix:'大型連休：'},
+    {key:'天気',label:'☀️ 天気',prefix:'天気：'},
+    {key:'イベント',label:'🎆 イベント',prefix:'イベント：'}
+  ];
+}
+function toggleRestLearningDetails(){
+  const box=$('restLearningDetails'); if(!box)return;
+  if(!box.classList.contains('hidden')){box.classList.add('hidden');return;}
+  box.classList.remove('hidden');
+  renderRestLearningDetails();
+}
+async function renderRestLearningDetails(){
+  const box=$('restLearningDetails'); if(!box)return;
+  const logs=await getLogs();
+  const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
+  const overall=usable.length?usable.reduce((s,x)=>s+Number(x.avg),0)/usable.length:0;
+  const catalog=restFactorCatalog();
+  const rows=catalog.map(f=>{
+    const matched=[];
+    usable.forEach(log=>restHistoricalFactors(log).filter(x=>x===f.prefix||x.startsWith(f.prefix)).forEach(x=>matched.push(x)));
+    const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;
+    let status='⚪ データ不足',cls='restStatusWeak';
+    if(count>=5){status='🟢 分析可能';cls='restStatusGood'}
+    else if(count>=3){status='🟡 学習中';cls='restStatusMid'}
+    return '<div class="restFactorRow"><div><strong>'+escapeHtml(f.label)+'</strong><div class="restFactorCount">'+count+'日分</div></div><span class="'+cls+'">'+status+'</span></div>';
+  }).join('');
+  const stats=restPatternStats(logs);
+  const trends=stats.patterns.slice().sort((a,b)=>a.diff-b.diff).map(p=>
+    '<div class="restTrendRow"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(p.diff))+'%低め</span></div>'
+  ).join('');
+  const trendHtml=trends||'<div class="restLearnBox">まだ十分なデータから発見できた傾向はありません。</div>';
+  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restDetailMeta">分析対象：エリア平均が入力された <strong>'+usable.length+'日</strong> ／ 全体平均 ¥'+Math.round(overall).toLocaleString()+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
 function restPatternStats(logs){
   const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
@@ -2406,6 +2450,9 @@ function deleteWorkPlan(){
 </style>
 <style id="rest-learning-v165">
 .restSummary,.restLearnBox{background:#f6fbf7;border:1px solid #d9eadc;border-radius:16px;padding:14px;margin-top:12px;line-height:1.6}.restSummaryTitle{font-size:18px;font-weight:900;margin-bottom:6px}.restSmall{font-size:12px;color:#777;margin-top:6px}.restSection{margin-top:14px}.restSectionTitle{font-size:17px;font-weight:900;margin-bottom:8px}.restPattern{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid #e6e9ec;border-radius:13px;padding:11px;margin-top:7px}.restPattern strong{font-size:14px}.restPattern span{font-size:12px;color:#666;text-align:right}.restCandidate{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #dce9df;border-radius:14px;padding:12px;margin-top:8px}.restCandidate strong{font-size:16px}.restWhy{font-size:12px;color:#666;margin-top:4px}.restCandidateMark{background:#edf8ef;color:#2e7d32;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:430px){.restPattern{display:block}.restPattern span{display:block;text-align:left;margin-top:4px}.restCandidateMark{font-size:10px;padding:6px 7px}}
+</style>
+<style id="rest-learning-details-v166">
+.restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
 </style>
 </body></html><style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
