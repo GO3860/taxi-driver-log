@@ -2087,6 +2087,9 @@ function restDateFactors(d){
   const lh=restLargeHoliday(d); if(lh)factors.push('大型連休：'+lh);
   return factors;
 }
+function restHasOwnAccident(log){
+  return (Array.isArray(log?.event)?log.event:[]).some(x=>String(x||'').trim().includes('事故'));
+}
 function restHistoricalFactors(log){
   const d=restDateOnly(log.date); if(!d)return [];
   const factors=restDateFactors(d);
@@ -2121,7 +2124,7 @@ function toggleRestLearningDetails(){
 async function renderRestLearningDetails(){
   const box=$('restLearningDetails'); if(!box)return;
   const logs=await getLogs();
-  const usable=logs.filter(x=>restAnalysisValue(x)>0);
+  const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
   const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const catalog=restFactorCatalog();
   const rows=catalog.map(f=>{
@@ -2154,7 +2157,7 @@ async function renderRestLearningDetails(){
     '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
 function restPatternStats(logs){
-  const usable=logs.filter(x=>restAnalysisValue(x)>0);
+  const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
   const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const map=new Map();
   usable.forEach(log=>{
