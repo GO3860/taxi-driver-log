@@ -2429,13 +2429,13 @@ function renderWorkCalendar(){
 function renderCalendarDetail(){
   const head=$('calendarDetailHead'),body=$('calendarDetailBody');
   if(!head||!body)return;
-  if(!workCalendarSelectedKey){head.textContent='日付を選択してください';body.innerHTML='';return;}
+  if(!workCalendarSelectedKey){head.textContent='日付をタップして選択してください';body.innerHTML='';return;}
   const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
   const m=workCalendarSelectedKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const dt=m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):null;
   const wd=dt?'（'+['日','月','火','水','木','金','土'][dt.getDay()]+'）':'';
   const holidayName=getHolidayName(workCalendarSelectedKey);
-  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付を選択してください';
+  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付をタップして選択してください';
   if(!arr.length){body.innerHTML='<div class="small">登録内容はありません</div>';return;}
 
   const planItems=arr.filter(p=>p.type==='plan');
@@ -2524,7 +2524,7 @@ function deletePlanItem(index){
   renderWorkCalendar();
 }
 function saveWorkPlan(){
-  if(!workCalendarSelectedKey){alert('登録する日付を選択してください。');return}
+  if(!workCalendarSelectedKey){alert('登録する日付をタップして選択してください。');return}
   const type=$('workPlanType').value;
   const memo=$('workPlanMemo').value||'';
   const time=$('workPlanTime')?.value||'';
