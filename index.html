@@ -1976,7 +1976,20 @@ async function renderRestLearningDetails(){
     '<div class="restTrendRow"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(p.diff))+'%低め</span></div>'
   ).join('');
   const trendHtml=trends||'<div class="restLearnBox">まだ十分なデータから発見できた傾向はありません。</div>';
-  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restDetailMeta">分析対象：エリア平均が入力された <strong>'+usable.length+'日</strong> ／ 全体平均 ¥'+Math.round(overall).toLocaleString()+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
+  const factorReadyCount=catalog.filter(f=>{
+    const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;
+    return count>=5;
+  }).length;
+  const learningTarget=30;
+  const progress=Math.min(100,Math.round(usable.length/learningTarget*100));
+  const remain=Math.max(0,learningTarget-usable.length);
+  const progressMessage=usable.length<learningTarget
+    ? 'あと<strong>'+remain+'日</strong>分のエリア平均がたまると、基礎的な学習ライン（30日分）に到達します。'
+    : '🎉 基礎的な学習ラインに到達しています。これからもデータが増えるほど傾向が安定していきます。';
+  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats">'+
+    '<div class="restLearningStat"><div class="restLearningStatLabel">📊 エリア平均データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
+    '<div class="restLearningStatGrid"><div class="restLearningStatBox"><strong>'+factorReadyCount+'種類</strong><span>分析できるファクター</span></div><div class="restLearningStatBox"><strong>'+stats.patterns.length+'件</strong><span>発見した傾向</span></div></div>'+
+    '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
 function restPatternStats(logs){
   const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
@@ -2453,6 +2466,9 @@ function deleteWorkPlan(){
 </style>
 <style id="rest-learning-details-v166">
 .restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
+</style>
+<style id="rest-learning-progress-v167">
+.restLearningStats{margin-top:12px}.restLearningStat{padding:12px;border:1px solid #dfe9e1;border-radius:14px;background:#fff}.restLearningStatLabel{font-size:14px;font-weight:900;margin-bottom:8px}.restProgress{height:12px;border-radius:999px;background:#edf0ed;overflow:hidden}.restProgressBar{height:100%;border-radius:999px;background:#78b88a;transition:width .3s ease}.restProgressText{margin-top:6px;font-size:14px;text-align:right;color:#555}.restProgressText strong{font-size:20px;color:#222}.restProgressMsg{margin-top:7px;font-size:12px;color:#666;line-height:1.5}.restLearningStatGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.restLearningStatBox{padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff}.restLearningStatBox strong{display:block;font-size:22px}.restLearningStatBox span{display:block;margin-top:3px;font-size:11px;color:#666;font-weight:700}@media(max-width:430px){.restLearningStatGrid{gap:7px}.restLearningStatBox strong{font-size:20px}}
 </style>
 </body></html><style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
