@@ -1980,16 +1980,31 @@ async function renderRestLearningDetails(){
     const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;
     return count>=5;
   }).length;
-  const learningTarget=30;
-  const progress=Math.min(100,Math.round(usable.length/learningTarget*100));
-  const remain=Math.max(0,learningTarget-usable.length);
-  const progressMessage=usable.length<learningTarget
-    ? 'あと<strong>'+remain+'日</strong>分のエリア平均がたまると、基礎的な学習ライン（30日分）に到達します。'
-    : '🎉 基礎的な学習ラインに到達しています。これからもデータが増えるほど傾向が安定していきます。';
-  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats">'+
-    '<div class="restLearningStat"><div class="restLearningStatLabel">📊 エリア平均データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
+  const stages=[
+    {days:30,icon:'🌱',name:'基礎学習ライン'},
+    {days:90,icon:'🌿',name:'傾向学習ライン'},
+    {days:180,icon:'🌳',name:'応用学習ライン'},
+    {days:365,icon:'🌲',name:'実践学習ライン'},
+    {days:730,icon:'🏆',name:'熟練学習ライン'}
+  ];
+  let stageIndex=-1;
+  stages.forEach((s,i)=>{if(usable.length>=s.days)stageIndex=i;});
+  const currentStage=stageIndex>=0?stages[stageIndex]:{days:0,icon:'🌱',name:'学習準備中'};
+  const nextStage=stageIndex<stages.length-1?stages[stageIndex+1]:null;
+  const progressBase=stageIndex>=0?stages[stageIndex].days:0;
+  const progressTarget=nextStage?nextStage.days:stages[stages.length-1].days;
+  const progress=Math.min(100,Math.round((usable.length-Math.min(progressBase,usable.length))/Math.max(1,progressTarget-Math.min(progressBase,usable.length))*100));
+  const remain=nextStage?Math.max(0,nextStage.days-usable.length):0;
+  const progressMessage=nextStage
+    ? (stageIndex<0
+      ? 'あと<strong>'+remain+'日</strong>で最初の学習ラインに到達します。'
+      : 'あと<strong>'+remain+'日</strong>で '+nextStage.icon+' <strong>'+nextStage.name+'</strong>へ進みます。')
+    : '🎉 2年間の学習ラインに到達しました。ここからもデータを積み重ねて、あなた専用の分析を更新していきます。';
+  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div>'+
+    '<div class="restStageBadge"><span class="restStageIcon">'+currentStage.icon+'</span><div><strong>'+currentStage.name+'</strong><div class="restStageSub">'+(nextStage?'次は '+nextStage.icon+' '+nextStage.name:'2年分のデータを学習済み')+'</div></div></div>'+
+    '<div class="restLearningStats"><div class="restLearningStat"><div class="restLearningStatLabel">📊 エリア平均データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong>'+(nextStage?' / '+nextStage.days+'日':' ／ 730日達成')+'</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
     '<div class="restLearningStatGrid"><div class="restLearningStatBox"><strong>'+factorReadyCount+'種類</strong><span>分析できるファクター</span></div><div class="restLearningStatBox"><strong>'+stats.patterns.length+'件</strong><span>発見した傾向</span></div></div>'+
-    '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
+    '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。<br>🌱→🌿→🌳→🌲→🏆 と、データが増えるほど学習ステージが進みます。</div></div>
 }
 function restPatternStats(logs){
   const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
@@ -2469,6 +2484,9 @@ function deleteWorkPlan(){
 </style>
 <style id="rest-learning-progress-v167">
 .restLearningStats{margin-top:12px}.restLearningStat{padding:12px;border:1px solid #dfe9e1;border-radius:14px;background:#fff}.restLearningStatLabel{font-size:14px;font-weight:900;margin-bottom:8px}.restProgress{height:12px;border-radius:999px;background:#edf0ed;overflow:hidden}.restProgressBar{height:100%;border-radius:999px;background:#78b88a;transition:width .3s ease}.restProgressText{margin-top:6px;font-size:14px;text-align:right;color:#555}.restProgressText strong{font-size:20px;color:#222}.restProgressMsg{margin-top:7px;font-size:12px;color:#666;line-height:1.5}.restLearningStatGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.restLearningStatBox{padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff}.restLearningStatBox strong{display:block;font-size:22px}.restLearningStatBox span{display:block;margin-top:3px;font-size:11px;color:#666;font-weight:700}@media(max-width:430px){.restLearningStatGrid{gap:7px}.restLearningStatBox strong{font-size:20px}}
+</style>
+<style id="rest-learning-stage-v168">
+.restStageBadge{display:flex;align-items:center;gap:12px;margin-top:12px;padding:13px 14px;border:1px solid #d5e7d9;border-radius:15px;background:#f5fbf6}.restStageIcon{font-size:31px;line-height:1}.restStageBadge strong{font-size:18px}.restStageSub{margin-top:3px;font-size:12px;color:#66736a}.restStageBadge+.restLearningStats{margin-top:9px}
 </style>
 </body></html><style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
