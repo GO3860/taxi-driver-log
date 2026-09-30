@@ -338,6 +338,19 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
 </div>
 
+<div class="card" id="restAnalysisSettingsCard">
+<div class="label">🌿 休み方分析の設定</div>
+<div class="help-text">売上を上げるためではなく、自分の営業データから「休む候補になりやすい日」を学習するための設定です。</div>
+<div style="margin-top:12px;font-weight:800;font-size:15px">💰 給料日基準</div>
+<select id="paydayBase" onchange="saveRestSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:7px"></select>
+<div class="small">ご自身の給料日ではなく、給料日前後の影響を分析するための基準日です。初期値は25日です。</div>
+<div style="margin-top:14px;font-weight:800;font-size:15px">💴 祝日手当</div>
+<div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
+<label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
+<label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
+</div>
+<div class="small" id="restSettingsStatus"></div>
+</div>
 <div class="card holidaySettingsMenuCard">
 <button class="settingsMenuBtn holidayMenuBtn" type="button" onclick="openHolidaySettings()">🇯🇵 祝日設定<br><span style="font-size:12px;color:#777;font-weight:500">年ごとの祝日を追加・削除・管理できます</span></button>
 </div>
@@ -543,17 +556,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <button class="areaAvgBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card areaAvgCard">
     <div class="label">🌿 休み方アドバイス</div>
-    <div class="help-text">タクログの記録をもとに、無理のない休み方を考えるためのページです。</div>
-    <div class="areaAvgInner">
-      <div class="areaAvgTitle">🌿 休み方アドバイス</div>
-      <div class="areaAvgExplain">ここでは、売上を上げるための営業指示ではなく、休暇・休憩・連勤などを見ながら、休み方についてのヒントを表示していきます。</div>
-      <div class="areaAvgRows">
-        <div class="areaAvgRow" style="display:block">
-          <strong style="font-size:18px">🏠 休みを大切に</strong>
-          <div style="margin-top:6px;color:#666;line-height:1.6">これから、タクログの記録を使って「いつ休むか」「どれくらい休めているか」などのアドバイスを追加していきます。</div>
-        </div>
-      </div>
-    </div>
+    <div class="help-text">自分の営業データから、エリア平均が低くなりやすい条件を学習し、休暇候補を表示します。</div>
+    <div id="restAdviceContent"></div>
   </div>
 </main>
 <main id="areaAvgLater" class="hidden">
@@ -1372,6 +1376,16 @@ function initSettings(){
   if($('showDistance'))$('showDistance').checked=showDistance;
   if($('showRoute'))$('showRoute').checked=showRoute;
   if($('showHelpText'))$('showHelpText').checked=showHelpText;
+  const payday=$('paydayBase');
+  if(payday){
+    payday.innerHTML='';
+    for(let d=1;d<=31;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'日';payday.appendChild(o)}
+    payday.value=localStorage.getItem('taxiPaydayBase')||'25';
+  }
+  const allowance=localStorage.getItem('taxiHolidayAllowance')||'1';
+  if($('holidayAllowanceYes'))$('holidayAllowanceYes').checked=allowance==='1';
+  if($('holidayAllowanceNo'))$('holidayAllowanceNo').checked=allowance!=='1';
+  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+(localStorage.getItem('taxiPaydayBase')||'25')+'日／祝日手当 '+(allowance==='1'?'あり':'なし');
   applySettings();
 }
 function saveSettings(){
@@ -1855,11 +1869,131 @@ async function showAreaAvgLater(){
   $('areaAvgLater').classList.remove('hidden');
   await renderAreaAvgLater();
 }
-function showRestAdvice(){
+async function showRestAdvice(){
   resetSaveButton();
   hideAllMainViews();
   $('restAdvice').classList.remove('hidden');
+  await renderRestAdvice();
 }
+
+// ===== 休み方学習エンジン =====
+function saveRestSettings(){
+  const payday=$('paydayBase')?.value||'25';
+  localStorage.setItem('taxiPaydayBase',payday);
+  const allowance=$('holidayAllowanceYes')?.checked?'1':'0';
+  localStorage.setItem('taxiHolidayAllowance',allowance);
+  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし');
+}
+function restDateKey(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function restDateOnly(v){
+  if(v instanceof Date)return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  const d=parseDutyDate(v); return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;
+}
+function restDiffDays(a,b){return Math.round((a-b)/86400000);}
+function restIsHoliday(d){return !!getHolidayName(restDateKey(d));}
+function restPaydayDate(year,month){
+  const day=Math.min(Number(localStorage.getItem('taxiPaydayBase')||25),new Date(year,month+1,0).getDate());
+  return new Date(year,month,day);
+}
+function restPensionDate(year,month){
+  if(month%2!==1)return null; // 2,4,6,8,10,12月
+  let d=new Date(year,month,15);
+  while(d.getDay()===0||d.getDay()===6||restIsHoliday(d))d.setDate(d.getDate()-1);
+  return d;
+}
+function restLargeHoliday(d){
+  const m=d.getMonth()+1,day=d.getDate();
+  if((m===4&&day>=29)||(m===5&&day<=5))return '🎌 GW';
+  if(m===8&&day>=13&&day<=16)return '☀️ お盆';
+  if((m===12&&day>=29)||(m===1&&day<=3))return '🎍 年末年始';
+  return '';
+}
+function restDateFactors(d){
+  const factors=[];
+  const wd=['日','月','火','水','木','金','土'][d.getDay()];
+  factors.push('曜日：'+wd);
+  factors.push('月：'+(d.getMonth()+1)+'月');
+  if(d.getDay()===0||d.getDay()===6)factors.push('週末');
+  if(restIsHoliday(d))factors.push('祝日');
+  const pay=restPaydayDate(d.getFullYear(),d.getMonth()),pd=restDiffDays(d,pay);
+  if(pd>=-3&&pd<=3)factors.push(pd<0?'給料日前後：前':pd===0?'給料日前後：当日':'給料日前後：後');
+  const pension=restPensionDate(d.getFullYear(),d.getMonth());
+  if(pension){
+    const nd=restDiffDays(d,pension);
+    if(nd>=-2&&nd<=2)factors.push(nd<0?'年金支給日前後：前':nd===0?'年金支給日前後：当日':'年金支給日前後：後');
+  }
+  const lh=restLargeHoliday(d); if(lh)factors.push('大型連休：'+lh);
+  return factors;
+}
+function restHistoricalFactors(log){
+  const d=restDateOnly(log.date); if(!d)return [];
+  const factors=restDateFactors(d);
+  (Array.isArray(log.weather)?log.weather:[]).forEach(x=>{if(x)factors.push('天気：'+String(x).trim())});
+  (Array.isArray(log.event)?log.event:[]).forEach(x=>{if(x)factors.push('イベント：'+String(x).trim())});
+  return [...new Set(factors)];
+}
+function restPatternStats(logs){
+  const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
+  const overall=usable.length?usable.reduce((s,x)=>s+Number(x.avg),0)/usable.length:0;
+  const map=new Map();
+  usable.forEach(log=>{
+    restHistoricalFactors(log).forEach(f=>{
+      if(!map.has(f))map.set(f,[]);
+      map.get(f).push(Number(log.avg));
+    });
+  });
+  const patterns=[];
+  for(const [factor,vals] of map){
+    if(vals.length<3)continue;
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+    const diff=overall?((avg/overall)-1)*100:0;
+    if(diff<=-10)patterns.push({factor,count:vals.length,avg,diff});
+  }
+  return {usable,overall,patterns};
+}
+function restCalendarType(key){
+  const arr=normalizePlansForDate(getWorkPlans()[key]);
+  return arr.length?arr[arr.length-1]?.type:'';
+}
+function restCandidateScore(d,patterns){
+  const factors=restDateFactors(d);
+  const hits=patterns.filter(p=>factors.includes(p.factor));
+  if(!hits.length)return null;
+  const combinedAvg=hits.reduce((s,p)=>s+p.avg,0)/hits.length;
+  return {factors:hits.map(p=>p.factor),avg:combinedAvg,hits};
+}
+async function renderRestAdvice(){
+  const box=$('restAdviceContent'); if(!box)return;
+  const logs=await getLogs();
+  const stats=restPatternStats(logs);
+  if(stats.usable.length<3){
+    box.innerHTML='<div class="restLearnBox">📚 エリア平均の記録がまだ少ないため、学習中です。<br><span>エリア平均が入力された営業日のデータが増えると、傾向を自動で探します。</span></div>';
+    return;
+  }
+  const patternHtml=stats.patterns.length
+    ? stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join('')
+    : '<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
+  const candidates=[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const allowance=localStorage.getItem('taxiHolidayAllowance')!=='0';
+  for(let i=1;i<=45;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const key=restDateKey(d),type=restCalendarType(key);
+    if(type!=='work')continue;
+    if(allowance&&restIsHoliday(d))continue;
+    const score=restCandidateScore(d,stats.patterns);
+    if(score)candidates.push({d,key,score});
+  }
+  const candHtml=candidates.length
+    ? candidates.slice(0,8).map(x=>'<div class="restCandidate"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討</div></div>').join('')
+    : '<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
+  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div><div>分析対象：エリア平均 <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
+    '<div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div>'+
+    '<div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
+}
+
 function getAreaAvgHiddenDates(){
   try{return JSON.parse(localStorage.getItem('taxiAreaAvgHiddenDates')||'[]')}catch(e){return[]}
 }
@@ -2269,6 +2403,9 @@ function deleteWorkPlan(){
 .calendarDetailSectionTitle{font-size:16px;font-weight:900;margin:10px 0 7px}
 .eventItem{background:#effbf3!important;border-color:#a9e1ba!important}
 .eventIconLarge{font-size:21px;margin-right:5px}
+</style>
+<style id="rest-learning-v165">
+.restSummary,.restLearnBox{background:#f6fbf7;border:1px solid #d9eadc;border-radius:16px;padding:14px;margin-top:12px;line-height:1.6}.restSummaryTitle{font-size:18px;font-weight:900;margin-bottom:6px}.restSmall{font-size:12px;color:#777;margin-top:6px}.restSection{margin-top:14px}.restSectionTitle{font-size:17px;font-weight:900;margin-bottom:8px}.restPattern{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid #e6e9ec;border-radius:13px;padding:11px;margin-top:7px}.restPattern strong{font-size:14px}.restPattern span{font-size:12px;color:#666;text-align:right}.restCandidate{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #dce9df;border-radius:14px;padding:12px;margin-top:8px}.restCandidate strong{font-size:16px}.restWhy{font-size:12px;color:#666;margin-top:4px}.restCandidateMark{background:#edf8ef;color:#2e7d32;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:430px){.restPattern{display:block}.restPattern span{display:block;text-align:left;margin-top:4px}.restCandidateMark{font-size:10px;padding:6px 7px}}
 </style>
 </body></html><style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
