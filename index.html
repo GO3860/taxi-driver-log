@@ -218,6 +218,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .calendarPlanDelete{border:0;border-radius:10px;background:#f2f2f2;color:#777;padding:7px 9px;font-weight:800;white-space:nowrap}
 .calendarAddWide{width:100%;margin-top:2px}
 </style>
+
+<style id="constraint-warning-v168">
+.hoursbox{position:relative;overflow:hidden}
+.hoursWarningOverlay{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 8px;border-radius:10px;pointer-events:none;font-weight:900;line-height:1.25;font-size:13px;backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px)}
+.hoursWarningOverlay.hidden{display:none}
+.hoursWarningOverlay.company{background:rgba(255,215,0,.34);color:#7a5b00}
+.hoursWarningOverlay.national{background:rgba(255,40,40,.26);color:#9d0000}
+.hoursWarningOverlay.over{background:rgba(255,40,40,.38);color:#8b0000}
+</style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -246,7 +255,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
 <div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
-<div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—</div></div><div id="distanceField"><div class="small">走行距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
+<div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div><div id="distanceField"><div class="small">走行距離 km</div><input id="km" type="number" inputmode="decimal"></div></div></div>
 
 <div class="card"><div class="label">💰 売上</div><div class="grid">
 <div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
@@ -765,20 +774,95 @@ function weather(e){
   e.dataset.weatherOrder=String(++weatherPickSeq);
   refreshWeather();
 }
+function getDutyElapsedMinutes(){
+  const out=$('out')?.value||'';
+  if(!out)return null;
+  const [oh,om]=out.split(':').map(Number);
+  if(!Number.isFinite(oh)||!Number.isFinite(om))return null;
+  const inn=$('in')?.value||'';
+  if(inn){
+    const [ih,im]=inn.split(':').map(Number);
+    if(!Number.isFinite(ih)||!Number.isFinite(im))return null;
+    let minutes=(ih*60+im)-(oh*60+om);
+    if(minutes<0)minutes+=24*60;
+    return minutes;
+  }
+  const now=new Date();
+  let minutes=(now.getHours()*60+now.getMinutes())-(oh*60+om);
+  if(minutes<0){
+    const dutyDate=parseDutyDate($('date')?.textContent);
+    if(dutyDate){
+      const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+      const base=new Date(dutyDate.getFullYear(),dutyDate.getMonth(),dutyDate.getDate());
+      const dayDiff=Math.round((today-base)/86400000);
+      if(dayDiff>=1)minutes+=dayDiff*24*60;
+      else return null;
+    }else return null;
+  }
+  return Math.max(0,minutes);
+}
+
+function getNationalDutyLimitMinutes(){
+  const workStyle=document.querySelector('input[name="workStyle"]:checked')?.value||'';
+  // 現行の改善基準告示：日勤15時間、隔勤は2暦日22時間を最大拘束時間として扱う。
+  return workStyle==='日勤者' ? 15*60 : 22*60;
+}
+
+function formatRemainingMinutes(minutes){
+  const m=Math.max(0,Math.ceil(minutes));
+  if(m<60)return m+'分';
+  const h=Math.floor(m/60),rest=m%60;
+  return rest ? h+'時間'+rest+'分' : h+'時間';
+}
+
+function updateConstraintWarning(){
+  const box=$('hours');
+  const overlay=$('hoursWarningOverlay');
+  const text=$('hoursWarningText');
+  if(!box||!overlay||!text)return;
+  const elapsed=getDutyElapsedMinutes();
+  overlay.classList.add('hidden');
+  overlay.classList.remove('company','national','over');
+  if(elapsed===null)return;
+
+  const company=Number($('dailyCompanyConstrainedHours')?.value||0)*60;
+  const national=getNationalDutyLimitMinutes();
+  let mode='',message='';
+
+  if(elapsed>=national){
+    mode='over';
+    message='国の拘束時間をオーバーしています';
+  }else if(national-elapsed<=60){
+    mode='national';
+    message='後'+formatRemainingMinutes(national-elapsed)+'で拘束時間をオーバーします';
+  }else if(company>0 && elapsed>=company){
+    mode='company';
+    message='会社規定の拘束時間が過ぎてます。';
+  }
+  if(mode){
+    overlay.classList.remove('hidden');
+    overlay.classList.add(mode);
+    text.textContent=message;
+  }
+}
+
 function duration(){
   const out=$('out').value;
   const inn=$('in').value;
   const hours=$('hours');
   if(!out||!inn){
-    hours.textContent='—';
+    hours.firstChild.textContent='—';
+    updateConstraintWarning();
     return;
   }
   const [oh,om]=out.split(':').map(Number);
   const [ih,im]=inn.split(':').map(Number);
   let minutes=(ih*60+im)-(oh*60+om);
   if(minutes<0)minutes+=24*60;
-  hours.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+  hours.firstChild.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+  updateConstraintWarning();
 }
+
 
 async function updateTotal(){
   const a=await getLogs();
@@ -2519,6 +2603,9 @@ function deleteWorkPlan(){
 <script>
 /* v109: 2件なら18px、3件なら18pxずつ重ねる。最新登録が最前面。 */
 /* v109 stack wrapper disabled by v112 fit design */
+
+// 拘束時間警告は、勤務中も自動更新する
+setInterval(updateConstraintWarning,30000);
 </script>
 
 <style id="calendar-color-text-v119">
