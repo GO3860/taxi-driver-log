@@ -1007,6 +1007,13 @@ function setDayType(el,type){
   if(df){ df.classList.toggle('hidden', parttime); df.style.display=parttime?'none':''; }
   const sg=$('salesGoalCard');
   if(sg){ sg.style.display=parttime?'none':''; }
+
+  // アルバイトでも「道ログ」を記録できるようにする
+  const routeCard=$('routeCard');
+  if(routeCard){
+    const routeSettingOn=localStorage.getItem('taxiShowRoute')==='1';
+    routeCard.classList.toggle('hidden', !routeSettingOn && !parttime);
+  }
 }
 function getDayType(){return document.querySelector('#dayType .chip.on')?.dataset.type||'work'}
 window.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
