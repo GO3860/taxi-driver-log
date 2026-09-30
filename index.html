@@ -2084,7 +2084,12 @@ function restHistoricalFactors(log){
   const d=restDateOnly(log.date); if(!d)return [];
   const factors=restDateFactors(d);
   (Array.isArray(log.weather)?log.weather:[]).forEach(x=>{if(x)factors.push('天気：'+String(x).trim())});
-  (Array.isArray(log.event)?log.event:[]).forEach(x=>{if(x)factors.push('イベント：'+String(x).trim())});
+  (Array.isArray(log.event)?log.event:[]).forEach(x=>{
+    const eventName=String(x||'').trim();
+    // 「🚨 事故」は外的な営業要因として扱わず、休み方アドバイスの学習対象から除外する。
+    if(!eventName || eventName.includes('事故'))return;
+    factors.push('イベント：'+eventName);
+  });
   return [...new Set(factors)];
 }
 function restFactorCatalog(){
