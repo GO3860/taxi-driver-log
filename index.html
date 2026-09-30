@@ -265,22 +265,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
-<div class="card"><div class="label">📊 営業データ</div><div class="grid">
-<div><div class="small loadedRateHelp">実車率</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div>
-<div id="loadedRateFormula" class="loadedRateFormula">
-  <div>実車率 ＝ 実車距離 ÷ 走行距離 × 100</div>
-  <div class="loadedRateCalc">
-    <div class="loadedRateCalcTitle">🧮 実車率を計算</div>
-    <div class="loadedRateCalcGrid">
-      <div><label for="loadedRateCalcDistance">実車距離 km</label><input id="loadedRateCalcDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：80"></div>
-      <div><label for="loadedRateCalcTotal">走行距離 km</label><input id="loadedRateCalcTotal" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：120"></div>
-    </div>
-    <div class="loadedRateCalcResult">実車率 <strong id="loadedRateCalcResult">—</strong> %</div>
-    <button type="button" class="loadedRateUseBtn" onclick="useLoadedRateCalc()">この値を実車率欄に入れる</button>
-  </div>
-</div></div>
-<div><div class="small">営業回</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="例：30"><div class="small" style="margin-top:4px">回</div></div>
-</div></div>
+<div class="card"><div class="label">📊 営業データ</div>
+<div class="salesDataCalcGrid">
+  <div class="salesDataCalcField"><div class="small">走行距離</div><input id="salesDataRunDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">乗車距離</div><input id="salesDataRideDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">実車距離</div><input id="salesDataLoadedDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">営業回数</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="回"></div>
+</div>
+<div class="loadedRateCalcResult salesDataRateResult">実車率 <strong id="loadedRateCalcResult">—</strong> %</div>
+<input id="loadedRate" type="hidden">
+<div class="salesDataCalcFormula">実車率 ＝ 実車距離 ÷ 走行距離 × 100</div>
+</div>
 
 <div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
 <div id="routeList"></div>
@@ -870,29 +865,21 @@ function showLoadedRateFormula(){
   el.classList.toggle('hidden');
 }
 function updateLoadedRateCalc(){
-  const loaded=Number($('loadedRateCalcDistance')?.value||0);
-  const total=Number($('loadedRateCalcTotal')?.value||0);
+  const loaded=Number($('salesDataLoadedDistance')?.value||0);
+  const total=Number($('salesDataRunDistance')?.value||0);
   const result=$('loadedRateCalcResult');
   if(!result)return;
   if(total>0 && loaded>=0){
     const rate=Math.min(100,(loaded/total)*100);
     result.textContent=rate.toFixed(1);
+    const input=$('loadedRate');
+    if(input)input.value=rate.toFixed(1);
+    const km=$('km');
+    if(km && total>0)km.value=total;
   }else{
     result.textContent='—';
-  }
-}
-function useLoadedRateCalc(){
-  const loaded=Number($('loadedRateCalcDistance')?.value||0);
-  const total=Number($('loadedRateCalcTotal')?.value||0);
-  if(!(total>0) || loaded<0){
-    alert('実車距離と走行距離を入力してください。');
-    return;
-  }
-  const rate=Math.min(100,(loaded/total)*100);
-  const input=$('loadedRate');
-  if(input){
-    input.value=rate.toFixed(1);
-    input.dispatchEvent(new Event('input',{bubbles:true}));
+    const input=$('loadedRate');
+    if(input)input.value='';
   }
 }
 function duration(){
@@ -2547,7 +2534,10 @@ function deleteWorkPlan(){
   renderWorkCalendar();
 }
 document.addEventListener('input',function(e){
-  if(e.target && (e.target.id==='loadedRateCalcDistance'||e.target.id==='loadedRateCalcTotal')) updateLoadedRateCalc();
+  if(e.target && (e.target.id==='salesDataLoadedDistance'||e.target.id==='salesDataRunDistance')) updateLoadedRateCalc();
+  if(e.target && e.target.id==='salesDataRunDistance'){
+    const km=$('km'); if(km)km.value=e.target.value;
+  }
 });
 </script>
 
@@ -2605,6 +2595,15 @@ document.addEventListener('input',function(e){
 </style>
 <style id="rest-learning-details-v166">
 .restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
+</style>
+<style id="sales-data-calc-v172">
+.salesDataCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;margin-top:2px}
+.salesDataCalcField .small{font-size:14px;font-weight:700;color:#555;margin-bottom:7px}
+.salesDataCalcField input{font-size:17px;padding:13px 10px}
+.salesDataRateResult{margin-top:16px;padding:12px;border-radius:12px;background:#f5f8fb;border:1px solid #dce7ef;text-align:center;font-size:14px}
+.salesDataRateResult strong{font-size:24px;color:#1677b7}
+.salesDataCalcFormula{margin-top:9px;text-align:center;font-size:12px;color:#777}
+@media(max-width:430px){.salesDataCalcGrid{gap:14px 18px}.salesDataCalcField input{font-size:16px}}
 </style>
 <style id="loaded-rate-formula-v169">
 .loadedRateHelp{cursor:pointer;color:#1677b7;text-decoration:underline;text-underline-offset:2px}
