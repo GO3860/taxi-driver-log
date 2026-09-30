@@ -266,7 +266,18 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
 <div class="card"><div class="label">📊 営業データ</div><div class="grid">
-<div><div class="small loadedRateHelp" onclick="showLoadedRateFormula()">実車率 ⓘ</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div><div id="loadedRateFormula" class="loadedRateFormula hidden">実車率 ＝ 実車距離 ÷ 走行距離 × 100</div></div>
+<div><div class="small loadedRateHelp" onclick="showLoadedRateFormula()">実車率 ⓘ</div><input id="loadedRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="例：55.5"><div class="small" style="margin-top:4px">%</div><div id="loadedRateFormula" class="loadedRateFormula hidden">
+  <div>実車率 ＝ 実車距離 ÷ 走行距離 × 100</div>
+  <div class="loadedRateCalc">
+    <div class="loadedRateCalcTitle">🧮 実車率を計算</div>
+    <div class="loadedRateCalcGrid">
+      <div><label for="loadedRateCalcDistance">実車距離 km</label><input id="loadedRateCalcDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：80"></div>
+      <div><label for="loadedRateCalcTotal">走行距離 km</label><input id="loadedRateCalcTotal" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例：120"></div>
+    </div>
+    <div class="loadedRateCalcResult">実車率 <strong id="loadedRateCalcResult">—</strong> %</div>
+    <button type="button" class="loadedRateUseBtn" onclick="useLoadedRateCalc()">この値を実車率欄に入れる</button>
+  </div>
+</div></div>
 <div><div class="small">営業回</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="例：30"><div class="small" style="margin-top:4px">回</div></div>
 </div></div>
 
@@ -856,6 +867,32 @@ function showLoadedRateFormula(){
   const el=$('loadedRateFormula');
   if(!el)return;
   el.classList.toggle('hidden');
+}
+function updateLoadedRateCalc(){
+  const loaded=Number($('loadedRateCalcDistance')?.value||0);
+  const total=Number($('loadedRateCalcTotal')?.value||0);
+  const result=$('loadedRateCalcResult');
+  if(!result)return;
+  if(total>0 && loaded>=0){
+    const rate=Math.min(100,(loaded/total)*100);
+    result.textContent=rate.toFixed(1);
+  }else{
+    result.textContent='—';
+  }
+}
+function useLoadedRateCalc(){
+  const loaded=Number($('loadedRateCalcDistance')?.value||0);
+  const total=Number($('loadedRateCalcTotal')?.value||0);
+  if(!(total>0) || loaded<0){
+    alert('実車距離と走行距離を入力してください。');
+    return;
+  }
+  const rate=Math.min(100,(loaded/total)*100);
+  const input=$('loadedRate');
+  if(input){
+    input.value=rate.toFixed(1);
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  }
 }
 function duration(){
   const out=$('out').value;
@@ -2508,6 +2545,11 @@ function deleteWorkPlan(){
   const time=$('workPlanTime');if(time)time.value='';
   renderWorkCalendar();
 }
+<script id="loaded-rate-calc-v169">
+document.addEventListener('input',function(e){
+  if(e.target && (e.target.id==='loadedRateCalcDistance'||e.target.id==='loadedRateCalcTotal')) updateLoadedRateCalc();
+});
+</script>
 </script>
 
 <style id="calendar-block-shift-v114">
@@ -2565,9 +2607,17 @@ function deleteWorkPlan(){
 <style id="rest-learning-details-v166">
 .restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
 </style>
-<style id="loaded-rate-formula-v168">
+<style id="loaded-rate-formula-v169">
 .loadedRateHelp{cursor:pointer;color:#1677b7;text-decoration:underline;text-underline-offset:2px}
 .loadedRateFormula{margin-top:8px;padding:9px 10px;border-radius:10px;background:#eef7ff;border:1px solid #cfe5f7;color:#17608d;font-size:13px;font-weight:700;line-height:1.5}
+.loadedRateCalc{margin-top:10px;padding:11px;border-radius:12px;background:#fff;border:1px solid #d7e7f3}
+.loadedRateCalcTitle{font-size:13px;font-weight:900;margin-bottom:8px;color:#17608d}
+.loadedRateCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.loadedRateCalcGrid label{display:block;font-size:11px;color:#666;margin-bottom:4px}
+.loadedRateCalcGrid input{padding:10px 8px;font-size:16px;background:#fafafa}
+.loadedRateCalcResult{margin-top:9px;padding:9px;border-radius:10px;background:#f5f8fb;text-align:center;font-size:14px}
+.loadedRateCalcResult strong{font-size:22px;color:#1677b7}
+.loadedRateUseBtn{width:100%;margin-top:8px;border:0;border-radius:10px;padding:10px;background:#e8f4ff;color:#1677b7;font-size:13px;font-weight:800}
 </style>
 <style id="rest-learning-progress-v167">
 .restLearningStats{margin-top:12px}.restLearningStat{padding:12px;border:1px solid #dfe9e1;border-radius:14px;background:#fff}.restLearningStatLabel{font-size:14px;font-weight:900;margin-bottom:8px}.restProgress{height:12px;border-radius:999px;background:#edf0ed;overflow:hidden}.restProgressBar{height:100%;border-radius:999px;background:#78b88a;transition:width .3s ease}.restProgressText{margin-top:6px;font-size:14px;text-align:right;color:#555}.restProgressText strong{font-size:20px;color:#222}.restProgressMsg{margin-top:7px;font-size:12px;color:#666;line-height:1.5}.restLearningStatGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.restLearningStatBox{padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff}.restLearningStatBox strong{display:block;font-size:22px}.restLearningStatBox span{display:block;margin-top:3px;font-size:11px;color:#666;font-weight:700}@media(max-width:430px){.restLearningStatGrid{gap:7px}.restLearningStatBox strong{font-size:20px}}
