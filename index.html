@@ -370,6 +370,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
+<div style="margin-top:14px;font-weight:800;font-size:15px">📊 学習に使う売上データ</div>
+<div class="help-text">エリア平均を入力できない場合は「自分の売上」を選べます。</div>
+<div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
+<label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="analysisSourceArea" type="radio" name="analysisSource" value="area" onchange="saveRestSettings()" style="width:20px;height:20px">エリア平均</label>
+<label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="analysisSourceOwn" type="radio" name="analysisSource" value="own" onchange="saveRestSettings()" style="width:20px;height:20px">自分の売上</label>
+</div>
 </div>
 <div class="small" id="restSettingsStatus"></div>
 </div>
@@ -1512,7 +1518,10 @@ function initSettings(){
   const allowance=localStorage.getItem('taxiHolidayAllowance')||'1';
   if($('holidayAllowanceYes'))$('holidayAllowanceYes').checked=allowance==='1';
   if($('holidayAllowanceNo'))$('holidayAllowanceNo').checked=allowance!=='1';
-  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+(localStorage.getItem('taxiPaydayBase')||'25')+'日／祝日手当 '+(allowance==='1'?'あり':'なし');
+  const source=localStorage.getItem('taxiRestAnalysisSource')||'area';
+  if($('analysisSourceArea'))$('analysisSourceArea').checked=source==='area';
+  if($('analysisSourceOwn'))$('analysisSourceOwn').checked=source==='own';
+  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+(localStorage.getItem('taxiPaydayBase')||'25')+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
   applySettings();
 }
 function saveSettings(){
@@ -2014,7 +2023,19 @@ function saveRestSettings(){
   localStorage.setItem('taxiPaydayBase',payday);
   const allowance=$('holidayAllowanceYes')?.checked?'1':'0';
   localStorage.setItem('taxiHolidayAllowance',allowance);
-  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし');
+  const source=$('analysisSourceOwn')?.checked?'own':'area';
+  localStorage.setItem('taxiRestAnalysisSource',source);
+  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
+}
+function restAnalysisSource(){
+  return localStorage.getItem('taxiRestAnalysisSource')||'area';
+}
+function restAnalysisValue(log){
+  const value=restAnalysisSource()==='own'?Number(log.sales):restAnalysisValue(log);
+  return Number.isFinite(value)&&value>0?value:0;
+}
+function restAnalysisLabel(){
+  return restAnalysisSource()==='own'?'自分の売上':'エリア平均';
 }
 function restDateKey(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -2088,8 +2109,8 @@ function toggleRestLearningDetails(){
 async function renderRestLearningDetails(){
   const box=$('restLearningDetails'); if(!box)return;
   const logs=await getLogs();
-  const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
-  const overall=usable.length?usable.reduce((s,x)=>s+Number(x.avg),0)/usable.length:0;
+  const usable=logs.filter(x=>restAnalysisValue(x)>0);
+  const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const catalog=restFactorCatalog();
   const rows=catalog.map(f=>{
     const matched=[];
@@ -2113,7 +2134,7 @@ async function renderRestLearningDetails(){
   const progress=Math.min(100,Math.round(usable.length/learningTarget*100));
   const remain=Math.max(0,learningTarget-usable.length);
   const progressMessage=usable.length<learningTarget
-    ? 'あと<strong>'+remain+'日</strong>分のエリア平均がたまると、基礎的な学習ライン（30日分）に到達します。'
+    ? 'あと<strong>'+remain+'日</strong>分の学習データがたまると、基礎的な学習ライン（30日分）に到達します。'
     : '🎉 基礎的な学習ラインに到達しています。これからもデータが増えるほど傾向が安定していきます。';
   box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats">'+
     '<div class="restLearningStat"><div class="restLearningStatLabel">📊 エリア平均データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
@@ -2121,13 +2142,13 @@ async function renderRestLearningDetails(){
     '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
 function restPatternStats(logs){
-  const usable=logs.filter(x=>Number.isFinite(Number(x.avg))&&Number(x.avg)>0);
-  const overall=usable.length?usable.reduce((s,x)=>s+Number(x.avg),0)/usable.length:0;
+  const usable=logs.filter(x=>restAnalysisValue(x)>0);
+  const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const map=new Map();
   usable.forEach(log=>{
     restHistoricalFactors(log).forEach(f=>{
       if(!map.has(f))map.set(f,[]);
-      map.get(f).push(Number(log.avg));
+      map.get(f).push(restAnalysisValue(log));
     });
   });
   const patterns=[];
@@ -2155,7 +2176,7 @@ async function renderRestAdvice(){
   const logs=await getLogs();
   const stats=restPatternStats(logs);
   if(stats.usable.length<3){
-    box.innerHTML='<div class="restLearnBox">📚 エリア平均の記録がまだ少ないため、学習中です。<br><span>エリア平均が入力された営業日のデータが増えると、傾向を自動で探します。</span></div>';
+    box.innerHTML='<div class="restLearnBox">📚 エリア平均の記録がまだ少ないため、学習中です。<br><span>選択した学習データが入力された営業日のデータが増えると、傾向を自動で探します。</span></div>';
     return;
   }
   const patternHtml=stats.patterns.length
@@ -2175,7 +2196,7 @@ async function renderRestAdvice(){
   const candHtml=candidates.length
     ? candidates.slice(0,8).map(x=>'<div class="restCandidate"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討</div></div>').join('')
     : '<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
-  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div><div>分析対象：エリア平均 <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
+  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div><div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
     '<div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div>'+
     '<div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
 }
