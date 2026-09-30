@@ -2031,7 +2031,7 @@ function restAnalysisSource(){
   return localStorage.getItem('taxiRestAnalysisSource')||'area';
 }
 function restAnalysisValue(log){
-  const value=restAnalysisSource()==='own'?Number(log.sales):restAnalysisValue(log);
+  const value=restAnalysisSource()==='own'?Number(log.sales):Number(log.avg);
   return Number.isFinite(value)&&value>0?value:0;
 }
 function restAnalysisLabel(){
