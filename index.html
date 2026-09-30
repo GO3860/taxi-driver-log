@@ -1533,6 +1533,7 @@ function applySettings(){
   document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
 function showSettings(){
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='none';
   $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('settings').classList.remove('hidden');
   $('settingsOverview').classList.remove('hidden');
   $('settingsOverview').style.display='block';
@@ -1960,6 +1961,7 @@ async function showAnalysis(type){
   }
 }
 async function showData(){
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
   $('today').classList.add('hidden');$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('routeDb').classList.add('hidden');$('data').classList.remove('hidden');
   $('dataSummaryView').classList.remove('hidden');$('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');
   await renderMonthlyTop();
@@ -1968,7 +1970,7 @@ function showDataSummary(){
   $('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataSummaryView').classList.remove('hidden');renderMonthlyTop();
 }
 
-async function showLogs(){$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest_nonpublic'||x.dayType==='rest'?'🏠 休（非・公）':x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+async function showLogs(){const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest_nonpublic'||x.dayType==='rest'?'🏠 休（非・公）':x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
 async function showLogDetail(id){
  const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
  await updateTotal();
@@ -1986,15 +1988,17 @@ function resetSaveButton(){
   if(b)b.classList.remove('savePressed');
 }
 function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAvgLater','restAdvice'].forEach(id=>$(id)?.classList.add('hidden'))}
-function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');applySettings()}
+function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';applySettings()}
 async function showAreaAvgLater(){
   resetSaveButton();
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
   hideAllMainViews();
   $('areaAvgLater').classList.remove('hidden');
   await renderAreaAvgLater();
 }
 async function showRestAdvice(){
   resetSaveButton();
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
   hideAllMainViews();
   $('restAdvice').classList.remove('hidden');
   if($('restLearningDetails'))$('restLearningDetails').classList.add('hidden');
@@ -2235,7 +2239,7 @@ async function renderAreaAvgLater(){
     </div>`;
   }).join('');
 }
-async function showRouteDatabase(){resetSaveButton();hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
+async function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
 
 async function goToToday(){
   const ymd=todayYMD();
