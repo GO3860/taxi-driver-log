@@ -534,7 +534,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="calendarWeek"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div>
     <div id="workCalendarGrid" class="calendarGrid"></div>
     <div id="calendarDetail" class="calendarDetail">
-      <div id="calendarDetailHead" class="calendarDetailHead">日付をタップして選択してください</div>
+      <div id="calendarDetailHead" class="calendarDetailHead">日付を押して選択してください</div>
       <div id="calendarDetailBody"></div>
     </div>
     <div class="calendarForm">
@@ -2429,13 +2429,13 @@ function renderWorkCalendar(){
 function renderCalendarDetail(){
   const head=$('calendarDetailHead'),body=$('calendarDetailBody');
   if(!head||!body)return;
-  if(!workCalendarSelectedKey){head.textContent='日付をタップして選択してください';body.innerHTML='';return;}
+  if(!workCalendarSelectedKey){head.textContent='日付を押して選択してください';body.innerHTML='';return;}
   const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
   const m=workCalendarSelectedKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const dt=m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):null;
   const wd=dt?'（'+['日','月','火','水','木','金','土'][dt.getDay()]+'）':'';
   const holidayName=getHolidayName(workCalendarSelectedKey);
-  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付をタップして選択してください';
+  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付を押して選択してください';
   if(!arr.length){body.innerHTML='<div class="small">登録内容はありません</div>';return;}
 
   const planItems=arr.filter(p=>p.type==='plan');
@@ -2524,7 +2524,7 @@ function deletePlanItem(index){
   renderWorkCalendar();
 }
 function saveWorkPlan(){
-  if(!workCalendarSelectedKey){alert('登録する日付をタップして選択してください。');return}
+  if(!workCalendarSelectedKey){alert('登録する日付を押して選択してください。');return}
   const type=$('workPlanType').value;
   const memo=$('workPlanMemo').value||'';
   const time=$('workPlanTime')?.value||'';
