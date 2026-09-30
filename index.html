@@ -805,7 +805,9 @@ function getDutyElapsedMinutes(){
 function getNationalDutyLimitMinutes(){
   const workStyle=document.querySelector('input[name="workStyle"]:checked')?.value||'';
   // 現行の改善基準告示：日勤15時間、隔勤は2暦日22時間を最大拘束時間として扱う。
-  return workStyle==='日勤者' ? 15*60 : 22*60;
+  if(workStyle==='日勤者')return 15*60;
+  if(workStyle==='隔日勤務者')return 22*60;
+  return null;
 }
 
 function formatRemainingMinutes(minutes){
@@ -827,6 +829,7 @@ function updateConstraintWarning(){
 
   const company=Number($('dailyCompanyConstrainedHours')?.value||0)*60;
   const national=getNationalDutyLimitMinutes();
+  if(!national)return;
   let mode='',message='';
 
   if(elapsed>=national){
