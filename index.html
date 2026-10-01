@@ -1006,7 +1006,7 @@ async function checkOutTimeDeviation(){
     const current=getBreakStartMinutes(out);
     if(outBase===null||current===null)return;
     const diff=circularTimeDiff(current,outBase);
-    if(diff<=60)return;
+    if(diff<=40)return;
     const h=Math.floor(outBase/60),m=outBase%60;
     const normalText=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
     msg.innerHTML='🟨 いつもの出庫時間と少し違います。<br><span style="font-weight:600">普段は '+normalText+' ごろです。今日は '+out+' です。</span><br>最近の自分の働き方と違っていないか、少し確認してみましょう。';
