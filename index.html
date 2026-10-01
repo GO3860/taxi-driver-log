@@ -266,6 +266,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
 <input id="km" type="hidden">
+<div id="restBreakCard" class="card">
+  <div class="label">☕ 休憩時間</div>
+  <div class="grid">
+    <div><div class="small">① 休憩開始</div><input id="breakStart" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">② 休憩終了</div><input id="breakEnd" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+  </div>
+  <div class="small">③ 休憩時間</div>
+  <div id="breakMinutesDisplay" class="hoursbox">—</div>
+  <div class="help-text">休憩開始・終了を入力すると、自動で休憩時間を計算します。</div>
+</div>
+<input id="km" type="hidden">
 
 
 <div id="salesDataWidget" class="card"><div class="label">📊 営業データ</div>
@@ -901,6 +912,29 @@ function updateLoadedRateCalc(){
     if(input)input.value='';
   }
 }
+function getBreakMinutes(){
+  const start=$('breakStart')?.value||'';
+  const end=$('breakEnd')?.value||'';
+  if(!start||!end)return 0;
+  const [sh,sm]=start.split(':').map(Number);
+  const [eh,em]=end.split(':').map(Number);
+  if(![sh,sm,eh,em].every(Number.isFinite))return 0;
+  let minutes=(eh*60+em)-(sh*60+sm);
+  if(minutes<0)minutes+=24*60;
+  return minutes;
+}
+function breakDuration(){
+  const display=$('breakMinutesDisplay');
+  if(!display)return;
+  const start=$('breakStart')?.value||'';
+  const end=$('breakEnd')?.value||'';
+  if(!start||!end){
+    display.textContent='—';
+    return;
+  }
+  const minutes=getBreakMinutes();
+  display.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+}
 function duration(){
   const out=$('out').value;
   const inn=$('in').value;
@@ -1103,7 +1137,7 @@ async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart:(dayType==='work'||dayType==='parttime')?$('breakStart').value:'',breakEnd:(dayType==='work'||dayType==='parttime')?$('breakEnd').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1232,6 +1266,9 @@ async function editLog(id){
 
   if($('out'))$('out').value=x.out||'';
   if($('in'))$('in').value=x.in||'';
+  if($('breakStart'))$('breakStart').value=x.breakStart||'';
+  if($('breakEnd'))$('breakEnd').value=x.breakEnd||'';
+  breakDuration();
   if($('km'))$('km').value=x.km||'';
   if($('sales'))$('sales').value=x.sales||'';
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
@@ -2055,7 +2092,7 @@ async function showLogDetail(id){
 
  const rest=isRestDay(x.dayType), parttime=x.dayType==='parttime';
  $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
- $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
+ $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">休憩時間</div><div class="dailyValue">${x.breakTime||'—'}${x.breakStart||x.breakEnd?`<br><span style="font-size:11px;color:#777">${x.breakStart||'—'} ～ ${x.breakEnd||'—'}</span>`:''}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
 }
 
 async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();showLogs()}
