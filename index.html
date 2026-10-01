@@ -300,6 +300,22 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <div class="small">合計休憩時間</div>
   <div id="breakMinutesDisplay" class="hoursbox">—</div>
   <div id="breakPatternMessage" class="help-text"></div>
+  <div id="concernMessenger" class="hidden" style="margin-top:10px;padding:12px;border-radius:14px;background:#fff9e8;border:1px solid #ead79a">
+    <div style="font-weight:800;line-height:1.5">🚕 最近、いつもの働き方と少し違います。<br>無理していないか、気になる事があるのか整理してみましょう。</div>
+    <div style="margin-top:8px;font-weight:700">今、気になっていることはありますか？</div>
+    <div id="concernOptions" style="margin-top:8px;display:grid;gap:7px">
+      <label><input type="radio" name="concern" value="スマホに夢中"> スマホに夢中</label>
+      <label><input type="radio" name="concern" value="会社関係"> 会社関係</label>
+      <label><input type="radio" name="concern" value="売上が心配"> 売上が心配</label>
+      <label><input type="radio" name="concern" value="睡眠・休養が足りない"> 睡眠・休養が足りない</label>
+      <label><input type="radio" name="concern" value="家族・プライベート"> 家族・プライベート</label>
+      <label><input type="radio" name="concern" value="仕事に行くのが少ししんどい"> 仕事に行くのが少ししんどい</label>
+      <label><input type="radio" name="concern" value="特に思い当たらない"> 特に思い当たらない</label>
+      <label><input type="radio" name="concern" value="その他"> その他</label>
+    </div>
+    <div id="concernAdvice" style="margin-top:10px;font-weight:700;line-height:1.55"></div>
+    <div style="margin-top:10px;font-weight:800">🚕 タクシードライバーに事故は厳禁🚫です。<br>気になることがあるときは、まず安全を優先しましょう。</div>
+  </div>
   <div class="help-text">休憩は分けて入力できます。1回だけ、2回だけの休憩でもOKです。</div>
 </div>
 
@@ -932,7 +948,7 @@ function getBreakStartMinutes(v){
   if(!v)return null; const p=v.split(':').map(Number); return p.length===2&&p.every(Number.isFinite)?p[0]*60+p[1]:null;
 }
 async function checkBreakPattern(){
-  const msg=$('breakPatternMessage'); if(!msg)return; msg.textContent='';
+  const msg=$('breakPatternMessage'); if(!msg)return; msg.textContent=''; showConcernMessenger(false);
   const slots=getBreakSlots().filter(b=>b.start&&b.end); if(slots.length<2)return;
   const starts=slots.map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null).sort((a,b)=>a-b);
   let clustered=false; for(let i=1;i<starts.length;i++){if(starts[i]-starts[i-1]<=90){clustered=true;break;}}
@@ -944,8 +960,38 @@ async function checkBreakPattern(){
     const hs=prior.flatMap(x=>x.breakSlots||[]).map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null);
     if(hs.length<5)return;
     const first=starts[0], nearest=Math.min(...hs.map(v=>{const d=Math.abs(v-first);return Math.min(d,1440-d);}));
-    if(nearest>=120)msg.textContent='🟨 いつもと少し違う休憩の取り方になっています。休憩が続いていますが、大丈夫ですか？ 無理せず、今の体調と休養を確認してください。';
+    if(nearest>=120){
+      msg.textContent='🟨 最近、いつもの働き方と少し違います。';
+      showConcernMessenger(true);
+    }else{
+      showConcernMessenger(false);
+    }
   }catch(e){console.error(e);}
+}
+function concernAdviceText(value){
+  const advice={
+    'スマホに夢中':'📱 スマホのことが気になっているんですね。仕事中にスマホへ意識が向きすぎていると感じるなら、一度スマホから離れて休憩してみましょう。',
+    '会社関係':'🏢 会社関係のことが気になっているんですね。頭の中で抱え続けず、何が気になっているのかを一度整理してみましょう。',
+    '売上が心配':'💰 売上が気になっているんですね。焦って取り返そうとせず、今日だけでなく今月全体の状況を一度整理してみましょう。',
+    '睡眠・休養が足りない':'😴 睡眠や休養が足りないと感じているなら、休むことも仕事の一部です。今の休養状態を一度整理してみましょう。',
+    '家族・プライベート':'🏠 家族やプライベートのことが気になっているんですね。気になることを一つずつ整理して、運転中は安全に意識を戻しましょう。',
+    '仕事に行くのが少ししんどい':'🫧 仕事に行くことがしんどく感じているんですね。無理に答えを出そうとせず、休養や今気になっていることを整理してみましょう。',
+    '特に思い当たらない':'🔎 特に思い当たらない場合も大丈夫です。今日は休憩・睡眠・勤務ペースを少し意識してみましょう。',
+    'その他':'📝 言葉にしにくいこともあります。今気になっていることを整理して、運転中は安全を最優先にしましょう。'
+  };
+  return advice[value]||'気になっていることを一度整理してみましょう。';
+}
+function bindConcernOptions(){
+  document.querySelectorAll('input[name="concern"]').forEach(r=>{
+    r.onchange=()=>{
+      const a=$('concernAdvice');
+      if(a)a.textContent=concernAdviceText(r.value);
+    };
+  });
+}
+function showConcernMessenger(show){
+  const box=$('concernMessenger');
+  if(box)box.classList.toggle('hidden',!show);
 }
 function breakDuration(){
   const d=$('breakMinutesDisplay'); if(!d)return;
@@ -1076,7 +1122,7 @@ function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || typ
   }
 }
 function getDayType(){return document.querySelector('#dayType .chip.on')?.dataset.type||'work'}
-window.addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
+window.addEventListener('DOMContentLoaded',()=>{bindConcernOptions();const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
 const saveButton=document.getElementById('saveButton');
 if(saveButton){
   const press=()=>saveButton.classList.add('savePressed');
@@ -1153,7 +1199,7 @@ async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart1:(dayType==='work'||dayType==='parttime')?$('breakStart1').value:'',breakEnd1:(dayType==='work'||dayType==='parttime')?$('breakEnd1').value:'',breakStart2:(dayType==='work'||dayType==='parttime')?$('breakStart2').value:'',breakEnd2:(dayType==='work'||dayType==='parttime')?$('breakEnd2').value:'',breakStart3:(dayType==='work'||dayType==='parttime')?$('breakStart3').value:'',breakEnd3:(dayType==='work'||dayType==='parttime')?$('breakEnd3').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',breakSlots:(dayType==='work'||dayType==='parttime')?getBreakSlots().filter(b=>b.start&&b.end):[],km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart1:(dayType==='work'||dayType==='parttime')?$('breakStart1').value:'',breakEnd1:(dayType==='work'||dayType==='parttime')?$('breakEnd1').value:'',breakStart2:(dayType==='work'||dayType==='parttime')?$('breakStart2').value:'',breakEnd2:(dayType==='work'||dayType==='parttime')?$('breakEnd2').value:'',breakStart3:(dayType==='work'||dayType==='parttime')?$('breakStart3').value:'',breakEnd3:(dayType==='work'||dayType==='parttime')?$('breakEnd3').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',breakSlots:(dayType==='work'||dayType==='parttime')?getBreakSlots().filter(b=>b.start&&b.end):[],concern:(document.querySelector('input[name="concern"]:checked')?.value||''),km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1289,6 +1335,10 @@ async function editLog(id){
   if($('breakStart3'))$('breakStart3').value=x.breakStart3||'';
   if($('breakEnd3'))$('breakEnd3').value=x.breakEnd3||'';
   breakDuration();
+  document.querySelectorAll('input[name="concern"]').forEach(r=>{r.checked=(r.value===(x.concern||''));});
+  const ca=$('concernAdvice');
+  if(ca&&x.concern)ca.textContent=concernAdviceText(x.concern);
+  showConcernMessenger(!!x.concern);
   if($('km'))$('km').value=x.km||'';
   if($('sales'))$('sales').value=x.sales||'';
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
