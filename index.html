@@ -268,25 +268,6 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <input id="km" type="hidden">
 
 
-
-<div id="salesDataWidget" class="card"><div class="label">📊 営業データ</div>
-<div class="salesDataCalcGrid">
-  <div class="salesDataCalcField"><div class="small">走行距離</div><input id="salesDataRunDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
-  <div class="salesDataCalcField"><div class="small">乗車距離</div><input id="salesDataRideDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
-  <div class="salesDataCalcField"><div class="small">実車率</div><div class="salesDataCalculatedBox"><strong id="loadedRateCalcResult">—</strong><span>%</span></div></div>
-  <div class="salesDataCalcField"><div class="small">営業回数</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="回"></div>
-</div>
-<input id="loadedRate" type="hidden">
-<div class="salesDataCalcFormula">実車率 ＝ 乗車距離 ÷ 走行距離 × 100</div>
-</div>
-
-<div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
-<div id="routeList"></div>
-<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道順を追加</button>
-</div>
-
-<div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
-
 <div id="restBreakCard" class="card">
   <div class="label">☕ 休憩時間</div>
   <div class="grid">
@@ -318,6 +299,27 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   </div>
   <div class="help-text">休憩は分けて入力できます。1回だけ、2回だけの休憩でもOKです。</div>
 </div>
+
+
+<div id="salesDataWidget" class="card"><div class="label">📊 営業データ</div>
+<div class="salesDataCalcGrid">
+  <div class="salesDataCalcField"><div class="small">走行距離</div><input id="salesDataRunDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">乗車距離</div><input id="salesDataRideDistance" type="number" inputmode="decimal" min="0" step="0.1" placeholder="km"></div>
+  <div class="salesDataCalcField"><div class="small">実車率</div><div class="salesDataCalculatedBox"><strong id="loadedRateCalcResult">—</strong><span>%</span></div></div>
+  <div class="salesDataCalcField"><div class="small">営業回数</div><input id="tripCount" type="number" inputmode="numeric" min="0" step="1" placeholder="回"></div>
+</div>
+<input id="loadedRate" type="hidden">
+<div class="salesDataCalcFormula">実車率 ＝ 乗車距離 ÷ 走行距離 × 100</div>
+</div>
+
+<div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道順を追加</div>
+<div id="routeList"></div>
+<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道順を追加</button>
+</div>
+
+<div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
+
+
 
 <div id="salesGoalCard" class="salesGoalCard"></div>
 
