@@ -1555,11 +1555,18 @@ function saveSettings(){
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
+  const wasAreaAvgEnabled=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const areaAvgEnabled=$('showAreaAvg')?.checked===true;
   localStorage.setItem('taxiShowAreaAvg',areaAvgEnabled?'1':'0');
-  if(!areaAvgEnabled)localStorage.setItem('taxiRestAnalysisSource','own');
+  if(!areaAvgEnabled){
+    localStorage.setItem('taxiRestAnalysisSource','own');
+  }else if(!wasAreaAvgEnabled){
+    // エリア平均入力をOFF→ONに戻したときは、学習データもエリア平均へ自動復帰
+    localStorage.setItem('taxiRestAnalysisSource','area');
+  }
   $('closingStatus').textContent='現在の設定：毎月'+$('closingDay').value+'日締め';
   applySettings();
+  updateRestSourceUI();
   renderSalesGoal();
 }
 function updateAreaAvgFieldsUI(){
