@@ -1538,7 +1538,11 @@ function initSettings(){
   const allowance=localStorage.getItem('taxiHolidayAllowance')||'1';
   if($('holidayAllowanceYes'))$('holidayAllowanceYes').checked=allowance==='1';
   if($('holidayAllowanceNo'))$('holidayAllowanceNo').checked=allowance!=='1';
-  const source=localStorage.getItem('taxiRestAnalysisSource')||'area';
+  let source=localStorage.getItem('taxiRestAnalysisSource')||'area';
+  if(!showAreaAvg){
+    source='own';
+    localStorage.setItem('taxiRestAnalysisSource','own');
+  }
   if($('analysisSourceArea'))$('analysisSourceArea').checked=source==='area';
   if($('analysisSourceOwn'))$('analysisSourceOwn').checked=source==='own';
   if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+(localStorage.getItem('taxiPaydayBase')||'25')+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
@@ -1551,7 +1555,9 @@ function saveSettings(){
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
-  localStorage.setItem('taxiShowAreaAvg',$('showAreaAvg')?.checked?'1':'0');
+  const areaAvgEnabled=$('showAreaAvg')?.checked===true;
+  localStorage.setItem('taxiShowAreaAvg',areaAvgEnabled?'1':'0');
+  if(!areaAvgEnabled)localStorage.setItem('taxiRestAnalysisSource','own');
   $('closingStatus').textContent='現在の設定：毎月'+$('closingDay').value+'日締め';
   applySettings();
   renderSalesGoal();
@@ -2076,13 +2082,20 @@ function saveRestSettings(){
   localStorage.setItem('taxiPaydayBase',payday);
   const allowance=$('holidayAllowanceYes')?.checked?'1':'0';
   localStorage.setItem('taxiHolidayAllowance',allowance);
-  const source=$('analysisSourceOwn')?.checked?'own':'area';
+  const source=isAreaAvgEnabled()&&$('analysisSourceArea')?.checked?'area':'own';
   localStorage.setItem('taxiRestAnalysisSource',source);
   if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
   updateRestSourceUI();
 }
 function updateRestSourceUI(){
-  const own=restAnalysisSource()==='own';
+  const areaAvgOn=isAreaAvgEnabled();
+  const own=!areaAvgOn||restAnalysisSource()==='own';
+  if(!areaAvgOn&&localStorage.getItem('taxiRestAnalysisSource')!=='own')localStorage.setItem('taxiRestAnalysisSource','own');
+  const areaRadio=$('analysisSourceArea');
+  const ownRadio=$('analysisSourceOwn');
+  if(areaRadio)areaRadio.disabled=!areaAvgOn;
+  if(ownRadio)ownRadio.checked=own;
+  if(areaRadio)areaRadio.checked=areaAvgOn&&!own;
   const label=own?'自分の売上':'エリア平均';
   if($('restLearningSourceLabel'))$('restLearningSourceLabel').textContent=label;
   if($('areaAvgLearningExplain')){
