@@ -303,7 +303,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="dataSummaryView">
   <div class="card">
     <div class="label">📈 年度データ</div>
-    <div class="help-text">12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。</div>
+    <div class="help-text" id="annualDataHelpText">12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。</div>
     <div id="monthlyData"></div>
   </div>
   <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button>
@@ -1575,6 +1575,7 @@ function updateAreaAvgFieldsUI(){
     if(!on)restAvg.value='';
   }
 }
+function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
   const timeCard=$('timeCard');
   const salesDataWidget=$('salesDataWidget');
@@ -1588,6 +1589,8 @@ function applySettings(){
   if($('showAreaAvg'))$('showAreaAvg').checked=areaAvgOn;
   if($('areaAvgSettingStatus'))$('areaAvgSettingStatus').textContent=areaAvgOn?'現在：ON（エリア平均入力を使用）':'現在：OFF（エリア平均入力を使用しない）';
   updateAreaAvgFieldsUI();
+  const annualHelp=$('annualDataHelpText');
+  if(annualHelp)annualHelp.textContent=isAreaAvgEnabled()?'12か月分をまとめて、自分の売上と乗務エリアの売上を月ごとに比較します。月を押すと、その月の詳細を確認できます。':'12か月分をまとめて、自分の売上を月ごとに確認できます。月を押すと、その月の詳細を確認できます。';
   const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
   document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
@@ -1695,6 +1698,7 @@ async function getPeriodWorkLogs(){
 function yen(v){return '¥'+Number(v||0).toLocaleString()}
 function diffText(v){return v===null?'—':(v>=0?'+':'−')+yen(Math.abs(v))}
 function renderMetricCards(work){
+  const areaAvgOn=isAreaAvgEnabled();
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
   const areaRows=work.filter(x=>Number(x.avg)>0);
   const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
@@ -1702,8 +1706,8 @@ function renderMetricCards(work){
   return `<div class="dataGrid" style="margin-top:14px">
     <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
     <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
   </div>`;
 }
 async function renderMonthlyTop(){
@@ -1758,6 +1762,7 @@ async function renderAnnualData(selectedYear){
   const currentYear=getFiscalYearStartYear();
   const available=getAvailableFiscalYears(logs);
   const year=available.includes(Number(selectedYear))?Number(selectedYear):currentYear;
+  const areaAvgOn=isAreaAvgEnabled();
   const periods=getFiscalPeriods(year);
   const rows=periods.map((p,i)=>{
     const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
@@ -1773,15 +1778,15 @@ async function renderAnnualData(selectedYear){
   const avgSales=active.length?Math.round(totalSales/active.length):0;
   const avgArea=active.length?Math.round(totalArea/active.length):0;
   const graph=`<div class="annualGraphWrap">
-    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span><span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span></div>
-    <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div><div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div></div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?'<span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span>':''}</div>
+    <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
   </div>`;
-  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div><div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div></button>`).join('')}</div>`;
+  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div>`:''} </button>`).join('')}</div>`;
   const summary=`<div class="dataGrid annualSummary">
     <div class="dataBox"><div class="dataLabel">自分の総売上</div><div class="dataValue">${yen(totalSales)}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
     <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
-    <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>`:''}
   </div>`;
   box.innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
@@ -1865,6 +1870,7 @@ async function showMonthlyDetail(year,index){
   $('dataDetailView').classList.remove('hidden');
   const periods=getFiscalPeriods(currentMonthYear);
   const p=periods[currentMonthIndex];
+  const areaAvgOn=isAreaAvgEnabled();
   const logs=await getLogs();
   const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
   const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
@@ -1910,9 +1916,9 @@ async function showMonthlyDetail(year,index){
     if(mins===null){const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);if(hm)mins=Math.round(Number(hm[1])*60)+Number(hm[2]||0);}
     const duration=mins===null?'—':`${Math.floor(mins/60)}時間${mins%60?String(mins%60).padStart(2,'0')+'分':''}`;
     const rate=Number(x.loadedRate); const trips=Number(x.tripCount);
-    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td>${x.sales?yen(x.sales):'—'}</td><td>${Number(x.avg)>0?yen(x.avg):'—'}</td><td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
+    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td>${x.sales?yen(x.sales):'—'}</td>${areaAvgOn?`<td>${Number(x.avg)>0?yen(x.avg):'—'}</td>`:''}<td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
   }).join('');
-  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。<br>📱 表を全部見るには、スマホの回転ロックを解除して、スマホを横にすると一覧が表示されます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>売上</th><th>エリア平均売上</th><th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||'<tr><td colspan="7" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>'}</tbody></table></div></div>`;
+  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。<br>📱 表を全部見るには、スマホの回転ロックを解除して、スマホを横にすると一覧が表示されます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>売上</th>${areaAvgOn?'<th>エリア平均売上</th>':''}<th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||'<tr><td colspan="7" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>'}</tbody></table></div></div>`;
   $('monthlyDetail').innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div>
     <div class="dataNote">この期間のログを集計しています。</div>
@@ -1921,8 +1927,8 @@ async function showMonthlyDetail(year,index){
     <div class="dataGrid" style="margin-top:18px">
       <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
-      <div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
-      <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>
+      ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
       <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
       <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
       <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
