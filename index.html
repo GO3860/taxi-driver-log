@@ -1000,7 +1000,7 @@ async function checkOutTimeDeviation(){
     const logs=await getLogs();
     const currentDate=$('date')?.textContent||'';
     const history=workLogsForDeviation(logs,currentDate);
-    if(history.length<5)return;
+    if(history.length<90)return;
     const base=history.slice(0,20);
     const outBase=medianNum(base.map(getOutMinutes));
     const current=getBreakStartMinutes(out);
@@ -1031,7 +1031,7 @@ async function analyzeWorkPatternDeviation(){
     const logs=await getLogs(), currentDate=$('date')?.textContent||'', currentType=getDayType();
     if(currentType!=='work'&&currentType!=='parttime')return;
     const history=workLogsForDeviation(logs,currentDate);
-    if(history.length<5)return;
+    if(history.length<90)return;
     const base=history.slice(0,20), recent=base.slice(0,Math.min(6,base.length));
     const outBase=medianNum(base.map(getOutMinutes));
     const breakStartBase=medianNum(base.map(getFirstBreakStart));
