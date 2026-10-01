@@ -266,16 +266,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
 <input id="km" type="hidden">
-<div id="restBreakCard" class="card">
-  <div class="label">☕ 休憩時間</div>
-  <div class="grid">
-    <div><div class="small">① 休憩開始</div><input id="breakStart" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">② 休憩終了</div><input id="breakEnd" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-  </div>
-  <div class="small">③ 休憩時間</div>
-  <div id="breakMinutesDisplay" class="hoursbox">—</div>
-  <div class="help-text">休憩開始・終了を入力すると、自動で休憩時間を計算します。</div>
-</div>
+
 
 
 <div id="salesDataWidget" class="card"><div class="label">📊 営業データ</div>
@@ -295,6 +286,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
+
+<div id="restBreakCard" class="card">
+  <div class="label">☕ 休憩時間</div>
+  <div class="grid">
+    <div><div class="small">① 休憩開始</div><input id="breakStart" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">② 休憩終了</div><input id="breakEnd" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+  </div>
+  <div class="small">③ 休憩時間</div>
+  <div id="breakMinutesDisplay" class="hoursbox">—</div>
+  <div class="help-text">休憩開始・終了を入力すると、自動で休憩時間を計算します。</div>
+</div>
 
 <div id="salesGoalCard" class="salesGoalCard"></div>
 
