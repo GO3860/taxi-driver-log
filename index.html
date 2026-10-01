@@ -947,27 +947,100 @@ function getBreakMinutes(){return getBreakSlots().reduce((sum,b)=>sum+getBreakSl
 function getBreakStartMinutes(v){
   if(!v)return null; const p=v.split(':').map(Number); return p.length===2&&p.every(Number.isFinite)?p[0]*60+p[1]:null;
 }
-async function checkBreakPattern(){
-  const msg=$('breakPatternMessage'); if(!msg)return; msg.textContent=''; showConcernMessenger(false);
-  const slots=getBreakSlots().filter(b=>b.start&&b.end); if(slots.length<2)return;
-  const starts=slots.map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null).sort((a,b)=>a-b);
-  let clustered=false; for(let i=1;i<starts.length;i++){if(starts[i]-starts[i-1]<=90){clustered=true;break;}}
-  if(!clustered)return;
+function circularTimeDiff(a,b){
+  if(a===null||b===null)return null;
+  const d=Math.abs(a-b); return Math.min(d,1440-d);
+}
+function medianNum(arr){
+  const a=arr.filter(v=>Number.isFinite(v)).sort((x,y)=>x-y);
+  if(!a.length)return null; const m=Math.floor(a.length/2);
+  return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function logHasOwnAccident(log){
+  return Array.isArray(log?.event) && log.event.some(v=>String(v).includes('自身の事故'));
+}
+function workLogsForDeviation(logs,currentDate){
+  return (logs||[]).filter(x=>(x.dayType||'work')==='work'&&x.date!==currentDate&&!logHasOwnAccident(x)&&String(x.out||'').trim())
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date),'ja'));
+}
+function getFirstBreakStart(log){
+  const slots=Array.isArray(log?.breakSlots)&&log.breakSlots.length?log.breakSlots:[
+    {start:log?.breakStart1||log?.breakStart||''},{start:log?.breakStart2||''},{start:log?.breakStart3||''}
+  ];
+  const vals=slots.map(x=>getBreakStartMinutes(x.start)).filter(v=>v!==null).sort((a,b)=>a-b);
+  return vals.length?vals[0]:null;
+}
+function getLogBreakTotal(log){
+  if(Number.isFinite(Number(log?.breakMinutes)))return Number(log.breakMinutes);
+  const slots=Array.isArray(log?.breakSlots)?log.breakSlots:[
+    {start:log?.breakStart1||log?.breakStart||'',end:log?.breakEnd1||log?.breakEnd||''},
+    {start:log?.breakStart2||'',end:log?.breakEnd2||''},{start:log?.breakStart3||'',end:log?.breakEnd3||''}
+  ];
+  return slots.reduce((n,b)=>n+getBreakSlotMinutes(b.start,b.end),0);
+}
+function getLogBreakCount(log){
+  const slots=Array.isArray(log?.breakSlots)?log.breakSlots:[
+    {start:log?.breakStart1||log?.breakStart||'',end:log?.breakEnd1||log?.breakEnd||''},
+    {start:log?.breakStart2||'',end:log?.breakEnd2||''},{start:log?.breakStart3||'',end:log?.breakEnd3||''}
+  ];
+  return slots.filter(b=>b.start&&b.end).length;
+}
+function getOutMinutes(log){return getBreakStartMinutes(log?.out||'');}
+function deviationForArrival(log,base){const v=getOutMinutes(log);return v!==null&&base!==null&&circularTimeDiff(v,base)>60;}
+function deviationForBreak(log,baseStart,baseTotal,baseCount){
+  const start=getFirstBreakStart(log),total=getLogBreakTotal(log),count=getLogBreakCount(log);
+  return (start!==null&&baseStart!==null&&circularTimeDiff(start,baseStart)>120) ||
+    (baseTotal!==null&&Math.abs(total-baseTotal)>=60) ||
+    (baseCount!==null&&count>0&&count!==baseCount);
+}
+function dateDiffDays(a,b){
+  const da=parseDutyDate(a),db=parseDutyDate(b); if(!da||!db)return null;
+  return Math.abs(Math.round((da-db)/86400000));
+}
+async function analyzeWorkPatternDeviation(){
+  const msg=$('breakPatternMessage'), messenger=$('concernMessenger');
+  if(!msg)return;
+  msg.textContent=''; if(messenger)messenger.classList.add('hidden');
   try{
-    const logs=await getLogs(), currentDate=$('date')?.textContent||'';
-    const prior=logs.filter(x=>(x.dayType||'work')==='work'&&Array.isArray(x.breakSlots)&&x.breakSlots.length&&x.date!==currentDate);
-    if(prior.length<5)return;
-    const hs=prior.flatMap(x=>x.breakSlots||[]).map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null);
-    if(hs.length<5)return;
-    const first=starts[0], nearest=Math.min(...hs.map(v=>{const d=Math.abs(v-first);return Math.min(d,1440-d);}));
-    if(nearest>=120){
-      msg.textContent='🟨 最近、いつもの働き方と少し違います。';
-      showConcernMessenger(true);
-    }else{
-      showConcernMessenger(false);
+    const logs=await getLogs(), currentDate=$('date')?.textContent||'', currentType=getDayType();
+    if(currentType!=='work'&&currentType!=='parttime')return;
+    const history=workLogsForDeviation(logs,currentDate);
+    if(history.length<5)return;
+    const base=history.slice(0,20), recent=base.slice(0,Math.min(6,base.length));
+    const outBase=medianNum(base.map(getOutMinutes));
+    const breakStartBase=medianNum(base.map(getFirstBreakStart));
+    const breakTotalBase=medianNum(base.map(getLogBreakTotal));
+    const breakCountBase=medianNum(base.map(getLogBreakCount).filter(v=>v>0));
+    const signals=[];
+    if(outBase!==null&&recent.length>=5&&recent.filter(x=>deviationForArrival(x,outBase)).length>=5)signals.push('出庫時間');
+    if((breakStartBase!==null||breakTotalBase!==null)&&recent.length>=5&&recent.filter(x=>deviationForBreak(x,breakStartBase,breakTotalBase,breakCountBase)).length>=5)signals.push('休憩の取り方');
+
+    const recentWindow=35, previousWindow=90;
+    const daysFromCurrent=x=>dateDiffDays(x.date,currentDate);
+    const leave=(logs||[]).filter(x=>x.dayType==='rest_leaveabsence'&&!logHasOwnAccident(x));
+    const recentLeave=leave.filter(x=>{const d=daysFromCurrent(x);return d!==null&&d<=recentWindow;}).length;
+    const prevLeave=leave.filter(x=>{const d=daysFromCurrent(x);return d!==null&&d>recentWindow&&d<=previousWindow;}).length;
+    const recentWork=(logs||[]).filter(x=>x.dayType==='work'&&!logHasOwnAccident(x)&&(()=>{const d=daysFromCurrent(x);return d!==null&&d<=recentWindow;})()).length;
+    const prevWork=(logs||[]).filter(x=>x.dayType==='work'&&!logHasOwnAccident(x)&&(()=>{const d=daysFromCurrent(x);return d!==null&&d>recentWindow&&d<=previousWindow;})()).length;
+    const rr=recentLeave/Math.max(1,recentLeave+recentWork),pr=prevLeave/Math.max(1,prevLeave+prevWork);
+    if(recentLeave>=2&&rr>=pr+0.15)signals.push('有休・欠勤');
+
+    const dates=base.map(x=>x.date).filter(Boolean),gaps=[];
+    for(let i=0;i<dates.length-1;i++){const d=dateDiffDays(dates[i],dates[i+1]);if(d!==null&&d>0)gaps.push(d);}
+    const gapBase=medianNum(gaps),lastGap=dateDiffDays(currentDate,history[0]?.date);
+    if(gapBase!==null&&lastGap!==null&&lastGap>gapBase+2&&recent.length>=5)signals.push('ログ入力の間隔');
+
+    const concernCounts={};
+    history.slice(0,20).map(x=>String(x.concern||'')).filter(Boolean).forEach(v=>concernCounts[v]=(concernCounts[v]||0)+1);
+    if(Object.values(concernCounts).some(n=>n>=5))signals.push('気になること');
+
+    if(signals.length){
+      msg.innerHTML='🟨 最近、いつもの働き方と少し違います。<br><span style="font-weight:600">・'+signals.join('<br>・')+'</span><br>無理していないか、気になる事があるのか整理してみましょう。';
+      if(messenger)messenger.classList.remove('hidden');
     }
   }catch(e){console.error(e);}
 }
+async function checkBreakPattern(){await analyzeWorkPatternDeviation();}
 function concernAdviceText(value){
   const advice={
     'スマホに夢中':'📱 スマホのことが気になっているんですね。仕事中にスマホへ意識が向きすぎていると感じるなら、一度スマホから離れて休憩してみましょう。',
@@ -1012,10 +1085,11 @@ function duration(){
   if(minutes<0)minutes+=24*60;
   hours.firstChild.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
   updateConstraintWarning();
+  analyzeWorkPatternDeviation();
 }
 
 
-async function updateTotal(){
+async function updateTotal{
   const a=await getLogs();
   const t=a.reduce((n,x)=>{
     const type=x.dayType||'work';
@@ -1339,6 +1413,7 @@ async function editLog(id){
   const ca=$('concernAdvice');
   if(ca&&x.concern)ca.textContent=concernAdviceText(x.concern);
   showConcernMessenger(!!x.concern);
+  analyzeWorkPatternDeviation();
   if($('km'))$('km').value=x.km||'';
   if($('sales'))$('sales').value=x.sales||'';
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
