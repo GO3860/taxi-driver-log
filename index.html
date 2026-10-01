@@ -360,6 +360,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
 </div>
 
+<div class="card">
+<div class="label">📚 エリア平均入力</div>
+<div class="help-text">会社から発表されるエリア平均売上を、後から入力する機能です。必要な場合だけONにしてください。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">エリア平均入力を使う <input id="showAreaAvg" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<div class="small" id="areaAvgSettingStatus"></div>
+</div>
+
 <div class="card" id="restAnalysisSettingsCard">
 <div class="label">🌿 休み方分析の設定</div>
 <div class="help-text">売上を上げるためではなく、自分の営業データから「休む候補になりやすい日」を学習するための設定です。</div>
@@ -1508,6 +1515,7 @@ function initSettings(){
   const showTime=localStorage.getItem('taxiShowTime')==='1';
   const showSalesData=localStorage.getItem('taxiShowSalesData')!=='0';
   const showRoute=localStorage.getItem('taxiShowRoute')==='1';
+  const showAreaAvg=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
   const salesGoal=localStorage.getItem('taxiSalesGoal')||'800000';
   if($('salesGoalInput'))$('salesGoalInput').value=salesGoal;
@@ -1515,6 +1523,7 @@ function initSettings(){
   if($('showTime'))$('showTime').checked=showTime;
   if($('showSalesData'))$('showSalesData').checked=showSalesData;
   if($('showRoute'))$('showRoute').checked=showRoute;
+  if($('showAreaAvg'))$('showAreaAvg').checked=showAreaAvg;
   if($('showHelpText'))$('showHelpText').checked=showHelpText;
   const payday=$('paydayBase');
   if(payday){
@@ -1538,6 +1547,7 @@ function saveSettings(){
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
+  localStorage.setItem('taxiShowAreaAvg',$('showAreaAvg')?.checked?'1':'0');
   $('closingStatus').textContent='現在の設定：毎月'+$('closingDay').value+'日締め';
   applySettings();
   renderSalesGoal();
@@ -1546,9 +1556,14 @@ function applySettings(){
   const timeCard=$('timeCard');
   const salesDataWidget=$('salesDataWidget');
   const routeCard=$('routeCard');
+  const areaAvgBtn=document.querySelector('.floatingAreaAvgBtn');
+  const areaAvgOn=localStorage.getItem('taxiShowAreaAvg')!=='0';
   if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
   if(salesDataWidget)salesDataWidget.classList.toggle('hidden',localStorage.getItem('taxiShowSalesData')==='0');
   if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
+  if(areaAvgBtn)areaAvgBtn.classList.toggle('hidden',!areaAvgOn);
+  if($('showAreaAvg'))$('showAreaAvg').checked=areaAvgOn;
+  if($('areaAvgSettingStatus'))$('areaAvgSettingStatus').textContent=areaAvgOn?'現在：ON（エリア平均入力を使用）':'現在：OFF（エリア平均入力を使用しない）';
   const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
   document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
