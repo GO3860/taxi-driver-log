@@ -371,7 +371,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
 <div style="margin-top:14px;font-weight:800;font-size:15px">📊 学習に使う売上データ</div>
-<div class="help-text">エリア平均を入力できない場合は「自分の売上」を選べます。</div>
+<div class="help-text">休み方アドバイスが学習する売上データを選択できます。</div>
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="analysisSourceArea" type="radio" name="analysisSource" value="area" onchange="saveRestSettings()" style="width:20px;height:20px">エリア平均</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="analysisSourceOwn" type="radio" name="analysisSource" value="own" onchange="saveRestSettings()" style="width:20px;height:20px">自分の売上</label>
@@ -597,7 +597,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="help-text">勤務後に事務方から数字が出たら、該当日の欄だけ入力してください。</div>
     <div class="areaAvgInner">
       <div class="areaAvgTitle">📊 エリア平均を後から入力</div>
-      <div class="areaAvgExplain">会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較や「休み方アドバイス」の学習に使われます。</div>
+      <div class="areaAvgExplain" id="areaAvgLearningExplain">会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較や「休み方アドバイス」の学習に使われます。</div>
       <div class="areaAvgRows" id="areaAvgRows"></div>
     </div>
   </div>
@@ -1529,6 +1529,7 @@ function initSettings(){
   if($('analysisSourceArea'))$('analysisSourceArea').checked=source==='area';
   if($('analysisSourceOwn'))$('analysisSourceOwn').checked=source==='own';
   if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+(localStorage.getItem('taxiPaydayBase')||'25')+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
+  updateRestSourceUI();
   applySettings();
 }
 function saveSettings(){
@@ -2033,6 +2034,17 @@ function saveRestSettings(){
   const source=$('analysisSourceOwn')?.checked?'own':'area';
   localStorage.setItem('taxiRestAnalysisSource',source);
   if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
+  updateRestSourceUI();
+}
+function updateRestSourceUI(){
+  const own=restAnalysisSource()==='own';
+  const label=own?'自分の売上':'エリア平均';
+  if($('restLearningSourceLabel'))$('restLearningSourceLabel').textContent=label;
+  if($('areaAvgLearningExplain')){
+    $('areaAvgLearningExplain').innerHTML=own
+      ? '会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較に使われます。'
+      : '会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較や「休み方アドバイス」の学習に使われます。';
+  }
 }
 function restAnalysisSource(){
   return localStorage.getItem('taxiRestAnalysisSource')||'area';
@@ -2152,7 +2164,7 @@ async function renderRestLearningDetails(){
     ? 'あと<strong>'+remain+'日</strong>分の学習データがたまると、基礎的な学習ライン（30日分）に到達します。'
     : '🎉 基礎的な学習ラインに到達しています。これからもデータが増えるほど傾向が安定していきます。';
   box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats">'+
-    '<div class="restLearningStat"><div class="restLearningStatLabel">📊 エリア平均データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
+    '<div class="restLearningStat"><div class="restLearningStatLabel">📊 <span id="restLearningSourceLabel">エリア平均</span>データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
     '<div class="restLearningStatGrid"><div class="restLearningStatBox"><strong>'+factorReadyCount+'種類</strong><span>分析できるファクター</span></div><div class="restLearningStatBox"><strong>'+stats.patterns.length+'件</strong><span>発見した傾向</span></div></div>'+
     '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
