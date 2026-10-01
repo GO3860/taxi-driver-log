@@ -390,9 +390,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="label">👀 今日の画面に表示する項目</div>
 <div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">☕ 休憩時間 <input id="showRestBreak" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">📊 営業項目 <input id="showSalesData" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">🗺️ 覚えておきたい道順 <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
+</div>
+
+<div class="card">
+<div class="label">🧠 働き方分析</div>
+<div class="help-text">90日分のログがたまった後、自分の普段の働き方との違いを知らせる機能です。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">働き方分析を使う <input id="workPatternAnalysisEnabled" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 </div>
 
 <div class="card">
@@ -990,6 +997,7 @@ function getLogBreakCount(log){
 function getOutMinutes(log){return getBreakStartMinutes(log?.out||'');}
 function deviationForArrival(log,base){const v=getOutMinutes(log);return v!==null&&base!==null&&circularTimeDiff(v,base)>60;}
 async function checkOutTimeDeviation(){
+  if(localStorage.getItem('taxiWorkPatternAnalysis')==='0')return;
   const msg=$('outPatternMessage');
   if(!msg)return;
   msg.textContent='';
@@ -1026,6 +1034,7 @@ function dateDiffDays(a,b){
   return Math.abs(Math.round((da-db)/86400000));
 }
 async function analyzeWorkPatternDeviation(){
+  if(localStorage.getItem('taxiWorkPatternAnalysis')==='0')return;
   const msg=$('breakPatternMessage'), messenger=$('concernMessenger');
   if(!msg)return;
   msg.textContent=''; if(messenger)messenger.classList.add('hidden');
@@ -1472,8 +1481,10 @@ async function editLog(id){
 
 function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
+  if(localStorage.getItem('taxiShowRestBreak')===null) localStorage.setItem('taxiShowRestBreak','1');
   if(localStorage.getItem('taxiShowSalesData')===null) localStorage.setItem('taxiShowSalesData','1');
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
+  if(localStorage.getItem('taxiWorkPatternAnalysis')===null) localStorage.setItem('taxiWorkPatternAnalysis','1');
 }
 function savePersonalData(){
   const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
@@ -1727,16 +1738,20 @@ function initSettings(){
     $('closingStatus').textContent='現在の設定：毎月'+saved+'日締め';
   }
   const showTime=localStorage.getItem('taxiShowTime')==='1';
+  const showRestBreak=localStorage.getItem('taxiShowRestBreak')!=='0';
   const showSalesData=localStorage.getItem('taxiShowSalesData')!=='0';
   const showRoute=localStorage.getItem('taxiShowRoute')==='1';
+  const workPatternAnalysis=localStorage.getItem('taxiWorkPatternAnalysis')!=='0';
   const showAreaAvg=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
   const salesGoal=localStorage.getItem('taxiSalesGoal')||'800000';
   if($('salesGoalInput'))$('salesGoalInput').value=salesGoal;
   if($('salesGoalStatus'))$('salesGoalStatus').textContent='現在の目標：¥'+Number(salesGoal||0).toLocaleString();
   if($('showTime'))$('showTime').checked=showTime;
+  if($('showRestBreak'))$('showRestBreak').checked=showRestBreak;
   if($('showSalesData'))$('showSalesData').checked=showSalesData;
   if($('showRoute'))$('showRoute').checked=showRoute;
+  if($('workPatternAnalysisEnabled'))$('workPatternAnalysisEnabled').checked=workPatternAnalysis;
   if($('showAreaAvg'))$('showAreaAvg').checked=showAreaAvg;
   if($('showHelpText'))$('showHelpText').checked=showHelpText;
   const payday=$('paydayBase');
@@ -1762,8 +1777,10 @@ function initSettings(){
 function saveSettings(){
   localStorage.setItem('taxiClosingDay',$('closingDay').value);
   localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
+  localStorage.setItem('taxiShowRestBreak',$('showRestBreak').checked?'1':'0');
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
+  localStorage.setItem('taxiWorkPatternAnalysis',$('workPatternAnalysisEnabled').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
   const wasAreaAvgEnabled=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const areaAvgEnabled=$('showAreaAvg')?.checked===true;
@@ -1801,11 +1818,17 @@ function updateAreaAvgFieldsUI(){
 function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
   const timeCard=$('timeCard');
+  const restBreakCard=$('restBreakCard');
   const salesDataWidget=$('salesDataWidget');
   const routeCard=$('routeCard');
   const areaAvgBtn=document.querySelector('.floatingAreaAvgBtn');
+  const workPatternAnalysis=localStorage.getItem('taxiWorkPatternAnalysis')!=='0';
   const areaAvgOn=localStorage.getItem('taxiShowAreaAvg')!=='0';
   if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
+  if(restBreakCard)restBreakCard.classList.toggle('hidden',localStorage.getItem('taxiShowRestBreak')==='0');
+  if($('outPatternMessage') && !workPatternAnalysis){ $('outPatternMessage').textContent=''; $('outPatternMessage').classList.add('hidden'); }
+  if($('breakPatternMessage') && !workPatternAnalysis){ $('breakPatternMessage').textContent=''; $('breakPatternMessage').classList.add('hidden'); }
+  if($('concernMessenger') && !workPatternAnalysis){ $('concernMessenger').classList.add('hidden'); }
   if(salesDataWidget)salesDataWidget.classList.toggle('hidden',localStorage.getItem('taxiShowSalesData')==='0');
   if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
   if(areaAvgBtn)areaAvgBtn.classList.toggle('hidden',!areaAvgOn);
