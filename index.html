@@ -1089,7 +1089,7 @@ function duration(){
 }
 
 
-async function updateTotal{
+async function updateTotal(){
   const a=await getLogs();
   const t=a.reduce((n,x)=>{
     const type=x.dayType||'work';
