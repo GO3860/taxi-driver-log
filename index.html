@@ -262,7 +262,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 <div id="workFields">
 <div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
-<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
+<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"><div id="outPatternMessage" class="help-text"></div></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
 <input id="km" type="hidden">
@@ -987,6 +987,32 @@ function getLogBreakCount(log){
 }
 function getOutMinutes(log){return getBreakStartMinutes(log?.out||'');}
 function deviationForArrival(log,base){const v=getOutMinutes(log);return v!==null&&base!==null&&circularTimeDiff(v,base)>60;}
+async function checkOutTimeDeviation(){
+  const msg=$('outPatternMessage');
+  if(!msg)return;
+  msg.textContent='';
+  msg.style.cssText='';
+  const out=$('out')?.value||'';
+  if(!out)return;
+  try{
+    const currentType=getDayType();
+    if(currentType!=='work'&&currentType!=='parttime')return;
+    const logs=await getLogs();
+    const currentDate=$('date')?.textContent||'';
+    const history=workLogsForDeviation(logs,currentDate);
+    if(history.length<5)return;
+    const base=history.slice(0,20);
+    const outBase=medianNum(base.map(getOutMinutes));
+    const current=getBreakStartMinutes(out);
+    if(outBase===null||current===null)return;
+    const diff=circularTimeDiff(current,outBase);
+    if(diff<=60)return;
+    const h=Math.floor(outBase/60),m=outBase%60;
+    const normalText=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+    msg.innerHTML='🟨 いつもの出庫時間と少し違います。<br><span style="font-weight:600">普段は '+normalText+' ごろです。今日は '+out+' です。</span><br>最近の自分の働き方と違っていないか、少し確認してみましょう。';
+    msg.style.cssText='margin-top:7px;padding:9px 10px;border-radius:10px;background:#fff8df;border:1px solid #ead79a;color:#6f5a13;line-height:1.5;font-weight:700;';
+  }catch(e){console.error(e);}
+}
 function deviationForBreak(log,baseStart,baseTotal,baseCount){
   const start=getFirstBreakStart(log),total=getLogBreakTotal(log),count=getLogBreakCount(log);
   return (start!==null&&baseStart!==null&&circularTimeDiff(start,baseStart)>120) ||
@@ -1074,6 +1100,7 @@ function duration(){
   const out=$('out').value;
   const inn=$('in').value;
   const hours=$('hours');
+  checkOutTimeDeviation();
   if(!out||!inn){
     hours.firstChild.textContent='—';
     updateConstraintWarning();
