@@ -997,8 +997,7 @@ async function renderSalesGoal(){
     <div class="salesGoalMessage">${message} 🐱</div>`;
 }
 
-function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }
-function setDayType(el,type){
+function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }function setDayType(el,type){
   document.querySelectorAll('#dayType .chip').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');
   const work=!isRestDay(type);
@@ -1997,8 +1996,7 @@ async function showEventBreakdown(year,index){
     });
   });
   const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${n}</span><strong>${counts[n]}回</strong></div>`).join('');
-  $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';
-  $('eventBreakdownModal').classList.remove('hidden');
+  $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';  $('eventBreakdownModal').classList.remove('hidden');
 }
 function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden')}
 
@@ -2761,7 +2759,7 @@ document.addEventListener('input',function(e){
 <style id="rest-learning-progress-v167">
 .restLearningStats{margin-top:12px}.restLearningStat{padding:12px;border:1px solid #dfe9e1;border-radius:14px;background:#fff}.restLearningStatLabel{font-size:14px;font-weight:900;margin-bottom:8px}.restProgress{height:12px;border-radius:999px;background:#edf0ed;overflow:hidden}.restProgressBar{height:100%;border-radius:999px;background:#78b88a;transition:width .3s ease}.restProgressText{margin-top:6px;font-size:14px;text-align:right;color:#555}.restProgressText strong{font-size:20px;color:#222}.restProgressMsg{margin-top:7px;font-size:12px;color:#666;line-height:1.5}.restLearningStatGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.restLearningStatBox{padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff}.restLearningStatBox strong{display:block;font-size:22px}.restLearningStatBox span{display:block;margin-top:3px;font-size:11px;color:#666;font-weight:700}@media(max-width:430px){.restLearningStatGrid{gap:7px}.restLearningStatBox strong{font-size:20px}}
 </style>
-</body></html><style>
+<style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
 .calendarGrid{gap:5px}
 .calDay{height:54px!important;min-height:54px!important}
@@ -2954,3 +2952,4 @@ setInterval(updateConstraintWarning,30000);
   .dailySalesDayType{font-size:9px;margin-top:1px;}
 }
 </style>
+</body></html>
