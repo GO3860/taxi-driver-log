@@ -290,12 +290,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="restBreakCard" class="card">
   <div class="label">☕ 休憩時間</div>
   <div class="grid">
-    <div><div class="small">① 休憩開始</div><input id="breakStart" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">② 休憩終了</div><input id="breakEnd" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">① 休憩開始</div><input id="breakStart1" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">① 休憩終了</div><input id="breakEnd1" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">② 休憩開始</div><input id="breakStart2" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">② 休憩終了</div><input id="breakEnd2" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">③ 休憩開始</div><input id="breakStart3" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
+    <div><div class="small">③ 休憩終了</div><input id="breakEnd3" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
   </div>
-  <div class="small">③ 休憩時間</div>
+  <div class="small">合計休憩時間</div>
   <div id="breakMinutesDisplay" class="hoursbox">—</div>
-  <div class="help-text">休憩開始・終了を入力すると、自動で休憩時間を計算します。</div>
+  <div id="breakPatternMessage" class="help-text"></div>
+  <div class="help-text">休憩は分けて入力できます。1回だけ、2回だけの休憩でもOKです。</div>
 </div>
 
 <div id="salesGoalCard" class="salesGoalCard"></div>
@@ -913,28 +918,38 @@ function updateLoadedRateCalc(){
     if(input)input.value='';
   }
 }
-function getBreakMinutes(){
-  const start=$('breakStart')?.value||'';
-  const end=$('breakEnd')?.value||'';
+function getBreakSlots(){
+  return [1,2,3].map(n=>({start:$('breakStart'+n)?.value||'',end:$('breakEnd'+n)?.value||''}));
+}
+function getBreakSlotMinutes(start,end){
   if(!start||!end)return 0;
-  const [sh,sm]=start.split(':').map(Number);
-  const [eh,em]=end.split(':').map(Number);
+  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
   if(![sh,sm,eh,em].every(Number.isFinite))return 0;
-  let minutes=(eh*60+em)-(sh*60+sm);
-  if(minutes<0)minutes+=24*60;
-  return minutes;
+  let m=(eh*60+em)-(sh*60+sm); if(m<0)m+=1440; return m;
+}
+function getBreakMinutes(){return getBreakSlots().reduce((sum,b)=>sum+getBreakSlotMinutes(b.start,b.end),0);}
+function getBreakStartMinutes(v){
+  if(!v)return null; const p=v.split(':').map(Number); return p.length===2&&p.every(Number.isFinite)?p[0]*60+p[1]:null;
+}
+async function checkBreakPattern(){
+  const msg=$('breakPatternMessage'); if(!msg)return; msg.textContent='';
+  const slots=getBreakSlots().filter(b=>b.start&&b.end); if(slots.length<2)return;
+  const starts=slots.map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null).sort((a,b)=>a-b);
+  let clustered=false; for(let i=1;i<starts.length;i++){if(starts[i]-starts[i-1]<=90){clustered=true;break;}}
+  if(!clustered)return;
+  try{
+    const logs=await getLogs(), currentDate=$('date')?.textContent||'';
+    const prior=logs.filter(x=>(x.dayType||'work')==='work'&&Array.isArray(x.breakSlots)&&x.breakSlots.length&&x.date!==currentDate);
+    if(prior.length<5)return;
+    const hs=prior.flatMap(x=>x.breakSlots||[]).map(b=>getBreakStartMinutes(b.start)).filter(v=>v!==null);
+    if(hs.length<5)return;
+    const first=starts[0], nearest=Math.min(...hs.map(v=>{const d=Math.abs(v-first);return Math.min(d,1440-d);}));
+    if(nearest>=120)msg.textContent='🟨 いつもと少し違う休憩の取り方になっています。休憩が続いていますが、大丈夫ですか？ 無理せず、今の体調と休養を確認してください。';
+  }catch(e){console.error(e);}
 }
 function breakDuration(){
-  const display=$('breakMinutesDisplay');
-  if(!display)return;
-  const start=$('breakStart')?.value||'';
-  const end=$('breakEnd')?.value||'';
-  if(!start||!end){
-    display.textContent='—';
-    return;
-  }
-  const minutes=getBreakMinutes();
-  display.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
+  const d=$('breakMinutesDisplay'); if(!d)return;
+  const m=getBreakMinutes(); d.textContent=m>0?Math.floor(m/60)+'時間'+(m%60)+'分':'—'; checkBreakPattern();
 }
 function duration(){
   const out=$('out').value;
@@ -1138,7 +1153,7 @@ async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart:(dayType==='work'||dayType==='parttime')?$('breakStart').value:'',breakEnd:(dayType==='work'||dayType==='parttime')?$('breakEnd').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart1:(dayType==='work'||dayType==='parttime')?$('breakStart1').value:'',breakEnd1:(dayType==='work'||dayType==='parttime')?$('breakEnd1').value:'',breakStart2:(dayType==='work'||dayType==='parttime')?$('breakStart2').value:'',breakEnd2:(dayType==='work'||dayType==='parttime')?$('breakEnd2').value:'',breakStart3:(dayType==='work'||dayType==='parttime')?$('breakStart3').value:'',breakEnd3:(dayType==='work'||dayType==='parttime')?$('breakEnd3').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1267,8 +1282,12 @@ async function editLog(id){
 
   if($('out'))$('out').value=x.out||'';
   if($('in'))$('in').value=x.in||'';
-  if($('breakStart'))$('breakStart').value=x.breakStart||'';
-  if($('breakEnd'))$('breakEnd').value=x.breakEnd||'';
+  if($('breakStart1'))$('breakStart1').value=x.breakStart1||x.breakStart||'';
+  if($('breakEnd1'))$('breakEnd1').value=x.breakEnd1||x.breakEnd||'';
+  if($('breakStart2'))$('breakStart2').value=x.breakStart2||'';
+  if($('breakEnd2'))$('breakEnd2').value=x.breakEnd2||'';
+  if($('breakStart3'))$('breakStart3').value=x.breakStart3||'';
+  if($('breakEnd3'))$('breakEnd3').value=x.breakEnd3||'';
   breakDuration();
   if($('km'))$('km').value=x.km||'';
   if($('sales'))$('sales').value=x.sales||'';
