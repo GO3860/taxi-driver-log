@@ -1205,11 +1205,39 @@ async function renderSalesGoal(){
     <div class="salesGoalMessage">${message} 🐱</div>`;
 }
 
-function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }function setDayType(el,type){
+function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }
+function updateSalesInputForDayType(type){
+  const sales=$('sales');
+  if(!sales)return;
+  const rest=isRestDay(type);
+  if(rest){
+    if(sales.type==='number')sales.dataset.lastSales=sales.value||sales.dataset.lastSales||'';
+    sales.type='text';
+    sales.value='—';
+    sales.disabled=true;
+    sales.setAttribute('aria-label','休みの日は自身の売上を入力できません');
+    sales.style.background='#f3f4f6';
+    sales.style.color='#777';
+    sales.style.fontWeight='800';
+    sales.style.textAlign='center';
+  }else{
+    const saved=sales.dataset.lastSales||'';
+    sales.type='number';
+    sales.disabled=false;
+    sales.removeAttribute('aria-label');
+    sales.style.background='';
+    sales.style.color='';
+    sales.style.fontWeight='';
+    sales.style.textAlign='';
+    if(sales.value==='—')sales.value=saved;
+  }
+}
+function setDayType(el,type){
   document.querySelectorAll('#dayType .chip').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');
   const work=!isRestDay(type);
   const parttime=type==='parttime';
+  updateSalesInputForDayType(type);
   const wf=$('workFields'), rf=$('restFields'), th=$('takeHomeField'), af=$('averageField'), df=$('diff');
   if(wf) wf.style.display='';
   if(wf){
@@ -1453,7 +1481,16 @@ async function editLog(id){
   showConcernMessenger(!!x.concern);
   analyzeWorkPatternDeviation();
   if($('km'))$('km').value=x.km||'';
-  if($('sales'))$('sales').value=x.sales||'';
+  if($('sales')){
+    if(isRestDay(normalizedDayType)){
+      $('sales').dataset.lastSales='';
+      updateSalesInputForDayType(normalizedDayType);
+    }else{
+      $('sales').dataset.lastSales=x.sales||'';
+      $('sales').value=x.sales||'';
+      updateSalesInputForDayType(normalizedDayType);
+    }
+  }
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
   if($('tripCount'))$('tripCount').value=x.tripCount??'';
   if($('avg'))$('avg').value=x.avg||'';
