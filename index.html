@@ -233,7 +233,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .hoursWarningOverlay.national{background:rgba(255,40,40,.26);color:#9d0000}
 .hoursWarningOverlay.over{background:rgba(255,40,40,.38);color:#8b0000}
 </style>
-<style id="calendar-other-delete-v186">/* v186: 勤務・その他などの通常ブロックにも削除ボタンを追加 */</style>\n<style id="calendar-date-log-v187">/* v187: カレンダーの日付タップで当日のログへ移動 */</style>\n</head>
+<style id="calendar-other-delete-v186">/* v186: 勤務・その他などの通常ブロックにも削除ボタンを追加 */</style>\n<style id="calendar-date-log-v187">/* v187: カレンダーの日付タップで当日のログへ移動 */</style>\n<style id="calendar-day-log-v188">
+.calendarDayLogBtn{display:block;width:100%;margin:10px 0 8px;padding:13px 14px;border:2px solid #9bc9f5;border-radius:14px;background:#f4faff;color:#1677c8;font-size:16px;font-weight:900}
+.calendarDayLogBtn:active{transform:scale(.99);background:#eaf5ff}
+</style>
+</head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
 
@@ -625,6 +629,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
       <label id="workPlanMemoWrap">メモ（任意）
         <input id="workPlanMemo" type="text" placeholder="例：病院、旅行、出勤予定など">
       </label>
+      <button type="button" class="calendarDayLogBtn" onclick="openSelectedDayLog()">📖 この日のログを見る</button>
       <div class="calendarActions"><button type="button" class="calSave" onclick="saveWorkPlan()">登録</button><button type="button" class="calDelete" onclick="deleteWorkPlan()">登録を削除</button></div>
       <button type="button" class="calClose" onclick="closeWorkCalendar()">閉じる</button>
     </div>
@@ -2878,6 +2883,28 @@ function swapCalendarBlocks(){
   renderWorkCalendar();
 }
 
+async function openSelectedDayLog(){
+  if(!workCalendarSelectedKey){
+    alert('先にカレンダーの日付を選択してください。');
+    return;
+  }
+  try{
+    const all=await getLogs();
+    const target=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      return d && restDateKey(d)===workCalendarSelectedKey;
+    });
+    if(target){
+      closeWorkCalendar();
+      await showLogDetail(target.id);
+      return;
+    }
+    alert(workCalendarSelectedKey.replace(/-/g,'/')+' のログはまだ登録されていません。');
+  }catch(e){
+    console.error(e);
+    alert('ログを開けませんでした。');
+  }
+}
 function prepareAddPlan(){
   $('workPlanType').value='plan';
   $('workPlanMemo').value='';
