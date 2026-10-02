@@ -220,6 +220,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .calendarPlanTime.muted{font-size:12px;color:#999}
 .calendarPlanMemo{word-break:break-word}
 .calendarPlanDelete{border:0;border-radius:10px;background:#f2f2f2;color:#777;padding:7px 9px;font-weight:800;white-space:nowrap}
+.calendarDetailActions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.calendarBlockDelete{background:#f2f2f2;color:#777}
 .calendarAddWide{width:100%;margin-top:2px}
 </style>
 
@@ -231,7 +233,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .hoursWarningOverlay.national{background:rgba(255,40,40,.26);color:#9d0000}
 .hoursWarningOverlay.over{background:rgba(255,40,40,.38);color:#8b0000}
 </style>
-</head>
+<style id="calendar-other-delete-v186">/* v186: 勤務・その他などの通常ブロックにも削除ボタンを追加 */</style>\n</head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
 
@@ -2811,7 +2813,7 @@ function renderCalendarDetail(){
   }
   if(nonPlans.length){
     const p=nonPlans[nonPlans.length-1],cls=planClass(p.type);
-    html+=`<div class="calendarDetailRow"><div class="calendarDetailBadge ${cls}">${planLabel(p.type)}</div><div class="calendarDetailInfo">${escapeHtml(p.memo||'—')}</div><button class="calendarAddBtn" type="button" onclick="document.getElementById('workPlanType').focus()">＋ 追加</button></div>`;
+    html+=`<div class="calendarDetailRow"><div class="calendarDetailBadge ${cls}">${planLabel(p.type)}</div><div class="calendarDetailInfo">${escapeHtml(p.memo||'—')}</div><div class="calendarDetailActions"><button class="calendarAddBtn" type="button" onclick="document.getElementById('workPlanType').focus()">＋ 追加</button><button class="calendarPlanDelete calendarBlockDelete" type="button" onclick="deleteNonPlanItem('${escapeHtml(p.type)}')">削除</button></div></div>`;
   }
   const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
   if(blockTypes.length===2){
@@ -2870,6 +2872,14 @@ function deletePlanItem(index){
   const targetPos=arr.indexOf(target);
   if(targetPos>=0)arr.splice(targetPos,1);
   if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function deleteNonPlanItem(type){
+  if(!workCalendarSelectedKey||!type)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const kept=arr.filter(p=>p.type!==type);
+  if(kept.length)plans[workCalendarSelectedKey]=kept;else delete plans[workCalendarSelectedKey];
   setWorkPlans(plans);
   renderWorkCalendar();
 }
