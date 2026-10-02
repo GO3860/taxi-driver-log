@@ -2890,8 +2890,9 @@ function saveWorkPlan(){
   if(type==='plan'||type==='event')item.time=time;
   if(type==='event')item.eventIcon=$('workPlanEventIcon')?.value||'';
   if(type!=='plan'&&type!=='event'){
-    // 勤務・有休・バイト・その他・欠勤は従来どおり1日1件に置き換える
-    const kept=arr.filter(p=>p.type==='plan');
+    // 勤務・有休・バイト・その他・欠勤は「同じ種類だけ」1日1件にする。
+    // 別の種類の既存ブロック（例：勤務）を消さずに残す。
+    const kept=arr.filter(p=>p.type!==type);
     kept.push(item);
     plans[workCalendarSelectedKey]=kept;
   }else{
