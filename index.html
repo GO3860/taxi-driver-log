@@ -2763,7 +2763,11 @@ function renderWorkCalendar(){
       const n=displayArr.length,gap=2,topPad=30,available=Math.max(30,100-topPad-gap*(n-1)),slot=available/n;
       blocks=displayArr.map((p,i)=>{
         const top=topPad+i*(slot+gap),z=i+10;
-        const label=p.type==='event'?((p.eventIcon?escapeHtml(p.eventIcon)+' ':'')+'イベント'):planLabel(p.type);
+        const label=p.type==='event'
+          ?((p.eventIcon?escapeHtml(p.eventIcon)+' ':'')+'イベント')
+          :(p.type==='other' && String(p.memo||'').trim()
+            ?escapeHtml(String(p.memo).trim().slice(0,4))
+            :planLabel(p.type));
         return `<div class="planCube ${planClass(p.type)}" style="top:${top}%;height:${slot}%;z-index:${z}" title="${escapeHtml(p.memo||'')}"><span class="cubeLabel">${label}</span></div>`;
       }).join('');
     }
