@@ -2956,10 +2956,7 @@ function saveWorkPlan(){
   const type=$('workPlanType').value;
   const memo=$('workPlanMemo').value||'';
   const time=$('workPlanTime')?.value||'';
-  if((type==='plan'||type==='event') && !memo.trim()){
-    alert(type==='event'?'イベントの内容を入力してください。':'予定の内容を入力してください。');
-    return;
-  }
+  // 「予定」「イベント」「その他」は内容なしでもブロックだけ登録できる。
   const plans=getWorkPlans();
   const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
   // カレンダー上のブロックは1日最大2種類まで。既存ブロックへの追加は許可する。
