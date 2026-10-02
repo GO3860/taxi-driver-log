@@ -233,7 +233,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .hoursWarningOverlay.national{background:rgba(255,40,40,.26);color:#9d0000}
 .hoursWarningOverlay.over{background:rgba(255,40,40,.38);color:#8b0000}
 </style>
-<style id="calendar-other-delete-v186">/* v186: 勤務・その他などの通常ブロックにも削除ボタンを追加 */</style>\n</head>
+<style id="calendar-other-delete-v186">/* v186: 勤務・その他などの通常ブロックにも削除ボタンを追加 */</style>\n<style id="calendar-date-log-v187">/* v187: カレンダーの日付タップで当日のログへ移動 */</style>\n</head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
 
@@ -2714,7 +2714,7 @@ function toggleWorkPlanFields(){
     memo.placeholder=type==='plan'?'例：病院、出世稲荷御祈祷、食事など':type==='event'?'例：阪神戦、ライブ、花火大会など':'例：病院、旅行、出勤予定など';
   }
 }
-function selectWorkCalendarDate(key){
+async function selectWorkCalendarDate(key){
   workCalendarSelectedKey=key;
   const plans=getWorkPlans(), arr=normalizePlansForDate(plans[key]);
   const hasPlan=arr.some(x=>x.type==='plan');
@@ -2726,6 +2726,47 @@ function selectWorkCalendarDate(key){
   const icon=$('workPlanEventIcon');if(icon)icon.value=(arr.find(x=>x.type==='event')||{}).eventIcon||'';
   toggleWorkPlanFields();
   renderWorkCalendar();
+
+  // カレンダーの日付をタップしたら、その日のログへ移動する。
+  // 既存ログがあれば編集画面、なければその日付の新規入力画面を開く。
+  try{
+    const all=await getLogs();
+    const target=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      if(!d)return false;
+      return restDateKey(d)===key;
+    });
+    if(target){
+      await editLog(target.id);
+      return;
+    }
+
+    localStorage.setItem('taxiDutyDate',key);
+    const dateEl=$('date');
+    if(dateEl)dateEl.textContent=formatDutyDate(new Date(key+'T00:00:00'));
+    const dp=$('datePicker');
+    if(dp){
+      dp.value=key;
+      dp.max=todayYMD();
+    }
+    editingLogId=null;
+    photoData='';
+    document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+    document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+    const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+    if(none)none.classList.add('on');
+    const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
+    if(workBtn)setDayType(workBtn,'work');
+    ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    initRoutes([]);
+    duration();
+    const status=$('status');
+    if(status)status.textContent='📅 '+key.replace(/-/g,'/')+'の記録を入力します';
+    showToday();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    console.error(e);
+  }
 }
 function planClass(type){
   return {work:'work',paid:'paid',plan:'plan',event:'event',parttime:'parttime',other:'other',absent:'absent'}[type]||'other';
