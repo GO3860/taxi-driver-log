@@ -2317,11 +2317,17 @@ async function renderRestAdvice(){
   const box=$('restAdviceContent'); if(!box)return;
   const logs=await getLogs();
   const stats=restPatternStats(logs);
-  if(stats.usable.length<3){
-    box.innerHTML='<div class="restLearnBox">📚 エリア平均の記録がまだ少ないため、学習中です。<br><span>選択した学習データが入力された営業日のデータが増えると、傾向を自動で探します。</span></div>';
-    return;
-  }
+  const learningDays=stats.usable.length;
+  let growthIcon='🌱',growthName='学習を始めたばかり',nextTarget=3;
+  if(learningDays>=30){growthIcon='🏆';growthName='十分な学習データがたまりました';nextTarget=null;}
+  else if(learningDays>=20){growthIcon='🌲';growthName='かなり成長しています';nextTarget=30;}
+  else if(learningDays>=10){growthIcon='🌳';growthName='分析が育ってきました';nextTarget=20;}
+  else if(learningDays>=3){growthIcon='🌿';growthName='学習が進んできました';nextTarget=10;}
+  const growthMessage=nextTarget===null
+    ? '30日分の基礎学習ラインに到達しています。'
+    : '次の成長段階まであと<strong>'+Math.max(0,nextTarget-learningDays)+'日</strong>分です。';
   const patternHtml=stats.patterns.length
+    ? stats.patterns.length
     ? stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join('')
     : '<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
   const candidates=[];
@@ -2338,7 +2344,11 @@ async function renderRestAdvice(){
   const candHtml=candidates.length
     ? candidates.slice(0,8).map((x,i)=>'<div class="restCandidate restCandidateTap" onclick="toggleRestCandidateDetail('+i+')" role="button" tabindex="0"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討<br><span>タップで理由</span></div></div><div id="restCandidateDetail'+i+'" class="restCandidateDetail hidden">'+x.score.hits.map(h=>'<div class="restReasonRow"><strong>'+escapeHtml(h.factor)+'</strong><span>過去'+h.count+'回・平均 ¥'+Math.round(h.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(h.diff))+'%低め</span></div>').join('')+'</div>').join('')
     : '<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
-  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div><div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
+  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div>'+
+    '<div style="display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px;border-radius:16px;background:#f7f9fb">'+
+    '<div style="font-size:42px;line-height:1">'+growthIcon+'</div>'+
+    '<div><div style="font-weight:900;font-size:18px">成長段階：'+growthName+'</div><div style="margin-top:3px">学習データ <strong>'+stats.usable.length+'日</strong></div><div class="restSmall">'+growthMessage+'</div></div></div>'+
+    '<div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">🌱 → 🌿 → 🌳 → 🌲 → 🏆　データが増えるほど成長します。</div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
     '<div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div>'+
     '<div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
 }
