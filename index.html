@@ -2332,7 +2332,6 @@ async function renderRestAdvice(){
     ? '180日分の学習データがたまり、長期パターン分析の段階です。'
     : '次の成長段階まであと<strong>'+Math.max(0,nextTarget-learningDays)+'日</strong>分です。';
   const patternHtml=stats.patterns.length
-    ? stats.patterns.length
     ? stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join('')
     : '<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
   const candidates=[];
