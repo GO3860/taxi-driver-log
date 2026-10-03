@@ -601,7 +601,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <button class="areaAvgBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card areaAvgCard">
     <div class="label">🌿 休み方アドバイス</div>
-    <div class="help-text">自分の営業データから、エリア平均が低くなりやすい条件を学習し、休暇候補を表示します。</div>
+    <div id="restAdviceExplain" class="restAdviceExplain">
+      <div class="restAdviceExplainTitle">📖 休み方分析のしくみ</div>
+      <div class="restAdviceExplainText">カレンダーに登録した「勤務」予定を対象に、今後45日間を分析します。<br>過去の売上データから、売上が低くなりやすかった条件と重なる勤務予定日を、<strong>「休暇候補として検討」</strong>として表示します。<br><span>※ 休むことを決める機能ではありません。過去の自分のデータをもとに、休暇を考える際の参考として表示しています。</span></div>
+      <button type="button" class="restAdviceExplainClose" onclick="closeRestAdviceExplain()">説明を閉じる</button>
+    </div>
+    <button type="button" id="restAdviceExplainOpen" class="restAdviceExplainOpen hidden" onclick="openRestAdviceExplain()">📖 休み方分析の説明を見る</button>
     <div id="restAdviceContent"></div>
     <button type="button" class="restLearningBtn" onclick="toggleRestLearningDetails()">🧠 学習状況を見る</button>
     <div id="restLearningDetails" class="hidden"></div>
@@ -2288,6 +2293,16 @@ async function renderRestLearningDetails(){
     '<div class="restLearningStatGrid"><div class="restLearningStatBox"><strong>'+factorReadyCount+'種類</strong><span>分析できるファクター</span></div><div class="restLearningStatBox"><strong>'+stats.patterns.length+'件</strong><span>発見した傾向</span></div></div>'+
     '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
 }
+function closeRestAdviceExplain(){
+  const box=$('restAdviceExplain'); const btn=$('restAdviceExplainOpen');
+  if(box)box.classList.add('hidden');
+  if(btn)btn.classList.remove('hidden');
+}
+function openRestAdviceExplain(){
+  const box=$('restAdviceExplain'); const btn=$('restAdviceExplainOpen');
+  if(box)box.classList.remove('hidden');
+  if(btn)btn.classList.add('hidden');
+}
 function restPatternStats(logs){
   const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
   const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
@@ -2851,6 +2866,10 @@ document.addEventListener('input',function(e){
 .calendarDetailSectionTitle{font-size:16px;font-weight:900;margin:10px 0 7px}
 .eventItem{background:#effbf3!important;border-color:#a9e1ba!important}
 .eventIconLarge{font-size:21px;margin-right:5px}
+</style>
+<style id="rest-advice-explain-v186">
+.restAdviceExplain{margin:10px 0 14px;padding:14px;border:1px solid #dce9df;border-radius:16px;background:#f8fcf9;line-height:1.65}
+.restAdviceExplainTitle{font-size:16px;font-weight:900;margin-bottom:7px}.restAdviceExplainText{font-size:13px;color:#444}.restAdviceExplainText strong{color:#2e7d32}.restAdviceExplainText span{display:block;margin-top:7px;font-size:12px;color:#777}.restAdviceExplainClose{margin-top:11px;width:100%;border:0;border-radius:999px;padding:10px;background:#e9f3eb;color:#2e7d32;font-size:13px;font-weight:800}.restAdviceExplainOpen{width:100%;margin:8px 0 12px;border:1px solid #dce9df;border-radius:999px;padding:10px;background:#f8fcf9;color:#2e7d32;font-size:13px;font-weight:800}.restAdviceExplainOpen.hidden{display:none}
 </style>
 <style id="rest-learning-v165">
 .restSummary,.restLearnBox{background:#f6fbf7;border:1px solid #d9eadc;border-radius:16px;padding:14px;margin-top:12px;line-height:1.6}.restSummaryTitle{font-size:18px;font-weight:900;margin-bottom:6px}.restSmall{font-size:12px;color:#777;margin-top:6px}.restSection{margin-top:14px}.restSectionTitle{font-size:17px;font-weight:900;margin-bottom:8px}.restPattern{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid #e6e9ec;border-radius:13px;padding:11px;margin-top:7px}.restPattern strong{font-size:14px}.restPattern span{font-size:12px;color:#666;text-align:right}.restCandidate{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #dce9df;border-radius:14px;padding:12px;margin-top:8px}.restCandidate strong{font-size:16px}.restWhy{font-size:12px;color:#666;margin-top:4px}.restCandidateMark{background:#edf8ef;color:#2e7d32;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:430px){.restPattern{display:block}.restPattern span{display:block;text-align:left;margin-top:4px}.restCandidateMark{font-size:10px;padding:6px 7px}}
