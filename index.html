@@ -395,6 +395,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 <div class="small" id="restSettingsStatus"></div>
 </div>
+<div class="card" style="margin-top:18px">
+<div class="label">🔄 休み方分析のリセット</div>
+<div class="help-text">勤務形態（隔勤・日勤など）、勤務エリア、タクシー会社が変わったときなどに使います。リセットしても、これまでの売上ログやカレンダーは削除されません。</div>
+<button type="button" class="btn full" onclick="resetRestAnalysis()" style="margin-top:10px">🔄 休み方分析をリセット</button>
+</div>
 <div class="card holidaySettingsMenuCard">
 <button class="settingsMenuBtn holidayMenuBtn" type="button" onclick="openHolidaySettings()">🇯🇵 祝日設定<br><span style="font-size:12px;color:#777;font-weight:500">年ごとの祝日を追加・削除・管理できます</span></button>
 </div>
@@ -1634,6 +1639,12 @@ function updateAreaAvgFieldsUI(){
   const on=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const averageField=$('averageField');
   const avg=$('avg');
+  if(averageField)averageField.classList.toggle('areaAvgDisabled',!on);
+  if(avg){
+    avg.disabled=!on;
+    avg.placeholder=on?'':'—';
+    if(!on)avg.value='';
+  }
 }
 function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
@@ -2248,7 +2259,7 @@ function toggleRestLearningDetails(){
 }
 async function renderRestLearningDetails(){
   const box=$('restLearningDetails'); if(!box)return;
-  const logs=await getLogs();
+  const logs=restLogsSinceReset(await getLogs());
   const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
   const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const catalog=restFactorCatalog();
@@ -2296,7 +2307,30 @@ function openRestAdviceExplain(){
   if(box)box.classList.remove('hidden');
   if(btn)btn.classList.add('hidden');
 }
+function restAnalysisResetDate(){
+  return localStorage.getItem('taxiRestAnalysisResetDate')||'';
+}
+function restLogsSinceReset(logs){
+  const reset=restAnalysisResetDate();
+  if(!reset)return logs;
+  return logs.filter(log=>{
+    const d=restDateOnly(log.date);
+    if(!d)return false;
+    const key=restDateKey(d);
+    return key>=reset;
+  });
+}
+function resetRestAnalysis(){
+  const resetDate=todayYMD();
+  if(!confirm('休み方分析をリセットします。\n\nこれまでの売上ログやカレンダーは削除されません。\n今日以降のデータを新しい勤務スタイル・会社・エリアの学習データとして使います。\n\nリセットしますか？'))return;
+  localStorage.setItem('taxiRestAnalysisResetDate',resetDate);
+  renderRestAdvice();
+  const box=$('restLearningDetails');
+  if(box && !box.classList.contains('hidden'))renderRestLearningDetails();
+  alert('休み方分析をリセットしました。');
+}
 function restPatternStats(logs){
+  logs=restLogsSinceReset(logs);
   const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
   const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
   const map=new Map();
