@@ -1021,12 +1021,17 @@ function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || typ
 // 画面更新や設定変更などで入力欄が一時的に空になっても、保存時に復元できるようにする。
 function initRestAvgDraft(){
   const el=$('restAvg');
-  if(!el)return;
-  el.addEventListener('input',()=>{
+  const top=$('avg');
+  const sync=(value,source)=>{
+    const v=String(value??'');
     const key='taxiRestAvgDraft_'+String($('date')?.textContent||'');
-    el.dataset.draftValue=el.value;
-    localStorage.setItem(key,el.value);
-  });
+    if(el && source!=='rest') el.value=v;
+    if(top && source!=='top') top.value=v;
+    if(el)el.dataset.draftValue=v;
+    localStorage.setItem(key,v);
+  };
+  if(el)el.addEventListener('input',()=>sync(el.value,'rest'));
+  if(top)top.addEventListener('input',()=>sync(top.value,'top'));
 }
 
 initRestAvgDraft();
@@ -1166,7 +1171,7 @@ async function saveLog(){
  const restAvgEl=$('restAvg');
  const restAvgDraftKey='taxiRestAvgDraft_'+String($('date')?.textContent||'');
  const restAverage = isRestDay(dayType)
-   ? String(restAvgEl?.value || restAvgEl?.dataset?.draftValue || localStorage.getItem(restAvgDraftKey) || '').trim()
+   ? String(restAvgEl?.value || $('avg')?.value || restAvgEl?.dataset?.draftValue || localStorage.getItem(restAvgDraftKey) || '').trim()
    : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
@@ -1320,6 +1325,7 @@ async function editLog(id){
   if($('tripCount'))$('tripCount').value=x.tripCount??'';
   if($('avg'))$('avg').value=x.avg||'';
   if($('restAvg'))$('restAvg').value=x.avg||'';
+  if($('restAvg'))$('restAvg').dataset.draftValue=String(x.avg||'');
   if($('parttimeTakeHomeInput'))$('parttimeTakeHomeInput').value=x.parttimeTakeHome||'';
   const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
   initRoutes(savedRoutes);
