@@ -2129,6 +2129,27 @@ function showDataSummary(){
 }
 
 async function showLogs(){const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest_nonpublic'||x.dayType==='rest'?'🏠 休（非・公）':x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+function calcBreakTotalMinutes(log){
+ const pairs=[[log.break1Start,log.break1End],[log.break2Start,log.break2End],[log.break3Start,log.break3End]];
+ let total=0;
+ pairs.forEach(([start,end])=>{
+   if(!start||!end)return;
+   const [sh,sm]=String(start).split(':').map(Number);
+   const [eh,em]=String(end).split(':').map(Number);
+   if(!Number.isFinite(sh)||!Number.isFinite(sm)||!Number.isFinite(eh)||!Number.isFinite(em))return;
+   let a=sh*60+sm,b=eh*60+em;
+   if(b<a)b+=1440;
+   total+=Math.max(0,b-a);
+ });
+ return total;
+}
+function formatBreakTotal(log){
+ const total=calcBreakTotalMinutes(log);
+ if(total<=0)return '—';
+ const h=Math.floor(total/60),m=total%60;
+ return h?(`${h}時間${m?m+'分':''}`):`${m}分`;
+}
+
 async function showLogDetail(id){
  const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
  await updateTotal();
@@ -2137,7 +2158,7 @@ async function showLogDetail(id){
 
  const rest=isRestDay(x.dayType), parttime=x.dayType==='parttime';
  $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
- $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
+ $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">休憩時間合計</div><div class="dailyValue">${formatBreakTotal(x)}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
 }
 
 async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();showLogs()}
