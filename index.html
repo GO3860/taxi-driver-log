@@ -268,43 +268,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 <div id="workFields">
 <div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
-<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"><div id="outPatternMessage" class="help-text"></div></div>
+<div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
 <input id="km" type="hidden">
-
-
-<div id="restBreakCard" class="card">
-  <div class="label">☕ 休憩時間</div>
-  <div class="grid">
-    <div><div class="small">① 休憩開始</div><input id="breakStart1" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">① 休憩終了</div><input id="breakEnd1" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">② 休憩開始</div><input id="breakStart2" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">② 休憩終了</div><input id="breakEnd2" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">③ 休憩開始</div><input id="breakStart3" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-    <div><div class="small">③ 休憩終了</div><input id="breakEnd3" type="time" oninput="breakDuration()" onchange="breakDuration()"></div>
-  </div>
-  <div class="small">合計休憩時間</div>
-  <div id="breakMinutesDisplay" class="hoursbox">—</div>
-  <div id="breakPatternMessage" class="help-text"></div>
-  <div id="concernMessenger" class="hidden" style="margin-top:10px;padding:12px;border-radius:14px;background:#fff9e8;border:1px solid #ead79a">
-    <div style="font-weight:800;line-height:1.5">🚕 最近、いつもの働き方と少し違います。<br>無理していないか、気になる事があるのか整理してみましょう。</div>
-    <div style="margin-top:8px;font-weight:700">今、気になっていることはありますか？</div>
-    <div id="concernOptions" style="margin-top:8px;display:grid;gap:7px">
-      <label><input type="radio" name="concern" value="スマホに夢中"> スマホに夢中</label>
-      <label><input type="radio" name="concern" value="会社関係"> 会社関係</label>
-      <label><input type="radio" name="concern" value="売上が心配"> 売上が心配</label>
-      <label><input type="radio" name="concern" value="睡眠・休養が足りない"> 睡眠・休養が足りない</label>
-      <label><input type="radio" name="concern" value="家族・プライベート"> 家族・プライベート</label>
-      <label><input type="radio" name="concern" value="仕事に行くのが少ししんどい"> 仕事に行くのが少ししんどい</label>
-      <label><input type="radio" name="concern" value="特に思い当たらない"> 特に思い当たらない</label>
-      <label><input type="radio" name="concern" value="その他"> その他</label>
-    </div>
-    <div id="concernAdvice" style="margin-top:10px;font-weight:700;line-height:1.55"></div>
-    <div style="margin-top:10px;font-weight:800">🚕 タクシードライバーに事故は厳禁🚫です。<br>気になることがあるときは、まず安全を優先しましょう。</div>
-  </div>
-  <div class="help-text">休憩は分けて入力できます。1回だけ、2回だけの休憩でもOKです。</div>
-</div>
 
 
 <div id="salesDataWidget" class="card"><div class="label">📊 営業データ</div>
@@ -396,16 +363,9 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="label">👀 今日の画面に表示する項目</div>
 <div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
-<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">☕ 休憩時間 <input id="showRestBreak" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">📊 営業項目 <input id="showSalesData" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">🗺️ 覚えておきたい道順 <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
-</div>
-
-<div class="card">
-<div class="label">🧠 働き方分析</div>
-<div class="help-text">90日分のログがたまった後、自分の普段の働き方との違いを知らせる機能です。</div>
-<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">働き方分析を使う <input id="workPatternAnalysisEnabled" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 </div>
 
 <div class="card">
@@ -950,175 +910,13 @@ function updateLoadedRateCalc(){
     if(input)input.value='';
   }
 }
-function getBreakSlots(){
-  return [1,2,3].map(n=>({start:$('breakStart'+n)?.value||'',end:$('breakEnd'+n)?.value||''}));
-}
-function getBreakSlotMinutes(start,end){
-  if(!start||!end)return 0;
-  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
-  if(![sh,sm,eh,em].every(Number.isFinite))return 0;
-  let m=(eh*60+em)-(sh*60+sm); if(m<0)m+=1440; return m;
-}
-function getBreakMinutes(){return getBreakSlots().reduce((sum,b)=>sum+getBreakSlotMinutes(b.start,b.end),0);}
-function getBreakStartMinutes(v){
-  if(!v)return null; const p=v.split(':').map(Number); return p.length===2&&p.every(Number.isFinite)?p[0]*60+p[1]:null;
-}
-function circularTimeDiff(a,b){
-  if(a===null||b===null)return null;
-  const d=Math.abs(a-b); return Math.min(d,1440-d);
-}
-function medianNum(arr){
-  const a=arr.filter(v=>Number.isFinite(v)).sort((x,y)=>x-y);
-  if(!a.length)return null; const m=Math.floor(a.length/2);
-  return a.length%2?a[m]:(a[m-1]+a[m])/2;
-}
 function logHasOwnAccident(log){
   return Array.isArray(log?.event) && log.event.some(v=>String(v).includes('自身の事故'));
-}
-function workLogsForDeviation(logs,currentDate){
-  return (logs||[]).filter(x=>(x.dayType||'work')==='work'&&x.date!==currentDate&&!logHasOwnAccident(x)&&String(x.out||'').trim())
-    .sort((a,b)=>String(b.date).localeCompare(String(a.date),'ja'));
-}
-function getFirstBreakStart(log){
-  const slots=Array.isArray(log?.breakSlots)&&log.breakSlots.length?log.breakSlots:[
-    {start:log?.breakStart1||log?.breakStart||''},{start:log?.breakStart2||''},{start:log?.breakStart3||''}
-  ];
-  const vals=slots.map(x=>getBreakStartMinutes(x.start)).filter(v=>v!==null).sort((a,b)=>a-b);
-  return vals.length?vals[0]:null;
-}
-function getLogBreakTotal(log){
-  if(Number.isFinite(Number(log?.breakMinutes)))return Number(log.breakMinutes);
-  const slots=Array.isArray(log?.breakSlots)?log.breakSlots:[
-    {start:log?.breakStart1||log?.breakStart||'',end:log?.breakEnd1||log?.breakEnd||''},
-    {start:log?.breakStart2||'',end:log?.breakEnd2||''},{start:log?.breakStart3||'',end:log?.breakEnd3||''}
-  ];
-  return slots.reduce((n,b)=>n+getBreakSlotMinutes(b.start,b.end),0);
-}
-function getLogBreakCount(log){
-  const slots=Array.isArray(log?.breakSlots)?log.breakSlots:[
-    {start:log?.breakStart1||log?.breakStart||'',end:log?.breakEnd1||log?.breakEnd||''},
-    {start:log?.breakStart2||'',end:log?.breakEnd2||''},{start:log?.breakStart3||'',end:log?.breakEnd3||''}
-  ];
-  return slots.filter(b=>b.start&&b.end).length;
-}
-function getOutMinutes(log){return getBreakStartMinutes(log?.out||'');}
-function deviationForArrival(log,base){const v=getOutMinutes(log);return v!==null&&base!==null&&circularTimeDiff(v,base)>60;}
-async function checkOutTimeDeviation(){
-  if(localStorage.getItem('taxiWorkPatternAnalysis')==='0')return;
-  const msg=$('outPatternMessage');
-  if(!msg)return;
-  msg.textContent='';
-  msg.style.cssText='';
-  const out=$('out')?.value||'';
-  if(!out)return;
-  try{
-    const currentType=getDayType();
-    if(currentType!=='work'&&currentType!=='parttime')return;
-    const logs=await getLogs();
-    const currentDate=$('date')?.textContent||'';
-    const history=workLogsForDeviation(logs,currentDate);
-    if(history.length<90)return;
-    const base=history.slice(0,20);
-    const outBase=medianNum(base.map(getOutMinutes));
-    const current=getBreakStartMinutes(out);
-    if(outBase===null||current===null)return;
-    const diff=circularTimeDiff(current,outBase);
-    if(diff<=40)return;
-    const h=Math.floor(outBase/60),m=outBase%60;
-    const normalText=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
-    msg.innerHTML='🟨 いつもの出庫時間と少し違います。<br><span style="font-weight:600">普段は '+normalText+' ごろです。今日は '+out+' です。</span><br>最近の自分の働き方と違っていないか、少し確認してみましょう。';
-    msg.style.cssText='margin-top:7px;padding:9px 10px;border-radius:10px;background:#fff8df;border:1px solid #ead79a;color:#6f5a13;line-height:1.5;font-weight:700;';
-  }catch(e){console.error(e);}
-}
-function deviationForBreak(log,baseStart,baseTotal,baseCount){
-  const start=getFirstBreakStart(log),total=getLogBreakTotal(log),count=getLogBreakCount(log);
-  return (start!==null&&baseStart!==null&&circularTimeDiff(start,baseStart)>120) ||
-    (baseTotal!==null&&Math.abs(total-baseTotal)>=60) ||
-    (baseCount!==null&&count>0&&count!==baseCount);
-}
-function dateDiffDays(a,b){
-  const da=parseDutyDate(a),db=parseDutyDate(b); if(!da||!db)return null;
-  return Math.abs(Math.round((da-db)/86400000));
-}
-async function analyzeWorkPatternDeviation(){
-  if(localStorage.getItem('taxiWorkPatternAnalysis')==='0')return;
-  const msg=$('breakPatternMessage'), messenger=$('concernMessenger');
-  if(!msg)return;
-  msg.textContent=''; if(messenger)messenger.classList.add('hidden');
-  try{
-    const logs=await getLogs(), currentDate=$('date')?.textContent||'', currentType=getDayType();
-    if(currentType!=='work'&&currentType!=='parttime')return;
-    const history=workLogsForDeviation(logs,currentDate);
-    if(history.length<90)return;
-    const base=history.slice(0,20), recent=base.slice(0,Math.min(6,base.length));
-    const outBase=medianNum(base.map(getOutMinutes));
-    const breakStartBase=medianNum(base.map(getFirstBreakStart));
-    const breakTotalBase=medianNum(base.map(getLogBreakTotal));
-    const breakCountBase=medianNum(base.map(getLogBreakCount).filter(v=>v>0));
-    const signals=[];
-    if(outBase!==null&&recent.length>=5&&recent.filter(x=>deviationForArrival(x,outBase)).length>=5)signals.push('出庫時間');
-    if((breakStartBase!==null||breakTotalBase!==null)&&recent.length>=5&&recent.filter(x=>deviationForBreak(x,breakStartBase,breakTotalBase,breakCountBase)).length>=5)signals.push('休憩の取り方');
-
-    const recentWindow=35, previousWindow=90;
-    const daysFromCurrent=x=>dateDiffDays(x.date,currentDate);
-    const leave=(logs||[]).filter(x=>x.dayType==='rest_leaveabsence'&&!logHasOwnAccident(x));
-    const recentLeave=leave.filter(x=>{const d=daysFromCurrent(x);return d!==null&&d<=recentWindow;}).length;
-    const prevLeave=leave.filter(x=>{const d=daysFromCurrent(x);return d!==null&&d>recentWindow&&d<=previousWindow;}).length;
-    const recentWork=(logs||[]).filter(x=>x.dayType==='work'&&!logHasOwnAccident(x)&&(()=>{const d=daysFromCurrent(x);return d!==null&&d<=recentWindow;})()).length;
-    const prevWork=(logs||[]).filter(x=>x.dayType==='work'&&!logHasOwnAccident(x)&&(()=>{const d=daysFromCurrent(x);return d!==null&&d>recentWindow&&d<=previousWindow;})()).length;
-    const rr=recentLeave/Math.max(1,recentLeave+recentWork),pr=prevLeave/Math.max(1,prevLeave+prevWork);
-    if(recentLeave>=2&&rr>=pr+0.15)signals.push('有休・欠勤');
-
-    const dates=base.map(x=>x.date).filter(Boolean),gaps=[];
-    for(let i=0;i<dates.length-1;i++){const d=dateDiffDays(dates[i],dates[i+1]);if(d!==null&&d>0)gaps.push(d);}
-    const gapBase=medianNum(gaps),lastGap=dateDiffDays(currentDate,history[0]?.date);
-    if(gapBase!==null&&lastGap!==null&&lastGap>gapBase+2&&recent.length>=5)signals.push('ログ入力の間隔');
-
-    const concernCounts={};
-    history.slice(0,20).map(x=>String(x.concern||'')).filter(Boolean).forEach(v=>concernCounts[v]=(concernCounts[v]||0)+1);
-    if(Object.values(concernCounts).some(n=>n>=5))signals.push('気になること');
-
-    if(signals.length){
-      msg.innerHTML='🟨 最近、いつもの働き方と少し違います。<br><span style="font-weight:600">・'+signals.join('<br>・')+'</span><br>無理していないか、気になる事があるのか整理してみましょう。';
-      if(messenger)messenger.classList.remove('hidden');
-    }
-  }catch(e){console.error(e);}
-}
-async function checkBreakPattern(){await analyzeWorkPatternDeviation();}
-function concernAdviceText(value){
-  const advice={
-    'スマホに夢中':'📱 スマホのことが気になっているんですね。仕事中にスマホへ意識が向きすぎていると感じるなら、一度スマホから離れて休憩してみましょう。',
-    '会社関係':'🏢 会社関係のことが気になっているんですね。頭の中で抱え続けず、何が気になっているのかを一度整理してみましょう。',
-    '売上が心配':'💰 売上が気になっているんですね。焦って取り返そうとせず、今日だけでなく今月全体の状況を一度整理してみましょう。',
-    '睡眠・休養が足りない':'😴 睡眠や休養が足りないと感じているなら、休むことも仕事の一部です。今の休養状態を一度整理してみましょう。',
-    '家族・プライベート':'🏠 家族やプライベートのことが気になっているんですね。気になることを一つずつ整理して、運転中は安全に意識を戻しましょう。',
-    '仕事に行くのが少ししんどい':'🫧 仕事に行くことがしんどく感じているんですね。無理に答えを出そうとせず、休養や今気になっていることを整理してみましょう。',
-    '特に思い当たらない':'🔎 特に思い当たらない場合も大丈夫です。今日は休憩・睡眠・勤務ペースを少し意識してみましょう。',
-    'その他':'📝 言葉にしにくいこともあります。今気になっていることを整理して、運転中は安全を最優先にしましょう。'
-  };
-  return advice[value]||'気になっていることを一度整理してみましょう。';
-}
-function bindConcernOptions(){
-  document.querySelectorAll('input[name="concern"]').forEach(r=>{
-    r.onchange=()=>{
-      const a=$('concernAdvice');
-      if(a)a.textContent=concernAdviceText(r.value);
-    };
-  });
-}
-function showConcernMessenger(show){
-  const box=$('concernMessenger');
-  if(box)box.classList.toggle('hidden',!show);
-}
-function breakDuration(){
-  const d=$('breakMinutesDisplay'); if(!d)return;
-  const m=getBreakMinutes(); d.textContent=m>0?Math.floor(m/60)+'時間'+(m%60)+'分':'—'; checkBreakPattern();
 }
 function duration(){
   const out=$('out').value;
   const inn=$('in').value;
   const hours=$('hours');
-  checkOutTimeDeviation();
   if(!out||!inn){
     hours.firstChild.textContent='—';
     updateConstraintWarning();
@@ -1130,7 +928,6 @@ function duration(){
   if(minutes<0)minutes+=24*60;
   hours.firstChild.textContent=Math.floor(minutes/60)+'時間'+(minutes%60)+'分';
   updateConstraintWarning();
-  analyzeWorkPatternDeviation();
 }
 
 
@@ -1269,7 +1066,6 @@ function setDayType(el,type){
   }
 }
 function getDayType(){return document.querySelector('#dayType .chip.on')?.dataset.type||'work'}
-window.addEventListener('DOMContentLoaded',()=>{bindConcernOptions();const b=document.querySelector('#dayType .chip.on');if(b)setDayType(b,b.dataset.type||'work');});
 const saveButton=document.getElementById('saveButton');
 if(saveButton){
   const press=()=>saveButton.classList.add('savePressed');
@@ -1346,7 +1142,7 @@ async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',breakStart1:(dayType==='work'||dayType==='parttime')?$('breakStart1').value:'',breakEnd1:(dayType==='work'||dayType==='parttime')?$('breakEnd1').value:'',breakStart2:(dayType==='work'||dayType==='parttime')?$('breakStart2').value:'',breakEnd2:(dayType==='work'||dayType==='parttime')?$('breakEnd2').value:'',breakStart3:(dayType==='work'||dayType==='parttime')?$('breakStart3').value:'',breakEnd3:(dayType==='work'||dayType==='parttime')?$('breakEnd3').value:'',breakMinutes:(dayType==='work'||dayType==='parttime')?getBreakMinutes():'',breakTime:(dayType==='work'||dayType==='parttime')?($('breakMinutesDisplay')?.textContent||'—'):'',breakSlots:(dayType==='work'||dayType==='parttime')?getBreakSlots().filter(b=>b.start&&b.end):[],concern:(document.querySelector('input[name="concern"]:checked')?.value||''),km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+ let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1475,18 +1271,6 @@ async function editLog(id){
 
   if($('out'))$('out').value=x.out||'';
   if($('in'))$('in').value=x.in||'';
-  if($('breakStart1'))$('breakStart1').value=x.breakStart1||x.breakStart||'';
-  if($('breakEnd1'))$('breakEnd1').value=x.breakEnd1||x.breakEnd||'';
-  if($('breakStart2'))$('breakStart2').value=x.breakStart2||'';
-  if($('breakEnd2'))$('breakEnd2').value=x.breakEnd2||'';
-  if($('breakStart3'))$('breakStart3').value=x.breakStart3||'';
-  if($('breakEnd3'))$('breakEnd3').value=x.breakEnd3||'';
-  breakDuration();
-  document.querySelectorAll('input[name="concern"]').forEach(r=>{r.checked=(r.value===(x.concern||''));});
-  const ca=$('concernAdvice');
-  if(ca&&x.concern)ca.textContent=concernAdviceText(x.concern);
-  showConcernMessenger(!!x.concern);
-  analyzeWorkPatternDeviation();
   if($('km'))$('km').value=x.km||'';
   if($('sales')){
     if(isRestDay(normalizedDayType)){
@@ -1525,10 +1309,8 @@ async function editLog(id){
 
 function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
-  if(localStorage.getItem('taxiShowRestBreak')===null) localStorage.setItem('taxiShowRestBreak','1');
   if(localStorage.getItem('taxiShowSalesData')===null) localStorage.setItem('taxiShowSalesData','1');
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
-  if(localStorage.getItem('taxiWorkPatternAnalysis')===null) localStorage.setItem('taxiWorkPatternAnalysis','1');
 }
 function savePersonalData(){
   const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
@@ -1782,20 +1564,16 @@ function initSettings(){
     $('closingStatus').textContent='現在の設定：毎月'+saved+'日締め';
   }
   const showTime=localStorage.getItem('taxiShowTime')==='1';
-  const showRestBreak=localStorage.getItem('taxiShowRestBreak')!=='0';
   const showSalesData=localStorage.getItem('taxiShowSalesData')!=='0';
   const showRoute=localStorage.getItem('taxiShowRoute')==='1';
-  const workPatternAnalysis=localStorage.getItem('taxiWorkPatternAnalysis')!=='0';
   const showAreaAvg=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
   const salesGoal=localStorage.getItem('taxiSalesGoal')||'800000';
   if($('salesGoalInput'))$('salesGoalInput').value=salesGoal;
   if($('salesGoalStatus'))$('salesGoalStatus').textContent='現在の目標：¥'+Number(salesGoal||0).toLocaleString();
   if($('showTime'))$('showTime').checked=showTime;
-  if($('showRestBreak'))$('showRestBreak').checked=showRestBreak;
   if($('showSalesData'))$('showSalesData').checked=showSalesData;
   if($('showRoute'))$('showRoute').checked=showRoute;
-  if($('workPatternAnalysisEnabled'))$('workPatternAnalysisEnabled').checked=workPatternAnalysis;
   if($('showAreaAvg'))$('showAreaAvg').checked=showAreaAvg;
   if($('showHelpText'))$('showHelpText').checked=showHelpText;
   const payday=$('paydayBase');
@@ -1821,10 +1599,8 @@ function initSettings(){
 function saveSettings(){
   localStorage.setItem('taxiClosingDay',$('closingDay').value);
   localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
-  localStorage.setItem('taxiShowRestBreak',$('showRestBreak').checked?'1':'0');
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
-  localStorage.setItem('taxiWorkPatternAnalysis',$('workPatternAnalysisEnabled').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
   const wasAreaAvgEnabled=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const areaAvgEnabled=$('showAreaAvg')?.checked===true;
@@ -1862,17 +1638,11 @@ function updateAreaAvgFieldsUI(){
 function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
   const timeCard=$('timeCard');
-  const restBreakCard=$('restBreakCard');
   const salesDataWidget=$('salesDataWidget');
   const routeCard=$('routeCard');
   const areaAvgBtn=document.querySelector('.floatingAreaAvgBtn');
-  const workPatternAnalysis=localStorage.getItem('taxiWorkPatternAnalysis')!=='0';
   const areaAvgOn=localStorage.getItem('taxiShowAreaAvg')!=='0';
   if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
-  if(restBreakCard)restBreakCard.classList.toggle('hidden',localStorage.getItem('taxiShowRestBreak')==='0');
-  if($('outPatternMessage') && !workPatternAnalysis){ $('outPatternMessage').textContent=''; $('outPatternMessage').classList.add('hidden'); }
-  if($('breakPatternMessage') && !workPatternAnalysis){ $('breakPatternMessage').textContent=''; $('breakPatternMessage').classList.add('hidden'); }
-  if($('concernMessenger') && !workPatternAnalysis){ $('concernMessenger').classList.add('hidden'); }
   if(salesDataWidget)salesDataWidget.classList.toggle('hidden',localStorage.getItem('taxiShowSalesData')==='0');
   if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
   if(areaAvgBtn)areaAvgBtn.classList.toggle('hidden',!areaAvgOn);
