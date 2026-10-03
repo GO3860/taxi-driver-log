@@ -271,6 +271,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
+<div id="breakTimeCard" class="card optional-widget hidden">
+  <div class="label">☕ 休憩時間</div>
+  <div class="grid">
+    <div><div class="small">休憩①</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="break1Start" type="time" aria-label="休憩①開始"><input id="break1End" type="time" aria-label="休憩①終了"></div></div>
+    <div><div class="small">休憩②</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="break2Start" type="time" aria-label="休憩②開始"><input id="break2End" type="time" aria-label="休憩②終了"></div></div>
+    <div><div class="small">休憩③</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="break3Start" type="time" aria-label="休憩③開始"><input id="break3End" type="time" aria-label="休憩③終了"></div></div>
+  </div>
+  <div class="small" style="margin-top:8px">開始・終了時刻を記録します。休みの日には表示されません。</div>
+</div>
 <input id="km" type="hidden">
 
 
@@ -363,6 +372,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="label">👀 今日の画面に表示する項目</div>
 <div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">☕ 休憩時間 <input id="showBreakTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">📊 営業項目 <input id="showSalesData" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">🗺️ 覚えておきたい道順 <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <div class="help-text widget-note">※ 設定はいつでも変更できます。</div>
@@ -1056,8 +1066,9 @@ function setDayType(el,type){
   const work=!isRestDay(type);
   const parttime=type==='parttime';
   updateSalesInputForDayType(type);
-  const wf=$('workFields'), rf=$('restFields'), th=$('takeHomeField'), af=$('averageField'), df=$('diff');
+  const wf=$('workFields'), rf=$('restFields'), th=$('takeHomeField'), af=$('averageField'), df=$('diff'), btc=$('breakTimeCard');
   if(wf) wf.style.display='';
+  if(btc) btc.classList.toggle('hidden', localStorage.getItem('taxiShowBreakTime')!=='1' || !work);
   if(wf){
     wf.classList.toggle('rest-route-mode', !work);
   }
@@ -1158,7 +1169,7 @@ async function saveLog(){
  const restAverage = isRestDay(dayType)
    ? String($('avg')?.value ?? '').trim()
    : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
-  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1303,6 +1314,12 @@ async function editLog(id){
   }
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
   if($('tripCount'))$('tripCount').value=x.tripCount??'';
+  if($('break1Start'))$('break1Start').value=x.break1Start||'';
+  if($('break1End'))$('break1End').value=x.break1End||'';
+  if($('break2Start'))$('break2Start').value=x.break2Start||'';
+  if($('break2End'))$('break2End').value=x.break2End||'';
+  if($('break3Start'))$('break3Start').value=x.break3Start||'';
+  if($('break3End'))$('break3End').value=x.break3End||'';
   if($('avg'))$('avg').value=x.avg||'';
   if($('parttimeTakeHomeInput'))$('parttimeTakeHomeInput').value=x.parttimeTakeHome||'';
   const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
@@ -1327,6 +1344,7 @@ async function editLog(id){
 
 function migrateOptionalSettings(){
   if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
+  if(localStorage.getItem('taxiShowBreakTime')===null) localStorage.setItem('taxiShowBreakTime','0');
   if(localStorage.getItem('taxiShowSalesData')===null) localStorage.setItem('taxiShowSalesData','1');
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
 }
@@ -1582,6 +1600,7 @@ function initSettings(){
     $('closingStatus').textContent='現在の設定：毎月'+saved+'日締め';
   }
   const showTime=localStorage.getItem('taxiShowTime')==='1';
+  const showBreakTime=localStorage.getItem('taxiShowBreakTime')==='1';
   const showSalesData=localStorage.getItem('taxiShowSalesData')!=='0';
   const showRoute=localStorage.getItem('taxiShowRoute')==='1';
   const showAreaAvg=localStorage.getItem('taxiShowAreaAvg')!=='0';
@@ -1590,6 +1609,7 @@ function initSettings(){
   if($('salesGoalInput'))$('salesGoalInput').value=salesGoal;
   if($('salesGoalStatus'))$('salesGoalStatus').textContent='現在の目標：¥'+Number(salesGoal||0).toLocaleString();
   if($('showTime'))$('showTime').checked=showTime;
+  if($('showBreakTime'))$('showBreakTime').checked=showBreakTime;
   if($('showSalesData'))$('showSalesData').checked=showSalesData;
   if($('showRoute'))$('showRoute').checked=showRoute;
   if($('showAreaAvg'))$('showAreaAvg').checked=showAreaAvg;
@@ -1618,6 +1638,7 @@ function initSettings(){
 function saveSettings(){
   localStorage.setItem('taxiClosingDay',$('closingDay').value);
   localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
+  localStorage.setItem('taxiShowBreakTime',$('showBreakTime').checked?'1':'0');
   localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
@@ -1649,11 +1670,13 @@ function updateAreaAvgFieldsUI(){
 function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
   const timeCard=$('timeCard');
+  const breakTimeCard=$('breakTimeCard');
   const salesDataWidget=$('salesDataWidget');
   const routeCard=$('routeCard');
   const areaAvgBtn=document.querySelector('.floatingAreaAvgBtn');
   const areaAvgOn=localStorage.getItem('taxiShowAreaAvg')!=='0';
   if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
+  if(breakTimeCard)breakTimeCard.classList.toggle('hidden',localStorage.getItem('taxiShowBreakTime')!=='1' || isRestDay(getDayType()));
   if(salesDataWidget)salesDataWidget.classList.toggle('hidden',localStorage.getItem('taxiShowSalesData')==='0');
   if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
   if(areaAvgBtn)areaAvgBtn.classList.toggle('hidden',!areaAvgOn);
