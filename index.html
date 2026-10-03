@@ -1147,7 +1147,7 @@ async function renderConstraintWarning(){
 async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
- const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
+ const restAverage = isRestDay(dayType) ? String($('restAvg')?.value ?? $('avg')?.value ?? '').trim() : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
@@ -1163,9 +1163,13 @@ async function saveLog(){
  // 非番・公休／有休・欠勤の平均売上も、保存直後に読み直して確認する。
  if(isRestDay(dayType)){
    const savedCheck=all.find(x=>x.date===log.date);
-   if(!savedCheck || String(savedCheck.avg??'')!==String(log.avg??'')){
+   const savedAvg=String(savedCheck?.avg??'').trim();
+   const inputAvg=String(log.avg??'').trim();
+   if(!savedCheck || savedAvg!==inputAvg){
+     console.error('休みの日のエリア平均保存確認:', {inputAvg,savedAvg,dayType});
      throw new Error('休みの日の平均売上の保存確認に失敗しました');
    }
+   if($('restAvg'))$('restAvg').value=inputAvg;
  }
  await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
  if(!isRestDay(dayType)) localStorage.removeItem('taxiDutyDate');
