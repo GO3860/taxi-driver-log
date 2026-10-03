@@ -385,6 +385,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
+<div id="holidayAllowanceNote" class="help-text hidden" style="margin-top:7px">※ 祝日手当ありを選択した場合、祝日は休暇候補に選ばれません。</div>
 <div style="margin-top:14px;font-weight:800;font-size:15px">📊 学習に使う売上データ</div>
 <div class="help-text">休み方アドバイスが学習する売上データを選択できます。</div>
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
@@ -1585,6 +1586,7 @@ function initSettings(){
   const allowance=localStorage.getItem('taxiHolidayAllowance')||'1';
   if($('holidayAllowanceYes'))$('holidayAllowanceYes').checked=allowance==='1';
   if($('holidayAllowanceNo'))$('holidayAllowanceNo').checked=allowance!=='1';
+  if($('holidayAllowanceNote'))$('holidayAllowanceNote').classList.toggle('hidden',allowance!=='1');
   let source=localStorage.getItem('taxiRestAnalysisSource')||'area';
   if(!showAreaAvg){
     source='own';
@@ -2135,6 +2137,8 @@ function saveRestSettings(){
   localStorage.setItem('taxiPaydayBase',payday);
   const allowance=$('holidayAllowanceYes')?.checked?'1':'0';
   localStorage.setItem('taxiHolidayAllowance',allowance);
+  const note=$('holidayAllowanceNote');
+  if(note)note.classList.toggle('hidden',allowance!=='1');
   const source=isAreaAvgEnabled()&&$('analysisSourceArea')?.checked?'area':'own';
   localStorage.setItem('taxiRestAnalysisSource',source);
   if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
