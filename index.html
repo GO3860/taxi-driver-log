@@ -298,7 +298,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 </div>
 
-<div id="restFields" class="card hidden"><div class="label">💰 同じエリアの平均売上</div><input id="restAvg" type="number" inputmode="numeric" placeholder="休みの日のエリア平均売上"></div>
+
 
 <div id="total" class="hidden">¥0</div>
 
@@ -1019,23 +1019,6 @@ function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || typ
 
 // 休みの日のエリア平均は、画面上の入力欄だけでなく端末内の下書きにも保持する。
 // 画面更新や設定変更などで入力欄が一時的に空になっても、保存時に復元できるようにする。
-function initRestAvgDraft(){
-  const el=$('restAvg');
-  const top=$('avg');
-  const sync=(value,source)=>{
-    const v=String(value??'');
-    const key='taxiRestAvgDraft_'+String($('date')?.textContent||'');
-    if(el && source!=='rest') el.value=v;
-    if(top && source!=='top') top.value=v;
-    if(el)el.dataset.draftValue=v;
-    localStorage.setItem(key,v);
-  };
-  if(el)el.addEventListener('input',()=>sync(el.value,'rest'));
-  if(top)top.addEventListener('input',()=>sync(top.value,'top'));
-}
-
-initRestAvgDraft();
-
 function updateSalesInputForDayType(type){
   const sales=$('sales');
   if(!sales)return;
@@ -1167,13 +1150,10 @@ async function renderConstraintWarning(){
 async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
- // 休みの日のエリア平均は、入力中の値を専用の下書きにも保持してから保存する。
- const restAvgEl=$('restAvg');
- const restAvgDraftKey='taxiRestAvgDraft_'+String($('date')?.textContent||'');
  const restAverage = isRestDay(dayType)
-   ? String(restAvgEl?.value || $('avg')?.value || restAvgEl?.dataset?.draftValue || localStorage.getItem(restAvgDraftKey) || '').trim()
+   ? String($('avg')?.value ?? '').trim()
    : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
- let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -1193,10 +1173,6 @@ async function saveLog(){
    if(!savedCheck || savedAvg!==inputAvg){
      console.error('休みの日のエリア平均保存確認:', {inputAvg,savedAvg,dayType});
      throw new Error('休みの日の平均売上の保存確認に失敗しました');
-   }
-   if($('restAvg')){
-     $('restAvg').value=inputAvg;
-     $('restAvg').dataset.draftValue=inputAvg;
    }
    localStorage.removeItem(restAvgDraftKey);
  }
@@ -1324,8 +1300,6 @@ async function editLog(id){
   if($('loadedRate'))$('loadedRate').value=x.loadedRate??'';
   if($('tripCount'))$('tripCount').value=x.tripCount??'';
   if($('avg'))$('avg').value=x.avg||'';
-  if($('restAvg'))$('restAvg').value=x.avg||'';
-  if($('restAvg'))$('restAvg').dataset.draftValue=String(x.avg||'');
   if($('parttimeTakeHomeInput'))$('parttimeTakeHomeInput').value=x.parttimeTakeHome||'';
   const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
   initRoutes(savedRoutes);
@@ -1661,26 +1635,6 @@ function updateAreaAvgFieldsUI(){
   const on=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const averageField=$('averageField');
   const avg=$('avg');
-  const restFields=$('restFields');
-  const restAvg=$('restAvg');
-  if(averageField)averageField.classList.toggle('areaAvgDisabled',!on);
-  if(avg){
-    avg.disabled=!on;
-    avg.placeholder=on?'':'—';
-    if(!on)avg.value='';
-  }
-  if(restFields)restFields.classList.toggle('areaAvgDisabled',!on);
-  if(restAvg){
-    restAvg.disabled=!on;
-    restAvg.placeholder=on?'休みの日のエリア平均売上':'—';
-    if(!on)restAvg.value='';
-    else{
-      const key='taxiRestAvgDraft_'+String($('date')?.textContent||'');
-      const draft=localStorage.getItem(key);
-      if(restAvg.value==='' && draft!==null)restAvg.value=draft;
-      if(restAvg.value!=='')restAvg.dataset.draftValue=restAvg.value;
-    }
-  }
 }
 function isAreaAvgEnabled(){return localStorage.getItem('taxiShowAreaAvg')!=='0'}
 function applySettings(){
