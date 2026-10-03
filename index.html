@@ -1174,7 +1174,6 @@ async function saveLog(){
      console.error('休みの日のエリア平均保存確認:', {inputAvg,savedAvg,dayType});
      throw new Error('休みの日の平均売上の保存確認に失敗しました');
    }
-   localStorage.removeItem(restAvgDraftKey);
  }
  await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
  if(!isRestDay(dayType)) localStorage.removeItem('taxiDutyDate');
