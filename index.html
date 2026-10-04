@@ -612,21 +612,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="calendarBottomNav"><div><span>⌂</span>今日</div><div><span>📖</span>ログ</div><div><span>▥</span>データ</div><div><span>🛣</span>道ログ</div><div><span>⚙</span>設定</div></div>
   </div>
 </div>
-<main id="restAdvice" class="hidden">
-  <button class="areaAvgBack" onclick="showToday()">← 今日の入力に戻る</button>
-  <div class="card areaAvgCard">
-    <div class="label">🌿 休み方アドバイス</div>
-    <div id="restAdviceExplain" class="restAdviceExplain">
-      <div class="restAdviceExplainTitle">📖 休み方分析のしくみ</div>
-      <div class="restAdviceExplainText">カレンダーに登録した「勤務」予定を対象に、今後45日間を分析します。<br>過去の売上データから、売上が低くなりやすかった条件と重なる勤務予定日を、<strong>「休暇候補として検討」</strong>として表示します。<br><span>※ 休むことを決める機能ではありません。過去の自分のデータをもとに、休暇を考える際の参考として表示しています。</span></div>
-      <button type="button" class="restAdviceExplainClose" onclick="closeRestAdviceExplain()">説明を閉じる</button>
-    </div>
-    <button type="button" id="restAdviceExplainOpen" class="restAdviceExplainOpen hidden" onclick="openRestAdviceExplain()">📖 休み方分析の説明を見る</button>
-    <div id="restAdviceContent"></div>
-    <button type="button" class="restLearningBtn" onclick="toggleRestLearningDetails()">🧠 学習状況を見る</button>
-    <div id="restLearningDetails" class="hidden"></div>
-  </div>
-</main>
+
 <main id="areaAvgLater" class="hidden">
   <button class="areaAvgBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card areaAvgCard">
@@ -1690,7 +1676,7 @@ function applySettings(){
 }
 function showSettings(){
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='none';
-  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('areaAvgLater').classList.add('hidden');$('restAdvice').classList.add('hidden');$('settings').classList.remove('hidden');
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('areaAvgLater').classList.add('hidden');$('settings').classList.remove('hidden');
   $('settingsOverview').classList.remove('hidden');
   $('settingsOverview').style.display='block';
   $('holidaySettingsPanel').classList.add('hidden');
@@ -2166,7 +2152,7 @@ function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
 }
-function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAvgLater','restAdvice'].forEach(id=>$(id)?.classList.add('hidden'))}
+function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAvgLater'].forEach(id=>$(id)?.classList.add('hidden'))}
 function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';applySettings()}
 async function showAreaAvgLater(){
   resetSaveButton();
@@ -2179,12 +2165,10 @@ async function showRestAdvice(){
   resetSaveButton();
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
   hideAllMainViews();
-  $('restAdvice').classList.remove('hidden');
-  if($('restLearningDetails'))$('restLearningDetails').classList.add('hidden');
-  await renderRestAdvice();
+  window.location.href='rest-advice.html';
 }
 
-// ===== 休み方学習エンジン =====
+// ===== 休み方設定 =====
 function saveRestSettings(){
   const payday=$('paydayBase')?.value||'25';
   localStorage.setItem('taxiPaydayBase',payday);
@@ -2217,236 +2201,11 @@ function updateRestSourceUI(){
 function restAnalysisSource(){
   return localStorage.getItem('taxiRestAnalysisSource')||'area';
 }
-function restAnalysisValue(log){
-  const value=restAnalysisSource()==='own'?Number(log.sales):Number(log.avg);
-  return Number.isFinite(value)&&value>0?value:0;
-}
-function restAnalysisLabel(){
-  return restAnalysisSource()==='own'?'自分の売上':'エリア平均';
-}
-function restDateKey(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function restDateOnly(v){
-  if(v instanceof Date)return new Date(v.getFullYear(),v.getMonth(),v.getDate());
-  const d=parseDutyDate(v); return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null;
-}
-function restDiffDays(a,b){return Math.round((a-b)/86400000);}
-function restIsHoliday(d){return !!getHolidayName(restDateKey(d));}
-function restPaydayDate(year,month){
-  const day=Math.min(Number(localStorage.getItem('taxiPaydayBase')||25),new Date(year,month+1,0).getDate());
-  return new Date(year,month,day);
-}
-function restPensionDate(year,month){
-  if(month%2!==1)return null; // 2,4,6,8,10,12月
-  let d=new Date(year,month,15);
-  while(d.getDay()===0||d.getDay()===6||restIsHoliday(d))d.setDate(d.getDate()-1);
-  return d;
-}
-function restLargeHoliday(d){
-  const m=d.getMonth()+1,day=d.getDate();
-  if((m===4&&day>=29)||(m===5&&day<=5))return '🎌 GW';
-  if(m===8&&day>=13&&day<=16)return '☀️ お盆';
-  if((m===12&&day>=29)||(m===1&&day<=3))return '🎍 年末年始';
-  return '';
-}
-function restDateFactors(d){
-  const factors=[];
-  const wd=['日','月','火','水','木','金','土'][d.getDay()];
-  factors.push('曜日：'+wd);
-  factors.push('月：'+(d.getMonth()+1)+'月');
-  if(d.getDay()===0||d.getDay()===6)factors.push('週末');
-  if(restIsHoliday(d))factors.push('祝日');
-  const pay=restPaydayDate(d.getFullYear(),d.getMonth()),pd=restDiffDays(d,pay);
-  if(pd>=-3&&pd<=3)factors.push(pd<0?'給料日前後：前':pd===0?'給料日前後：当日':'給料日前後：後');
-  const pension=restPensionDate(d.getFullYear(),d.getMonth());
-  if(pension){
-    const nd=restDiffDays(d,pension);
-    if(nd>=-2&&nd<=2)factors.push(nd<0?'年金支給日前後：前':nd===0?'年金支給日前後：当日':'年金支給日前後：後');
-  }
-  const lh=restLargeHoliday(d); if(lh)factors.push('大型連休：'+lh);
-  return factors;
-}
-function restHasOwnAccident(log){
-  return (Array.isArray(log?.event)?log.event:[]).some(x=>String(x||'').trim().includes('事故'));
-}
-function restHistoricalFactors(log){
-  const d=restDateOnly(log.date); if(!d)return [];
-  const factors=restDateFactors(d);
-  (Array.isArray(log.weather)?log.weather:[]).forEach(x=>{if(x)factors.push('天気：'+String(x).trim())});
-  (Array.isArray(log.event)?log.event:[]).forEach(x=>{
-    const eventName=String(x||'').trim();
-    // 「🚨 自身の事故」は外的な営業要因として扱わず、休み方アドバイスの学習対象から除外する。
-    if(!eventName || eventName.includes('事故'))return;
-    factors.push('イベント：'+eventName);
-  });
-  return [...new Set(factors)];
-}
-function restFactorCatalog(){
-  return [
-    {key:'曜日',label:'📅 曜日',prefix:'曜日：'},
-    {key:'月',label:'🗓️ 月・時期',prefix:'月：'},
-    {key:'週末',label:'🏖️ 週末',prefix:'週末'},
-    {key:'祝日',label:'🎌 祝日',prefix:'祝日'},
-    {key:'給料日前後',label:'💰 給料日前後',prefix:'給料日前後：'},
-    {key:'年金支給日前後',label:'👨‍🦳 年金支給日前後',prefix:'年金支給日前後：'},
-    {key:'大型連休',label:'🎌 大型連休',prefix:'大型連休：'},
-    {key:'天気',label:'☀️ 天気',prefix:'天気：'},
-    {key:'イベント',label:'🎆 イベント',prefix:'イベント：'}
-  ];
-}
-function toggleRestLearningDetails(){
-  const box=$('restLearningDetails'); if(!box)return;
-  if(!box.classList.contains('hidden')){box.classList.add('hidden');return;}
-  box.classList.remove('hidden');
-  renderRestLearningDetails();
-}
-async function renderRestLearningDetails(){
-  const box=$('restLearningDetails'); if(!box)return;
-  const logs=restLogsSinceReset(await getLogs());
-  const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
-  const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
-  const catalog=restFactorCatalog();
-  const rows=catalog.map(f=>{
-    const matched=[];
-    usable.forEach(log=>restHistoricalFactors(log).filter(x=>x===f.prefix||x.startsWith(f.prefix)).forEach(x=>matched.push(x)));
-    const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;
-    let status='⚪ データ不足',cls='restStatusWeak';
-    if(count>=5){status='🟢 分析可能';cls='restStatusGood'}
-    else if(count>=3){status='🟡 学習中';cls='restStatusMid'}
-    return '<div class="restFactorRow"><div><strong>'+escapeHtml(f.label)+'</strong><div class="restFactorCount">'+count+'日分</div></div><span class="'+cls+'">'+status+'</span></div>';
-  }).join('');
-  const stats=restPatternStats(logs);
-  const trends=stats.patterns.slice().sort((a,b)=>a.diff-b.diff).map(p=>
-    '<div class="restTrendRow"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(p.diff))+'%低め</span></div>'
-  ).join('');
-  const trendHtml=trends||'<div class="restLearnBox">まだ十分なデータから発見できた傾向はありません。</div>';
-  const factorReadyCount=catalog.filter(f=>{
-    const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;
-    return count>=5;
-  }).length;
-  const learningTarget=180;
-  const progress=Math.min(100,Math.round(usable.length/learningTarget*100));
-  let nextStage=30,nextStageIcon='🌱',nextStageName='基礎学習完了';
-  if(usable.length>=180){nextStage=null;}
-  else if(usable.length>=90){nextStage=180;nextStageIcon='🏆';nextStageName='長期パターン分析';}
-  else if(usable.length>=60){nextStage=90;nextStageIcon='🌲';nextStageName='かなり詳しく分析';}
-  else if(usable.length>=30){nextStage=60;nextStageIcon='🌿';nextStageName='傾向が安定';}
-  const remain=nextStage===null?0:Math.max(0,nextStage-usable.length);
-  const progressMessage=nextStage===null
-    ? '🎉 180日分の学習データがたまり、長期パターン分析の段階です。'
-    : '次の成長段階 '+nextStageIcon+' '+nextStageName+' まであと<strong>'+remain+'日</strong>分です。';
-  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats">'+
-    '<div class="restLearningStat"><div class="restLearningStatLabel">📊 <span id="restLearningSourceLabel">エリア平均</span>データ</div><div class="restProgress"><div class="restProgressBar" style="width:'+progress+'%"></div></div><div class="restProgressText"><strong>'+usable.length+'日</strong> / '+learningTarget+'日</div><div class="restProgressMsg">'+progressMessage+'</div></div>'+
-    '<div class="restLearningStatGrid"><div class="restLearningStatBox"><strong>'+factorReadyCount+'種類</strong><span>分析できるファクター</span></div><div class="restLearningStatBox"><strong>'+stats.patterns.length+'件</strong><span>発見した傾向</span></div></div>'+
-    '<div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
-}
-function closeRestAdviceExplain(){
-  const box=$('restAdviceExplain'); const btn=$('restAdviceExplainOpen');
-  if(box)box.classList.add('hidden');
-  if(btn)btn.classList.remove('hidden');
-}
-function openRestAdviceExplain(){
-  const box=$('restAdviceExplain'); const btn=$('restAdviceExplainOpen');
-  if(box)box.classList.remove('hidden');
-  if(btn)btn.classList.add('hidden');
-}
-function restAnalysisResetDate(){
-  return localStorage.getItem('taxiRestAnalysisResetDate')||'';
-}
-function restLogsSinceReset(logs){
-  const reset=restAnalysisResetDate();
-  if(!reset)return logs;
-  return logs.filter(log=>{
-    const d=restDateOnly(log.date);
-    if(!d)return false;
-    const key=restDateKey(d);
-    return key>=reset;
-  });
-}
 function resetRestAnalysis(){
   const resetDate=todayYMD();
   if(!confirm('休み方分析をリセットします。\n\nこれまでの売上ログやカレンダーは削除されません。\n今日以降のデータを新しい勤務スタイル・会社・エリアの学習データとして使います。\n\nリセットしますか？'))return;
   localStorage.setItem('taxiRestAnalysisResetDate',resetDate);
-  renderRestAdvice();
-  const box=$('restLearningDetails');
-  if(box && !box.classList.contains('hidden'))renderRestLearningDetails();
   alert('休み方分析をリセットしました。');
-}
-function restPatternStats(logs){
-  logs=restLogsSinceReset(logs);
-  const usable=logs.filter(x=>restAnalysisValue(x)>0 && !restHasOwnAccident(x));
-  const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;
-  const map=new Map();
-  usable.forEach(log=>{
-    restHistoricalFactors(log).forEach(f=>{
-      if(!map.has(f))map.set(f,[]);
-      map.get(f).push(restAnalysisValue(log));
-    });
-  });
-  const patterns=[];
-  for(const [factor,vals] of map){
-    if(vals.length<3)continue;
-    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-    const diff=overall?((avg/overall)-1)*100:0;
-    if(diff<=-10)patterns.push({factor,count:vals.length,avg,diff});
-  }
-  return {usable,overall,patterns};
-}
-function restCalendarType(key){
-  const arr=normalizePlansForDate(getWorkPlans()[key]);
-  return arr.length?arr[arr.length-1]?.type:'';
-}
-function restCandidateScore(d,patterns){
-  const factors=restDateFactors(d);
-  const hits=patterns.filter(p=>factors.includes(p.factor));
-  if(!hits.length)return null;
-  const combinedAvg=hits.reduce((s,p)=>s+p.avg,0)/hits.length;
-  return {factors:hits.map(p=>p.factor),avg:combinedAvg,hits};
-}
-async function renderRestAdvice(){
-  const box=$('restAdviceContent'); if(!box)return;
-  const logs=await getLogs();
-  const stats=restPatternStats(logs);
-  const learningDays=stats.usable.length;
-  let growthIcon='🌱',growthName='基礎学習中',nextTarget=30;
-  if(learningDays>=180){growthIcon='🏆';growthName='長期パターン分析';nextTarget=null;}
-  else if(learningDays>=90){growthIcon='🌲';growthName='かなり詳しく分析';nextTarget=180;}
-  else if(learningDays>=60){growthIcon='🌿';growthName='傾向が安定';nextTarget=90;}
-  else if(learningDays>=30){growthIcon='🌱';growthName='基礎学習完了';nextTarget=60;}
-  const growthMessage=nextTarget===null
-    ? '180日分の学習データがたまり、長期パターン分析の段階です。'
-    : '次の成長段階まであと<strong>'+Math.max(0,nextTarget-learningDays)+'日</strong>分です。';
-  const patternHtml=stats.patterns.length
-    ? stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join('')
-    : '<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
-  const candidates=[];
-  const today=new Date();today.setHours(0,0,0,0);
-  const allowance=localStorage.getItem('taxiHolidayAllowance')!=='0';
-  for(let i=1;i<=45;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);
-    const key=restDateKey(d),type=restCalendarType(key);
-    if(type!=='work')continue;
-    if(allowance&&restIsHoliday(d))continue;
-    const score=restCandidateScore(d,stats.patterns);
-    if(score)candidates.push({d,key,score});
-  }
-  const candHtml=candidates.length
-    ? candidates.slice(0,8).map((x,i)=>'<div class="restCandidate restCandidateTap" onclick="toggleRestCandidateDetail('+i+')" role="button" tabindex="0"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討<br><span>タップで理由</span></div></div><div id="restCandidateDetail'+i+'" class="restCandidateDetail hidden">'+x.score.hits.map(h=>'<div class="restReasonRow"><strong>'+escapeHtml(h.factor)+'</strong><span>過去'+h.count+'回・平均 ¥'+Math.round(h.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(h.diff))+'%低め</span></div>').join('')+'</div>').join('')
-    : '<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
-  box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div>'+
-    '<div style="display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px;border-radius:16px;background:#f7f9fb">'+
-    '<div style="font-size:42px;line-height:1">'+growthIcon+'</div>'+
-    '<div><div style="font-weight:900;font-size:18px">成長段階：'+growthName+'</div><div style="margin-top:3px">学習データ <strong>'+stats.usable.length+'日</strong></div><div class="restSmall">'+growthMessage+'</div></div></div>'+
-    '<div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">🌱 30日：基礎学習完了　→　🌿 60日：傾向が安定　→　🌲 90日：かなり詳しく分析　→　🏆 180日：長期パターン分析</div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div>'+
-    '<div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div>'+
-    '<div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
-}
-
-function toggleRestCandidateDetail(index){
-  const box=$('restCandidateDetail'+index);
-  if(!box)return;
-  box.classList.toggle('hidden');
 }
 
 function getAreaAvgHiddenDates(){
@@ -2938,26 +2697,6 @@ document.addEventListener('input',function(e){
 .eventItem{background:#effbf3!important;border-color:#a9e1ba!important}
 .eventIconLarge{font-size:21px;margin-right:5px}
 </style>
-<style id="rest-advice-explain-v186">
-.restAdviceExplain{margin:10px 0 14px;padding:14px;border:1px solid #dce9df;border-radius:16px;background:#f8fcf9;line-height:1.65}
-.restAdviceExplainTitle{font-size:16px;font-weight:900;margin-bottom:7px}.restAdviceExplainText{font-size:13px;color:#444}.restAdviceExplainText strong{color:#2e7d32}.restAdviceExplainText span{display:block;margin-top:7px;font-size:12px;color:#777}.restAdviceExplainClose{margin-top:11px;width:100%;border:0;border-radius:999px;padding:10px;background:#e9f3eb;color:#2e7d32;font-size:13px;font-weight:800}.restAdviceExplainOpen{width:100%;margin:8px 0 12px;border:1px solid #dce9df;border-radius:999px;padding:10px;background:#f8fcf9;color:#2e7d32;font-size:13px;font-weight:800}.restAdviceExplainOpen.hidden{display:none}
-</style>
-<style id="rest-learning-v165">
-.restSummary,.restLearnBox{background:#f6fbf7;border:1px solid #d9eadc;border-radius:16px;padding:14px;margin-top:12px;line-height:1.6}.restSummaryTitle{font-size:18px;font-weight:900;margin-bottom:6px}.restSmall{font-size:12px;color:#777;margin-top:6px}.restSection{margin-top:14px}.restSectionTitle{font-size:17px;font-weight:900;margin-bottom:8px}.restPattern{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid #e6e9ec;border-radius:13px;padding:11px;margin-top:7px}.restPattern strong{font-size:14px}.restPattern span{font-size:12px;color:#666;text-align:right}.restCandidate{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #dce9df;border-radius:14px;padding:12px;margin-top:8px}.restCandidate strong{font-size:16px}.restWhy{font-size:12px;color:#666;margin-top:4px}.restCandidateMark{background:#edf8ef;color:#2e7d32;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}@media(max-width:430px){.restPattern{display:block}.restPattern span{display:block;text-align:left;margin-top:4px}.restCandidateMark{font-size:10px;padding:6px 7px}}
-</style>
-<style id="rest-candidate-detail-v185">
-.restCandidateTap{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.restCandidateTap:active{transform:scale(.99)}
-.restCandidateMark span{font-size:10px;font-weight:700;opacity:.78}
-.restCandidateDetail{margin-top:-2px;padding:10px 12px;border:1px solid #dce9df;border-top:0;border-radius:0 0 14px 14px;background:#f8fcf9}
-.restReasonRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e7eee8}
-.restReasonRow:last-of-type{border-bottom:0}
-.restReasonRow strong{font-size:13px}
-.restReasonRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}
-</style>
-<style id="rest-learning-details-v166">
-.restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
-</style>
 <style id="sales-data-calc-v173">
 .salesDataCalculatedBox{height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;background:#fafafa;display:flex;align-items:center;justify-content:center;gap:4px;font-size:17px}
 .salesDataCalculatedBox strong{font-size:22px;color:#1677b7}
@@ -2984,9 +2723,6 @@ document.addEventListener('input',function(e){
 .loadedRateCalcResult{margin-top:9px;padding:9px;border-radius:10px;background:#f5f8fb;text-align:center;font-size:14px}
 .loadedRateCalcResult strong{font-size:22px;color:#1677b7}
 .loadedRateUseBtn{width:100%;margin-top:8px;border:0;border-radius:10px;padding:10px;background:#e8f4ff;color:#1677b7;font-size:13px;font-weight:800}
-</style>
-<style id="rest-learning-progress-v167">
-.restLearningStats{margin-top:12px}.restLearningStat{padding:12px;border:1px solid #dfe9e1;border-radius:14px;background:#fff}.restLearningStatLabel{font-size:14px;font-weight:900;margin-bottom:8px}.restProgress{height:12px;border-radius:999px;background:#edf0ed;overflow:hidden}.restProgressBar{height:100%;border-radius:999px;background:#78b88a;transition:width .3s ease}.restProgressText{margin-top:6px;font-size:14px;text-align:right;color:#555}.restProgressText strong{font-size:20px;color:#222}.restProgressMsg{margin-top:7px;font-size:12px;color:#666;line-height:1.5}.restLearningStatGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.restLearningStatBox{padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff}.restLearningStatBox strong{display:block;font-size:22px}.restLearningStatBox span{display:block;margin-top:3px;font-size:11px;color:#666;font-weight:700}@media(max-width:430px){.restLearningStatGrid{gap:7px}.restLearningStatBox strong{font-size:20px}}
 </style>
 <style>
 /* v100: 日付の正方形を予定キューブと同じスケールに調整 */
