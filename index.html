@@ -2010,9 +2010,9 @@ async function showMonthlyDetail(year,index){
     if(mins===null){const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);if(hm)mins=Math.round(Number(hm[1])*60)+Number(hm[2]||0);}
     const duration=mins===null?'—':`${Math.floor(mins/60)}時間${mins%60?String(mins%60).padStart(2,'0')+'分':''}`;
     const rate=Number(x.loadedRate); const trips=Number(x.tripCount);
-    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td>${x.sales?yen(x.sales):'—'}</td>${areaAvgOn?`<td>${Number(x.avg)>0?yen(x.avg):'—'}</td>`:''}<td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
+    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td class="breakTotalCell">${formatBreakTotal(x)}</td><td>${x.sales?yen(x.sales):'—'}</td>${areaAvgOn?`<td>${Number(x.avg)>0?yen(x.avg):'—'}</td>`:''}<td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
   }).join('');
-  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。<br>📱 表を全部見るには、スマホの回転ロックを解除して、スマホを横にすると一覧が表示されます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>売上</th>${areaAvgOn?'<th>エリア平均売上</th>':''}<th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||'<tr><td colspan="7" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>'}</tbody></table></div></div>`;
+  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。<br>📱 表を全部見るには、スマホの回転ロックを解除して、スマホを横にすると一覧が表示されます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>休憩合計</th><th>売上</th>${areaAvgOn?'<th>エリア平均売上</th>':''}<th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||`<tr><td colspan="${areaAvgOn?8:7}" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>`}</tbody></table></div></div>`;
   $('monthlyDetail').innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div>
     <div class="dataNote">この期間のログを集計しています。</div>
@@ -3179,6 +3179,21 @@ setInterval(updateConstraintWarning,30000);
   .dailySalesTable th:nth-child(6){width:14%;min-width:0;}
   .dailySalesTable th:nth-child(7){width:14%;min-width:0;}
   .dailySalesDayType{font-size:9px;margin-top:1px;}
+}
+</style>
+<style id="daily-break-total-v187">
+/* v187: 月間営業データに休憩時間合計を追加。横向き画面でも一覧表示 */
+.dailySalesTable .breakTotalCell{font-weight:700}
+@media screen and (orientation: landscape){
+  .dailySalesTable th:nth-child(1),.dailySalesTable td:nth-child(1){width:8%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(2),.dailySalesTable td:nth-child(2){width:14%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(3),.dailySalesTable td:nth-child(3){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(4),.dailySalesTable td:nth-child(4){width:13%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(5),.dailySalesTable td:nth-child(5){width:15%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(6),.dailySalesTable td:nth-child(6){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(7),.dailySalesTable td:nth-child(7){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(8),.dailySalesTable td:nth-child(8){width:14%!important;min-width:0!important}
+  .dailySalesTable th,.dailySalesTable td{padding-left:3px!important;padding-right:3px!important;font-size:11px!important}
 }
 </style>
 </body></html>
