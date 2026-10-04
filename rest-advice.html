@@ -145,9 +145,9 @@ function restHistoricalFactors(log){
  return[...new Set(factors)];
 }
 function restFactorCatalog(){return[
- {label:'📅 曜日',prefix:'曜日:'},{label:'🗓️ 月・時期',prefix:'月:'},{label:'🏖️ 週末',prefix:'週末'},
- {label:'🎌 祝日',prefix:'祝日'},{label:'💰 給料日前後',prefix:'給料日前後:'},{label:'👨‍🦳 年金支給日前後',prefix:'年金支給日前後:'},
- {label:'🎌 大型連休',prefix:'大型連休:'},{label:'☀️ 天気',prefix:'天気:'},{label:'🎆 イベント',prefix:'イベント:'}
+ {label:'📅 曜日',prefix:'曜日：'},{label:'🗓️ 月・時期',prefix:'月：'},{label:'🏖️ 週末',prefix:'週末'},
+ {label:'🎌 祝日',prefix:'祝日'},{label:'💰 給料日前後',prefix:'給料日前後：'},{label:'👨‍🦳 年金支給日前後',prefix:'年金支給日前後：'},
+ {label:'🎌 大型連休',prefix:'大型連休：'},{label:'☀️ 天気',prefix:'天気：'},{label:'🎆 イベント',prefix:'イベント：'}
 ]}
 function restLogsSinceReset(logs){const reset=localStorage.getItem('taxiRestAnalysisResetDate')||'';if(!reset)return logs;return logs.filter(log=>{const d=restDateOnly(log.date);return d&&restDateKey(d)>=reset})}
 function restPatternStats(logs){
