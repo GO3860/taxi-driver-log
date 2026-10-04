@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🌿 休み方アドバイス｜タクログ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f7;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif}
+.app{max-width:520px;margin:auto;padding-bottom:28px}
+header{background:#151515;color:#fff;padding:20px 18px}
+h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.72;margin-top:4px}
+main{padding:14px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}
+.label{font-weight:800;font-size:18px;margin-bottom:8px}
+.help{font-size:13px;color:#666;line-height:1.65}
+.back{width:100%;border:0;border-radius:999px;background:#eef1f4;color:#2580ee;padding:12px;font-size:15px;font-weight:800;margin-bottom:12px}
+.restAdviceExplain{margin:0 0 14px;padding:14px;border:1px solid #dce9df;border-radius:16px;background:#f8fcf9;line-height:1.65}
+.restAdviceExplainTitle{font-size:16px;font-weight:900;margin-bottom:7px}
+.restAdviceExplainText{font-size:13px;color:#444}
+.restAdviceExplainText strong{color:#2e7d32}
+.restAdviceExplainText span{display:block;margin-top:7px;font-size:12px;color:#777}
+.restAdviceExplainClose{margin-top:11px;width:100%;border:0;border-radius:999px;padding:10px;background:#e9f3eb;color:#2e7d32;font-size:13px;font-weight:800}
+.restAdviceExplainOpen{width:100%;margin:8px 0 12px;border:1px solid #dce9df;border-radius:999px;padding:10px;background:#f8fcf9;color:#2e7d32;font-size:13px;font-weight:800}
+.hidden{display:none!important}
+.restSummary,.restLearnBox{background:#f6fbf7;border:1px solid #d9eadc;border-radius:16px;padding:14px;margin-top:12px;line-height:1.6}
+.restSummaryTitle{font-size:18px;font-weight:900;margin-bottom:6px}
+.restSmall{font-size:12px;color:#777;margin-top:6px}
+.restSection{margin-top:16px}
+.restSectionTitle{font-size:17px;font-weight:900;margin-bottom:8px}
+.restPattern{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid #e6e9ec;border-radius:13px;padding:11px;margin-top:7px}
+.restPattern strong{font-size:14px}.restPattern span{font-size:12px;color:#666;text-align:right}
+.restCandidate{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #dce9df;border-radius:14px;padding:12px;margin-top:8px}
+.restCandidate strong{font-size:16px}.restWhy{font-size:12px;color:#666;margin-top:4px}
+.restCandidateMark{background:#edf8ef;color:#2e7d32;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.restCandidateMark span{font-size:10px;font-weight:700;opacity:.78}
+.restCandidateTap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.restCandidateTap:active{transform:scale(.99)}
+.restCandidateDetail{margin-top:-2px;padding:10px 12px;border:1px solid #dce9df;border-top:0;border-radius:0 0 14px 14px;background:#f8fcf9}
+.restReasonRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #e7eee8}
+.restReasonRow:last-of-type{border-bottom:0}.restReasonRow strong{font-size:13px}.restReasonRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}
+.restLearningBtn{display:block;width:100%;margin-top:14px;padding:13px 14px;border:1px solid #cfe3d3;border-radius:14px;background:#f5fbf6;color:#2e7d32;font-size:15px;font-weight:900}
+.restDetailCard{margin-top:10px;border:1px solid #dfe9e1;border-radius:16px;padding:13px;background:#fbfefb}
+.restDetailTitle{font-size:18px;font-weight:900}.restDetailMeta{font-size:13px;color:#555;margin-top:5px}
+.restDetailSection{margin-top:14px}.restDetailSectionTitle{font-size:15px;font-weight:900;margin-bottom:7px}
+.restFactorRow,.restTrendRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #e8ece9;border-radius:12px;background:#fff;margin-top:6px}
+.restFactorRow strong,.restTrendRow strong{font-size:14px}.restFactorCount{font-size:11px;color:#777;margin-top:3px}
+.restStatusGood,.restStatusMid,.restStatusWeak{border-radius:999px;padding:5px 8px;font-size:11px;font-weight:900;white-space:nowrap}
+.restStatusGood{background:#e9f7eb;color:#2e7d32}.restStatusMid{background:#fff8df;color:#9a7410}.restStatusWeak{background:#f1f3f4;color:#777}
+.restTrendRow span{font-size:11px;color:#666;text-align:right;line-height:1.45}
+.restDetailNote{margin-top:12px;padding:9px;border-radius:10px;background:#f5f6f7;color:#777;font-size:11px;line-height:1.6}
+.actionBtn{width:100%;border:0;border-radius:14px;padding:13px;font-size:15px;font-weight:800;background:#eef6ff;color:#1677b7;margin-top:8px}
+@media(max-width:430px){
+ .restPattern{display:block}.restPattern span{display:block;text-align:left;margin-top:4px}
+ .restCandidateMark{font-size:10px;padding:6px 7px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>🌿 休み方アドバイス</h1><div class="sub">タクログの営業データから、休むタイミングを考えるための専用ページ</div></header>
+<main>
+<button class="back" type="button" onclick="goHome()">← タクログに戻る</button>
+<div class="card">
+<div class="label">📖 休み方分析のしくみ</div>
+<div id="restAdviceExplain" class="restAdviceExplain">
+<div class="restAdviceExplainTitle">今後45日間の「勤務予定」を分析します</div>
+<div class="restAdviceExplainText">カレンダーに登録した「勤務」予定を対象に、<strong>今後45日間</strong>を分析します。<br>過去の売上データから、売上が低くなりやすかった条件と重なる勤務予定日を、<strong>「休暇候補として検討」</strong>として表示します。<br><span>※ 休むことを決める機能ではありません。過去の自分のデータをもとに、休暇を考える際の参考として表示しています。</span></div>
+<button type="button" class="restAdviceExplainClose" onclick="closeExplain()">説明を閉じる</button>
+</div>
+<button type="button" id="restAdviceExplainOpen" class="restAdviceExplainOpen hidden" onclick="openExplain()">📖 休み方分析の説明を見る</button>
+<div id="restAdviceContent"></div>
+<button type="button" class="restLearningBtn" onclick="toggleLearning()">🧠 学習状況を見る</button>
+<div id="restLearningDetails" class="hidden"></div>
+</div>
+</main>
+</div>
+<script>
+const DB_NAME='TaxiDriverLogDB',STORE='logs';
+let db=null;
+const $=id=>document.getElementById(id);
+function initDB(){
+ return new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onsuccess=e=>{db=e.target.result;resolve()};
+  req.onerror=()=>reject(req.error);
+  req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};
+ });
+}
+function getLogs(){return new Promise((resolve,reject)=>{if(!db)return reject(new Error('DB not ready'));const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function goHome(){window.location.href='index.html'}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function parseDutyDate(value){
+ if(!value)return null;
+ if(value instanceof Date)return value;
+ const s=String(value),m=s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+ if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+ const d=new Date(s+'T00:00:00');return isNaN(d.getTime())?null:d;
+}
+function restDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function restDateOnly(v){const d=parseDutyDate(v);return d?new Date(d.getFullYear(),d.getMonth(),d.getDate()):null}
+function restDiffDays(a,b){return Math.round((a-b)/86400000)}
+function restAnalysisSource(){return localStorage.getItem('taxiRestAnalysisSource')||'area'}
+function restAnalysisValue(log){const value=restAnalysisSource()==='own'?Number(log.sales):Number(log.avg);return Number.isFinite(value)&&value>0?value:0}
+function restAnalysisLabel(){return restAnalysisSource()==='own'?'自分の売上':'エリア平均'}
+function getWorkPlans(){try{const raw=JSON.parse(localStorage.getItem('taxiWorkPlans')||'{}');Object.keys(raw).forEach(k=>{if(raw[k]&&!Array.isArray(raw[k]))raw[k]=[raw[k]]});return raw}catch(e){return {}}}
+function normalizePlansForDate(p){if(!p)return[];return(Array.isArray(p)?p:[p]).filter(x=>x&&x.type&&x.type!=='rest')}
+function nthWeekdayOfMonth(year,month,weekday,n){const first=new Date(year,month-1,1),delta=(weekday-first.getDay()+7)%7;return 1+delta+7*(n-1)}
+function equinoxDay(year,isAutumn){const y=year-1980,v=isAutumn?23.2488:20.8431;return Math.floor(v+0.242194*y-Math.floor(y/4))}
+const DEFAULT_HOLIDAYS_2026={'2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日','2026-03-20':'春分の日','2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日','2026-05-05':'こどもの日','2026-05-06':'振替休日','2026-07-20':'海の日','2026-08-11':'山の日','2026-09-21':'敬老の日','2026-09-22':'国民の休日','2026-09-23':'秋分の日','2026-10-12':'スポーツの日','2026-11-03':'文化の日','2026-11-23':'勤労感謝の日'};
+function generateDefaultHolidays(year){
+ const h={},add=(m,d,n)=>h[year+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')]=n;
+ add(1,1,'元日');add(1,nthWeekdayOfMonth(year,1,1,2),'成人の日');add(2,11,'建国記念の日');add(2,23,'天皇誕生日');add(3,equinoxDay(year,false),'春分の日');add(4,29,'昭和の日');add(5,3,'憲法記念日');add(5,4,'みどりの日');add(5,5,'こどもの日');add(7,nthWeekdayOfMonth(year,7,1,3),'海の日');add(8,11,'山の日');add(9,nthWeekdayOfMonth(year,9,1,3),'敬老の日');add(9,equinoxDay(year,true),'秋分の日');add(10,nthWeekdayOfMonth(year,10,1,2),'スポーツの日');add(11,3,'文化の日');add(11,23,'勤労感謝の日');
+ Object.keys(h).forEach(key=>{const d=new Date(key+'T00:00:00');if(d.getDay()!==0)return;let cur=new Date(d);cur.setDate(cur.getDate()+1);while(h[restDateKey(cur)])cur.setDate(cur.getDate()+1);h[restDateKey(cur)]='振替休日'});
+ const nationalKeys=new Set(Object.keys(h));
+ for(let m=1;m<=12;m++){const last=new Date(year,m,0).getDate();for(let day=1;day<=last;day++){const d=new Date(year,m-1,day);if(d.getDay()===0||d.getDay()===6)continue;const key=restDateKey(d);if(h[key])continue;const p=new Date(d);p.setDate(day-1);const n=new Date(d);n.setDate(day+1);if(nationalKeys.has(restDateKey(p))&&nationalKeys.has(restDateKey(n)))h[key]='国民の休日';}}
+ return h;
+}
+function getHolidayData(){
+ let data={};const raw=localStorage.getItem('taxiHolidaysByYear');
+ if(raw){try{data=JSON.parse(raw)||{}}catch(e){}}
+ if(!Object.keys(data).length){const old=localStorage.getItem('taxiHolidays');if(old){try{const flat=JSON.parse(old)||{};Object.keys(flat).forEach(k=>{const y=k.slice(0,4);if(!data[y])data[y]={};data[y][k]=flat[k]})}catch(e){}}}
+ if(!data['2026'])data['2026']={...DEFAULT_HOLIDAYS_2026};
+ localStorage.setItem('taxiHolidaysByYear',JSON.stringify(data));return data;
+}
+function getHolidayName(key){const data=getHolidayData();for(const y of Object.keys(data)){if(data[y]&&data[y][key])return data[y][key]}return ''}
+function ensureHolidayYear(year){const data=getHolidayData(),k=String(year);if(!data[k]||!Object.keys(data[k]).length){data[k]=year===2026?{...DEFAULT_HOLIDAYS_2026}:generateDefaultHolidays(year);localStorage.setItem('taxiHolidaysByYear',JSON.stringify(data))}return data[k]}
+function restIsHoliday(d){ensureHolidayYear(d.getFullYear());return !!getHolidayName(restDateKey(d))}
+function restPaydayDate(year,month){const day=Math.min(Number(localStorage.getItem('taxiPaydayBase')||25),new Date(year,month+1,0).getDate());return new Date(year,month,day)}
+function restPensionDate(year,month){if(month%2!==1)return null;let d=new Date(year,month,15);while(d.getDay()===0||d.getDay()===6||restIsHoliday(d))d.setDate(d.getDate()-1);return d}
+function restLargeHoliday(d){const m=d.getMonth()+1,day=d.getDate();if((m===4&&day>=29)||(m===5&&day<=5))return'🎌 GW';if(m===8&&day>=13&&day<=16)return'☀️ お盆';if((m===12&&day>=29)||(m===1&&day<=3))return'🎍 年末年始';return''}
+function restDateFactors(d){
+ const factors=[],wd=['日','月','火','水','木','金','土'][d.getDay()];factors.push('曜日：'+wd);factors.push('月：'+(d.getMonth()+1)+'月');if(d.getDay()===0||d.getDay()===6)factors.push('週末');if(restIsHoliday(d))factors.push('祝日');
+ const pay=restPaydayDate(d.getFullYear(),d.getMonth()),pd=restDiffDays(d,pay);if(pd>=-3&&pd<=3)factors.push(pd<0?'給料日前後：前':pd===0?'給料日前後：当日':'給料日前後：後');
+ const pension=restPensionDate(d.getFullYear(),d.getMonth());if(pension){const nd=restDiffDays(d,pension);if(nd>=-2&&nd<=2)factors.push(nd<0?'年金支給日前後：前':nd===0?'年金支給日前後：当日':'年金支給日前後：後')}
+ const lh=restLargeHoliday(d);if(lh)factors.push('大型連休：'+lh);return factors;
+}
+function restHasOwnAccident(log){return(Array.isArray(log?.event)?log.event:[]).some(x=>String(x||'').trim().includes('事故'))}
+function restHistoricalFactors(log){
+ const d=restDateOnly(log.date);if(!d)return[];
+ const factors=restDateFactors(d);
+ (Array.isArray(log.weather)?log.weather:[]).forEach(x=>{if(x)factors.push('天気：'+String(x).trim())});
+ (Array.isArray(log.event)?log.event:[]).forEach(x=>{const n=String(x||'').trim();if(!n||n.includes('事故'))return;factors.push('イベント：'+n)});
+ return[...new Set(factors)];
+}
+function restFactorCatalog(){return[
+ {label:'📅 曜日',prefix:'曜日:'},{label:'🗓️ 月・時期',prefix:'月:'},{label:'🏖️ 週末',prefix:'週末'},
+ {label:'🎌 祝日',prefix:'祝日'},{label:'💰 給料日前後',prefix:'給料日前後:'},{label:'👨‍🦳 年金支給日前後',prefix:'年金支給日前後:'},
+ {label:'🎌 大型連休',prefix:'大型連休:'},{label:'☀️ 天気',prefix:'天気:'},{label:'🎆 イベント',prefix:'イベント:'}
+]}
+function restLogsSinceReset(logs){const reset=localStorage.getItem('taxiRestAnalysisResetDate')||'';if(!reset)return logs;return logs.filter(log=>{const d=restDateOnly(log.date);return d&&restDateKey(d)>=reset})}
+function restPatternStats(logs){
+ logs=restLogsSinceReset(logs);const usable=logs.filter(x=>restAnalysisValue(x)>0&&!restHasOwnAccident(x));const overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0;const map=new Map();
+ usable.forEach(log=>restHistoricalFactors(log).forEach(f=>{if(!map.has(f))map.set(f,[]);map.get(f).push(restAnalysisValue(log))}));
+ const patterns=[];for(const [factor,vals] of map){if(vals.length<3)continue;const avg=vals.reduce((a,b)=>a+b,0)/vals.length,diff=overall?((avg/overall)-1)*100:0;if(diff<=-10)patterns.push({factor,count:vals.length,avg,diff})}
+ return{usable,overall,patterns}
+}
+function restCalendarType(key){const arr=normalizePlansForDate(getWorkPlans()[key]);return arr.length?arr[arr.length-1]?.type:''}
+function restCandidateScore(d,patterns){const hits=patterns.filter(p=>restDateFactors(d).includes(p.factor));if(!hits.length)return null;return{factors:hits.map(p=>p.factor),avg:hits.reduce((s,p)=>s+p.avg,0)/hits.length,hits}}
+async function renderRestAdvice(){
+ const box=$('restAdviceContent');if(!box)return;const stats=restPatternStats(await getLogs());const learningDays=stats.usable.length;
+ let growthIcon='🌱',growthName='基礎学習中',nextTarget=30;
+ if(learningDays>=180){growthIcon='🏆';growthName='長期パターン分析';nextTarget=null}else if(learningDays>=90){growthIcon='🌲';growthName='かなり詳しく分析';nextTarget=180}else if(learningDays>=60){growthIcon='🌿';growthName='傾向が安定';nextTarget=90}else if(learningDays>=30){growthIcon='🌱';growthName='基礎学習完了';nextTarget=60}
+ const growthMessage=nextTarget===null?'180日分の学習データがたまり、長期パターン分析の段階です。':'次の成長段階まであと<strong>'+Math.max(0,nextTarget-learningDays)+'日</strong>分です。';
+ const patternHtml=stats.patterns.length?stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join(''):'<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
+ const candidates=[],today=new Date();today.setHours(0,0,0,0),allowance=localStorage.getItem('taxiHolidayAllowance')!=='0';
+ for(let i=1;i<=45;i++){const d=new Date(today);d.setDate(today.getDate()+i);const key=restDateKey(d),type=restCalendarType(key);if(type!=='work')continue;if(allowance&&restIsHoliday(d))continue;const score=restCandidateScore(d,stats.patterns);if(score)candidates.push({d,key,score})}
+ const candHtml=candidates.length?candidates.slice(0,8).map((x,i)=>'<div class="restCandidate restCandidateTap" onclick="toggleCandidate('+i+')" role="button" tabindex="0"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討<br><span>タップで理由</span></div></div><div id="candidateDetail'+i+'" class="restCandidateDetail hidden">'+x.score.hits.map(h=>'<div class="restReasonRow"><strong>'+escapeHtml(h.factor)+'</strong><span>過去'+h.count+'回・平均 ¥'+Math.round(h.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(h.diff))+'%低め</span></div>').join('')+'</div>').join(''):'<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
+ box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 自分の営業データから学習中</div><div style="display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px;border-radius:16px;background:#f7f9fb"><div style="font-size:42px;line-height:1">'+growthIcon+'</div><div><div style="font-weight:900;font-size:18px">成長段階：'+growthName+'</div><div style="margin-top:3px">学習データ <strong>'+stats.usable.length+'日</strong></div><div class="restSmall">'+growthMessage+'</div></div></div><div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">🌱 30日：基礎学習完了　→　🌿 60日：傾向が安定　→　🌲 90日：かなり詳しく分析　→　🏆 180日：長期パターン分析</div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div><div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div><div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
+}
+function toggleCandidate(index){$('candidateDetail'+index)?.classList.toggle('hidden')}
+function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
+async function renderLearningDetails(){
+ const box=$('restLearningDetails');if(!box)return;const logs=restLogsSinceReset(await getLogs()),usable=logs.filter(x=>restAnalysisValue(x)>0&&!restHasOwnAccident(x)),overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0,catalog=restFactorCatalog();
+ const rows=catalog.map(f=>{const count=new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size;let status='⚪ データ不足',cls='restStatusWeak';if(count>=5){status='🟢 分析可能';cls='restStatusGood'}else if(count>=3){status='🟡 学習中';cls='restStatusMid'}return'<div class="restFactorRow"><div><strong>'+escapeHtml(f.label)+'</strong><div class="restFactorCount">'+count+'日分</div></div><span class="'+cls+'">'+status+'</span></div>'}).join('');
+ const stats=restPatternStats(logs),trendHtml=stats.patterns.length?stats.patterns.slice().sort((a,b)=>a.diff-b.diff).map(p=>'<div class="restTrendRow"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(p.diff))+'%低め</span></div>').join(''):'<div class="restLearnBox">まだ十分なデータから発見できた傾向はありません。</div>';
+ const factorReadyCount=catalog.filter(f=>new Set(usable.filter(log=>restHistoricalFactors(log).some(x=>x===f.prefix||x.startsWith(f.prefix))).map(log=>restDateKey(restDateOnly(log.date)))).size>=5).length;
+ const progress=Math.min(100,Math.round(usable.length/180*100));let nextStage=30,nextStageIcon='🌱',nextStageName='基礎学習完了';
+ if(usable.length>=180)nextStage=null;else if(usable.length>=90){nextStage=180;nextStageIcon='🏆';nextStageName='長期パターン分析'}else if(usable.length>=60){nextStage=90;nextStageIcon='🌲';nextStageName='かなり詳しく分析'}else if(usable.length>=30){nextStage=60;nextStageIcon='🌿';nextStageName='傾向が安定'}
+ const remain=nextStage===null?0:Math.max(0,nextStage-usable.length),progressMessage=nextStage===null?'🎉 180日分の学習データがたまり、長期パターン分析の段階です。':'次の成長段階 '+nextStageIcon+' '+nextStageName+' まであと<strong>'+remain+'日</strong>分です。';
+ box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats"><div class="restLearningStat"><div class="restLearningStatLabel">📊 '+escapeHtml(restAnalysisLabel())+'データ</div><div class="restProgress" style="height:12px;border-radius:999px;background:#edf0ed;overflow:hidden;margin-top:8px"><div style="height:100%;border-radius:999px;background:#78b88a;width:'+progress+'%"></div></div><div style="margin-top:6px;font-size:14px;text-align:right;color:#555"><strong style="font-size:20px;color:#222">'+usable.length+'日</strong> / 180日</div><div style="margin-top:7px;font-size:12px;color:#666;line-height:1.5">'+progressMessage+'</div></div><div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div class="restLearningStatBox" style="padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff"><strong style="display:block;font-size:22px">'+factorReadyCount+'種類</strong><span style="font-size:11px;color:#666;font-weight:700">分析できるファクター</span></div><div class="restLearningStatBox" style="padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff"><strong style="display:block;font-size:22px">'+stats.patterns.length+'件</strong><span style="font-size:11px;color:#666;font-weight:700">発見した傾向</span></div></div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
+}
+function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
+function openExplain(){$('restAdviceExplain')?.classList.remove('hidden');$('restAdviceExplainOpen')?.classList.add('hidden')}
+document.addEventListener('DOMContentLoaded',async()=>{try{await initDB();await renderRestAdvice()}catch(e){const b=$('restAdviceContent');if(b)b.innerHTML='<div class="restLearnBox">⚠️ データの読み込みに失敗しました。タクログ本体に戻って、もう一度開いてください。</div>'}});
+</script>
+</body>
+</html>
