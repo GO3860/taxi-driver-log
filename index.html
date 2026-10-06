@@ -1782,8 +1782,6 @@ function renderMetricCards(work){
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
   const areaRows=work.filter(x=>Number(x.avg)>0);
   const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
-  const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
-  const areaGrandTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
   const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
   return `<div class="dataGrid" style="margin-top:14px">
     <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
@@ -1964,6 +1962,8 @@ async function showMonthlyDetail(year,index){
   const ownAvg=work.length?Math.round(sales/work.length):0;
   const areaRows=work.filter(x=>Number(x.avg)>0);
   const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
+  const areaGrandTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
   const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
   const rainyDays=periodLogs.filter(x=>Array.isArray(x.weather)&&x.weather.includes('☔')).length;
   const paidAbsence=periodLogs.filter(x=>(x.dayType||'work')==='rest_paid'||(x.dayType||'work')==='rest_leaveabsence').length;
