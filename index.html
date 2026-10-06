@@ -1868,9 +1868,10 @@ async function renderAnnualData(selectedYear){
   const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaSales?yen(r.areaSales):'—'}</div></div>`:''} </button>`).join('')}</div>`;
   const summary=`<div class="dataGrid annualSummary">
     <div class="dataBox"><div class="dataLabel">自分の総売上</div><div class="dataValue">${yen(totalSales)}</div></div>
-    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${totalAreaSales?yen(totalAreaSales):'—'}</div></div><div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
     <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
-    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>`:''}
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${totalAreaSales?yen(totalAreaSales):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
   </div>`;
   box.innerHTML=`<div class="dataPeriod" style="cursor:default">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
