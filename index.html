@@ -1782,6 +1782,8 @@ function renderMetricCards(work){
   const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
   const areaRows=work.filter(x=>Number(x.avg)>0);
   const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
+  const areaGrandTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
   const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
   return `<div class="dataGrid" style="margin-top:14px">
     <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
@@ -1845,14 +1847,18 @@ async function renderAnnualData(selectedYear){
   const areaAvgOn=isAreaAvgEnabled();
   const periods=getFiscalPeriods(year);
   const rows=periods.map((p,i)=>{
-    const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+    const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+    const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
+    const areaWorkRows=work.filter(x=>Number(x.avg)>0);
+    const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
     const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
-    const areaRows=work.filter(x=>Number(x.avg)>0);
-    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
-    return {label:periodMonthLabel(p),sales,areaTotal,duties:work.length,detail:p};
+    const areaSales=areaWorkRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    return {label:periodMonthLabel(p),sales,areaSales,areaTotal,duties:work.length,detail:p};
   });
   const max=Math.max(1,...rows.map(r=>Math.max(r.sales,r.areaTotal)));
   const totalSales=rows.reduce((n,r)=>n+r.sales,0);
+  const totalAreaSales=rows.reduce((n,r)=>n+r.areaSales,0);
   const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
   const active=rows.filter(r=>r.duties>0);
   const avgSales=active.length?Math.round(totalSales/active.length):0;
@@ -1861,10 +1867,10 @@ async function renderAnnualData(selectedYear){
     <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?'<span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span>':''}</div>
     <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
   </div>`;
-  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaTotal?yen(r.areaTotal):'—'}</div></div>`:''} </button>`).join('')}</div>`;
+  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaSales?yen(r.areaSales):'—'}</div></div>`:''} </button>`).join('')}</div>`;
   const summary=`<div class="dataGrid annualSummary">
     <div class="dataBox"><div class="dataLabel">自分の総売上</div><div class="dataValue">${yen(totalSales)}</div></div>
-    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${totalAreaSales?yen(totalAreaSales):'—'}</div></div><div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
     <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
     ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>`:''}
   </div>`;
@@ -2007,7 +2013,8 @@ async function showMonthlyDetail(year,index){
     <div class="dataGrid" style="margin-top:18px">
       <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
-      ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+      ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${areaGrandTotal?yen(areaGrandTotal):'—'}</div></div>
       <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
       <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
       <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
