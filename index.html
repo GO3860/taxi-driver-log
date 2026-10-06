@@ -2014,8 +2014,8 @@ async function showMonthlyDetail(year,index){
       <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
       ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
-      <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${areaGrandTotal?yen(areaGrandTotal):'—'}</div></div>
       <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
+      <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${areaGrandTotal?yen(areaGrandTotal):'—'}</div></div>
       <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
       <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
       <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
