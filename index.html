@@ -1840,12 +1840,6 @@ async function setAnnualAreaGraphMode(mode,year){
   localStorage.setItem('taxiAnnualAreaGraphMode',mode==='sales'?'sales':'total');
   renderAnnualData(year);
 }
-<style id="annual-graph-switch-v1">
-.annualGraphSwitch{display:flex;gap:8px;margin-bottom:10px}
-.annualGraphSwitchBtn{flex:1;border:1px solid #d8e2ec;background:#fff;color:#1677b7;border-radius:12px;padding:9px 7px;font-size:12px;font-weight:800;line-height:1.25}
-.annualGraphSwitchBtn.on{background:#e8f4ff;border-color:#6fa5ef;box-shadow:inset 0 0 0 1px #6fa5ef;color:#1765a8}
-.annualGraphSwitchBtn:active{transform:translateY(1px)}
-</style>
 function renderAnnualData(selectedYear){
   const box=$('annualData'); if(!box)return;
   let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
@@ -4067,5 +4061,11 @@ setInterval(updateConstraintWarning,30000);
   .dailySalesTable th:nth-child(8),.dailySalesTable td:nth-child(8){width:14%!important;min-width:0!important}
   .dailySalesTable th,.dailySalesTable td{padding-left:3px!important;padding-right:3px!important;font-size:11px!important}
 }
+</style>
+<style id="annual-graph-switch-v1">
+.annualGraphSwitch{display:flex;gap:8px;margin-bottom:10px}
+.annualGraphSwitchBtn{flex:1;border:1px solid #d8e2ec;background:#fff;color:#1677b7;border-radius:12px;padding:9px 7px;font-size:12px;font-weight:800;line-height:1.25}
+.annualGraphSwitchBtn.on{background:#e8f4ff;border-color:#6fa5ef;box-shadow:inset 0 0 0 1px #6fa5ef;color:#1765a8}
+.annualGraphSwitchBtn:active{transform:translateY(1px)}
 </style>
 </body></html>
