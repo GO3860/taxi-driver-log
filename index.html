@@ -1791,7 +1791,7 @@ function renderMetricCards(work){
   const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
   return `<div class="dataGrid" style="margin-top:14px">
     <div class="dataBox"><div class="dataLabel">勤務日数</div><div class="dataValue">${work.length}日</div></div>
-    <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の売上</div><div class="dataValue">${yen(sales)}</div></div>
     ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上合計</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
     <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
   </div>`;
@@ -2029,7 +2029,7 @@ async function showMonthlyDetail(year,index){
     <button type="button" class="analysisBtn btn full" onclick="toggleMonthlyDailySales()">📋 ${periodMonthLabel(p)}の日々の営業データ</button>
     ${dailyTable}
     <div class="dataGrid" style="margin-top:18px">
-      <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+      <div class="dataBox"><div class="dataLabel">自分の売上</div><div class="dataValue">${yen(sales)}</div></div>
       <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
       ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
       <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
