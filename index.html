@@ -1860,7 +1860,7 @@ async function renderAnnualData(selectedYear){
   const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
   const active=rows.filter(r=>r.duties>0);
   const avgSales=active.length?Math.round(totalSales/active.length):0;
-  const avgArea=active.length?Math.round(totalArea/active.length):0;
+  const avgArea=active.length?Math.round(totalAreaSales/active.length):0;
   const graph=`<div class="annualGraphWrap">
     <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?'<span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span>':''}</div>
     <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
