@@ -1836,7 +1836,17 @@ function getAvailableFiscalYears(logs){
 function annualYearOptions(logs, selected){
   return getAvailableFiscalYears(logs).map(y=>`<option value="${y}" ${y===selected?'selected':''}>${y}年度</option>`).join('');
 }
-async function renderAnnualData(selectedYear){
+async function setAnnualAreaGraphMode(mode,year){
+  localStorage.setItem('taxiAnnualAreaGraphMode',mode==='sales'?'sales':'total');
+  renderAnnualData(year);
+}
+<style id="annual-graph-switch-v1">
+.annualGraphSwitch{display:flex;gap:8px;margin-bottom:10px}
+.annualGraphSwitchBtn{flex:1;border:1px solid #d8e2ec;background:#fff;color:#1677b7;border-radius:12px;padding:9px 7px;font-size:12px;font-weight:800;line-height:1.25}
+.annualGraphSwitchBtn.on{background:#e8f4ff;border-color:#6fa5ef;box-shadow:inset 0 0 0 1px #6fa5ef;color:#1765a8}
+.annualGraphSwitchBtn:active{transform:translateY(1px)}
+</style>
+function renderAnnualData(selectedYear){
   const box=$('annualData'); if(!box)return;
   let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
   const currentYear=getFiscalYearStartYear();
@@ -1854,7 +1864,10 @@ async function renderAnnualData(selectedYear){
     const areaTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
     return {label:periodMonthLabel(p),sales,areaSales,areaTotal,duties:work.length,detail:p};
   });
-  const max=Math.max(1,...rows.map(r=>Math.max(r.sales,r.areaTotal)));
+  const annualAreaGraphMode=localStorage.getItem('taxiAnnualAreaGraphMode')==='sales'?'sales':'total';
+  const graphAreaLabel=annualAreaGraphMode==='sales'?'乗務エリアの売上':'乗務エリアの総売上';
+  const graphAreaKey=annualAreaGraphMode==='sales'?'areaSales':'areaTotal';
+  const max=Math.max(1,...rows.map(r=>Math.max(r.sales,Number(r[graphAreaKey])||0)));
   const totalSales=rows.reduce((n,r)=>n+r.sales,0);
   const totalAreaSales=rows.reduce((n,r)=>n+r.areaSales,0);
   const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
@@ -1862,8 +1875,1123 @@ async function renderAnnualData(selectedYear){
   const avgSales=active.length?Math.round(totalSales/active.length):0;
   const avgArea=active.length?Math.round(totalAreaSales/active.length):0;
   const graph=`<div class="annualGraphWrap">
-    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?'<span><b style="color:#aab2bd">■</b> 乗務エリアの総売上</span>':''}</div>
-    <div class="annualGraph">${rows.map(r=>{const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=r.areaTotal?Math.max(4,Math.round(r.areaTotal/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} 乗務エリアの総売上 ${r.areaTotal?yen(r.areaTotal):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
+    ${areaAvgOn?`<div class="annualGraphSwitch" role="group" aria-label="グラフの乗務エリア表示">
+      <button type="button" class="annualGraphSwitchBtn ${annualAreaGraphMode==='sales'?'on':''}" onclick="setAnnualAreaGraphMode('sales',${year})">乗務エリアの売上</button>
+      <button type="button" class="annualGraphSwitchBtn ${annualAreaGraphMode==='total'?'on':''}" onclick="setAnnualAreaGraphMode('total',${year})">乗務エリアの総売上</button>
+    </div>`:''}
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?`<span><b style="color:#aab2bd">■</b> ${graphAreaLabel}</span>`:''}</div>
+    <div class="annualGraph">${rows.map(r=>{const areaValue=Number(r[graphAreaKey])||0;const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=areaValue?Math.max(4,Math.round(areaValue/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} ${graphAreaLabel} ${areaValue?yen(areaValue):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
+  </div>`;
+  const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaSales?yen(r.areaSales):'—'}</div></div>`:''} </button>`).join('')}</div>`;
+  const summary=`<div class="dataGrid annualSummary">
+    <div class="dataBox"><div class="dataLabel">自分の売上</div><div class="dataValue">${yen(totalSales)}</div></div>
+    <div class="dataBox"><div class="dataLabel">自分の月平均売上</div><div class="dataValue">${avgSales?yen(avgSales):'—'}</div></div>
+    ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${totalAreaSales?yen(totalAreaSales):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの月平均売上</div><div class="dataValue">${avgArea?yen(avgArea):'—'}</div></div>
+    <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${totalArea?yen(totalArea):'—'}</div></div>`:''}
+  </div>`;
+  box.innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="periodTitle" style="margin:0">${fiscalYearLabel(year)}</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#555">年度を選択
+        <select id="annualYearSelect" onchange="renderAnnualData(this.value)" aria-label="年度を選択" style="min-width:150px;padding:10px 12px;border:2px solid #ddd;border-radius:12px;font-size:15px;font-weight:700;background:#fafafa">${annualYearOptions(logs,year)}</select>
+      </label>
+    </div>
+    <div class="dataNote">対象期間：${periods[0].start.getFullYear()}年${periods[0].start.getMonth()+1}月${periods[0].start.getDate()}日〜${periods[11].end.getFullYear()}年${periods[11].end.getMonth()+1}月${periods[11].end.getDate()}日</div>
+    ${graph}${summary}${table}
+  </div>`;
+}
+function analysisStats(work, getter, names){
+  return names.map(name=>{
+    const rows=work.filter(x=>getter(x).includes(name));
+    const total=rows.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const avg=rows.length?Math.round(total/rows.length):0;
+    const areaRows=rows.filter(x=>Number(x.avg)>0);
+    const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+    const diff=rows.length&&areaRows.length?avg-areaAvg:null;
+    return {name,rows,total,avg,areaAvg,diff};
+  });
+}
+function renderBarGraph(stats){
+  const maxGraph=Math.max(1,...stats.map(x=>Math.max(x.avg,x.areaAvg)));
+  return `<div style="margin-top:16px;padding:16px 10px 12px;background:#f7f8fa;border-radius:16px">
+    <div style="font-weight:800;font-size:15px;margin-bottom:10px">📊 自分の平均 vs エリア平均</div>
+    <div style="display:flex;justify-content:flex-end;gap:14px;font-size:12px;color:#333;margin-bottom:8px"><span><b style="color:#4d8bd8">■</b> 自分</span><span><b style="color:#aab2bd">■</b> エリア平均</span></div>
+    <div style="height:190px;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid #ddd;padding:0 2px">
+      ${stats.map(s=>{const h1=s.avg?Math.max(4,Math.round(s.avg/maxGraph*150)):0;const h2=s.areaAvg?Math.max(4,Math.round(s.areaAvg/maxGraph*150)):0;return `<div style="flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px"><div title="${s.name} 自分 ${s.avg?yen(s.avg):'—'}" style="width:22%;max-width:24px;height:${h1}px;background:#4d8bd8;border-radius:5px 5px 0 0"></div><div title="${s.name} エリア平均 ${s.areaAvg?yen(s.areaAvg):'—'}" style="width:22%;max-width:24px;height:${h2}px;background:#aab2bd;border-radius:5px 5px 0 0"></div></div>`}).join('')}
+    </div>
+    <div style="display:flex;gap:4px;margin-top:6px">${stats.map(s=>`<div style="flex:1;text-align:center;font-size:12px;font-weight:700">${s.name}</div>`).join('')}</div>
+  </div>`;
+}
+function renderAnalysisRows(stats){
+  return `<div style="margin-top:18px">${stats.map(s=>`<div style="padding:14px 0 18px;border-bottom:1px solid #eee">
+    <div style="font-weight:800;font-size:20px;margin-bottom:16px">${s.name}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:28px;row-gap:22px">
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・自分の平均</div>
+        <div style="font-weight:800;font-size:22px">${s.rows.length?yen(s.avg):'—'}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・エリア平均</div>
+        <div style="font-weight:800;font-size:22px">${s.areaAvg?yen(s.areaAvg):'—'}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・エリア平均との差</div>
+        <div style="font-weight:800;font-size:22px">${diffText(s.diff)}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:16px;color:#555;margin-bottom:5px">・自分の売上合計</div>
+        <div style="font-weight:800;font-size:22px">${yen(s.total)}</div>
+      </div>
+    </div>
+  </div>`).join('')}</div>`;
+}
+let currentMonthYear=null;
+let currentMonthIndex=null;
+
+let selectedAnnualMonthKey='';
+function annualMonthTap(year,index,button){
+  const key=String(year)+'-'+String(index);
+  if(selectedAnnualMonthKey===key){
+    selectedAnnualMonthKey='';
+    button.classList.remove('selected');
+    showMonthlyDetail(year,index);
+    return;
+  }
+  document.querySelectorAll('.annualMonthBtn.selected').forEach(el=>el.classList.remove('selected'));
+  selectedAnnualMonthKey=key;
+  button.classList.add('selected');
+}
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.annualMonthBtn');if(b)b.classList.add('pressed');});
+document.addEventListener('pointerup',e=>{const b=e.target.closest('.annualMonthBtn');if(b)setTimeout(()=>b.classList.remove('pressed'),180);});
+async function showMonthlyDetail(year,index){
+  currentMonthYear=Number(year); currentMonthIndex=Number(index);
+  $('dataSummaryView').classList.add('hidden');
+  $('dataAnalysisView').classList.add('hidden');
+  $('dataDetailView').classList.remove('hidden');
+  const periods=getFiscalPeriods(currentMonthYear);
+  const p=periods[currentMonthIndex];
+  const areaAvgOn=isAreaAvgEnabled();
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+  const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+  const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+  const ownAvg=work.length?Math.round(sales/work.length):0;
+  const areaRows=work.filter(x=>Number(x.avg)>0);
+  const areaTotal=areaRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
+  const areaGrandTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+  const areaAvg=areaRows.length?Math.round(areaTotal/areaRows.length):0;
+  const rainyDays=periodLogs.filter(x=>Array.isArray(x.weather)&&x.weather.includes('☔')).length;
+  const paidAbsence=periodLogs.filter(x=>(x.dayType||'work')==='rest_paid'||(x.dayType||'work')==='rest_leaveabsence').length;
+  const eventCount=periodLogs.reduce((n,x)=>n+(Array.isArray(x.event)?x.event.filter(e=>e!=='なし').length:0),0);
+  // 毎日のログに保存されている「拘束時間」と「走行距離」を、この月の対象期間で合計
+  const durationMinutes=periodLogs.reduce((n,x)=>{
+    if(x.out&&x.in){
+      const [oh,om]=String(x.out).split(':').map(Number);
+      const [ih,im]=String(x.in).split(':').map(Number);
+      if(Number.isFinite(oh)&&Number.isFinite(om)&&Number.isFinite(ih)&&Number.isFinite(im)){
+        let m=(ih*60+im)-(oh*60+om);
+        if(m<0)m+=24*60;
+        return n+m;
+      }
+    }
+    const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);
+    if(hm){
+      const h=Number(hm[1]);
+      const min=Number(hm[2]||0);
+      return n+Math.round(h*60)+min;
+    }
+    return n;
+  },0);
+  const totalDistance=periodLogs.reduce((n,x)=>n+(Number(x.km)||0),0);
+  const durationText=durationMinutes?`${Math.floor(durationMinutes/60)}時間${durationMinutes%60?durationMinutes%60+'分':''}`:'0時間';
+  const distanceText=totalDistance?`${totalDistance.toLocaleString(undefined,{maximumFractionDigits:1})}km`:'0km';
+  $('monthlyDetailTitle').textContent='📋 '+periodMonthLabel(p)+'の営業データ';
+  const dailyRows=work.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>{
+    const d=parseDutyDate(x.date);
+    const dayLabel=d?`${d.getMonth()+1}/${d.getDate()}`:String(x.date||'—');
+    let mins=null;
+    if(x.out&&x.in){
+      const [oh,om]=String(x.out).split(':').map(Number); const [ih,im]=String(x.in).split(':').map(Number);
+      if([oh,om,ih,im].every(Number.isFinite)){mins=(ih*60+im)-(oh*60+om);if(mins<0)mins+=24*60;}
+    }
+    if(mins===null){const hm=String(x.hours||'').match(/(\d+(?:\.\d+)?)時間(?:([0-9]+)分)?/);if(hm)mins=Math.round(Number(hm[1])*60)+Number(hm[2]||0);}
+    const duration=mins===null?'—':`${Math.floor(mins/60)}時間${mins%60?String(mins%60).padStart(2,'0')+'分':''}`;
+    const rate=Number(x.loadedRate); const trips=Number(x.tripCount);
+    return `<tr><td>${dayLabel}<div class="dailySalesDayType">勤務</div></td><td>${duration}</td><td class="breakTotalCell">${formatBreakTotal(x)}</td><td>${x.sales?yen(x.sales):'—'}</td>${areaAvgOn?`<td>${Number(x.avg)>0?yen(x.avg):'—'}</td>`:''}<td>${Number(x.km)>0?Number(x.km).toLocaleString(undefined,{maximumFractionDigits:1})+'km':'—'}</td><td>${Number.isFinite(rate)?rate+'%':'—'}</td><td>${Number.isFinite(trips)?trips+'回':'—'}</td></tr>`;
+  }).join('');
+  const dailyTable=`<div id="monthlyDailySalesPanel" class="dailySalesWrap" style="display:none"><div class="dailySalesTitle">${periodMonthLabel(p)}の営業データ</div><div class="dailySalesSub">対象期間：${periodLabel(p)} ／ 勤務日の記録を表示しています。</div><div class="dailySalesHint">📌 日付は固定されています。右へスライドすると、走行距離・実車率・営業回を確認できます。<br>📱 表を全部見るには、スマホの回転ロックを解除して、スマホを横にすると一覧が表示されます。</div><div class="dailySalesScrollerBar"><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(-1)">‹ 左</button><span class="dailySalesScrollPos">横にスライドできます</span><button type="button" class="dailySalesScrollBtn" onclick="scrollDailySales(1)">右 ›</button></div><div class="dailySalesScroll" id="dailySalesScroll"><table class="dailySalesTable"><thead><tr><th>日</th><th>拘束時間</th><th>休憩合計</th><th>売上</th>${areaAvgOn?'<th>エリア平均売上</th>':''}<th>走行距離</th><th>実車率</th><th>営業回</th></tr></thead><tbody>${dailyRows||`<tr><td colspan="${areaAvgOn?8:7}" class="dailySalesMuted" style="text-align:center">この期間の勤務データはありません。</td></tr>`}</tbody></table></div></div>`;
+  $('monthlyDetail').innerHTML=`<div class="dataPeriod" style="cursor:default">
+    <div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div>
+    <div class="dataNote">この期間のログを集計しています。</div>
+    <button type="button" class="analysisBtn btn full" onclick="toggleMonthlyDailySales()">📋 ${periodMonthLabel(p)}の日々の営業データ</button>
+    ${dailyTable}
+    <div class="dataGrid" style="margin-top:18px">
+      <div class="dataBox"><div class="dataLabel">自分の売上合計</div><div class="dataValue">${yen(sales)}</div></div>
+      <div class="dataBox"><div class="dataLabel">自分の売上平均</div><div class="dataValue">${work.length?yen(ownAvg):'—'}</div></div>
+      ${areaAvgOn?`<div class="dataBox"><div class="dataLabel">乗務エリアの売上</div><div class="dataValue">${areaRows.length?yen(areaTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">乗務エリアの平均売上</div><div class="dataValue">${areaRows.length?yen(areaAvg):'—'}</div></div>`:''}
+      <div class="dataBox"><div class="dataLabel">乗務エリアの総売上</div><div class="dataValue">${areaGrandTotal?yen(areaGrandTotal):'—'}</div></div>
+      <div class="dataBox"><div class="dataLabel">拘束時間</div><div class="dataValue">${durationText}</div></div>
+      <div class="dataBox"><div class="dataLabel">走行距離</div><div class="dataValue">${distanceText}</div></div>
+      <div class="dataBox"><div class="dataLabel">勤務回数</div><div class="dataValue">${work.length}回</div></div>
+      <div class="dataBox"><div class="dataLabel">有休・欠勤回数</div><div class="dataValue">${paidAbsence}回</div></div>
+      <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
+      <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
+    </div>
+    <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})">📅 ${periodMonthLabel(p)}の曜日別比較</button>
+  </div>`;
+}
+
+function toggleMonthlyDailySales(){
+  const panel=$('monthlyDailySalesPanel');
+  if(!panel)return;
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'block';
+  if(!isOpen) enableDailySalesTouchScroll();
+  const btn=panel.previousElementSibling;
+  if(btn)btn.textContent=(isOpen?'📋 ':'🔽 ')+(document.querySelector('.dailySalesTitle')?.textContent||'日々の営業データ');
+}
+
+function scrollDailySales(dir){
+  const box=$('dailySalesScroll');
+  if(!box)return;
+  const amount=Math.max(180,Math.round(box.clientWidth*0.75));
+  box.scrollBy({left:dir*amount,behavior:'smooth'});
+}
+
+function enableDailySalesTouchScroll(){
+  const box=$('dailySalesScroll');
+  if(!box || box.dataset.touchReady==='1')return;
+  box.dataset.touchReady='1';
+  let sx=0,sy=0,sl=0,dragging=false;
+  box.addEventListener('touchstart',e=>{
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; sl=box.scrollLeft; dragging=false;
+  },{passive:true});
+  box.addEventListener('touchmove',e=>{
+    const t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(!dragging && Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)) dragging=true;
+    if(dragging){ e.preventDefault(); box.scrollLeft=sl-dx; }
+  },{passive:false});
+}
+
+async function showEventBreakdown(year,index){
+  const periods=getFiscalPeriods(Number(year)), p=periods[Number(index)];
+  const logs=await getLogs();
+  const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+  const names=['⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','🚨 自身の事故','その他'];
+  const counts=Object.fromEntries(names.map(n=>[n,0]));
+  periodLogs.forEach(x=>{
+    (Array.isArray(x.event)?x.event:[]).forEach(e=>{
+      if(e!=='なし' && Object.prototype.hasOwnProperty.call(counts,e)) counts[e]++;
+    });
+  });
+  const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${n}</span><strong>${counts[n]}回</strong></div>`).join('');
+  $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';  $('eventBreakdownModal').classList.remove('hidden');
+}
+function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden')}
+
+async function showMonthWeekday(year,index){
+  currentMonthYear=Number(year); currentMonthIndex=Number(index);
+  $('dataSummaryView').classList.add('hidden');
+  $('dataDetailView').classList.add('hidden');
+  $('dataAnalysisView').classList.remove('hidden');
+  $('analysisTitle').textContent='📅 '+periodMonthLabel(getFiscalPeriods(currentMonthYear)[currentMonthIndex])+'の曜日別比較';
+  const periods=getFiscalPeriods(currentMonthYear), p=periods[currentMonthIndex];
+  const logs=await getLogs();
+  const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
+  const names=['日曜','月曜','火曜','水曜','木曜','金曜','土曜'];
+  const stats=analysisStats(work,x=>{const d=parseDutyDate(x.date);return d?[names[d.getDay()]]:[]},names);
+  $('analysisContent').innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">この月の「勤務」のログだけを曜日ごとに集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+}
+
+async function showAnalysis(type){
+  $('dataSummaryView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataAnalysisView').classList.remove('hidden');
+  const work=await getPeriodWorkLogs();
+  const p=getDataPeriod();
+  const content=$('analysisContent');
+  if(type==='weekday'){
+    $('analysisTitle').textContent='📅 曜日別の売上';
+    const names=['日曜','月曜','火曜','水曜','木曜','金曜','土曜'];
+    const stats=analysisStats(work,x=>{const d=parseDutyDate(x.date);return d?[names[d.getDay()]]:[]},names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">この期間の「勤務」のログだけを曜日ごとに集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else if(type==='weather'){
+    $('analysisTitle').textContent='🌤️ 天気別の売上';
+    const names=['☀️','☁️','☔ 雨','❄️'];
+    const stats=analysisStats(work,x=>Array.isArray(x.weather)?x.weather:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">天気を選択した勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }else{
+    $('analysisTitle').textContent='📅 イベント別の売上';
+    const names=['なし','⚾ 野球','⚽ サッカー','🎆 花火','🏮 夏祭り','🎤 ライブ','🚃 運転見合せ','🌀 台風直撃','🌧️ 大雨','❄️ 大雪','🚨 自身の事故','その他'];
+    const stats=analysisStats(work,x=>Array.isArray(x.event)?x.event:[],names);
+    content.innerHTML=`<div class="dataPeriod" style="cursor:default"><div class="periodTitle"><div>対象期間:</div><div>${periodLabel(p)}</div></div><div class="dataNote">選択したイベントを含む勤務ログを集計しています。</div>${renderBarGraph(stats)}${renderAnalysisRows(stats)}</div>`;
+  }
+}
+async function showData(){
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
+  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('routeDb').classList.add('hidden');$('data').classList.remove('hidden');
+  $('dataSummaryView').classList.remove('hidden');$('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');
+  await renderMonthlyTop();
+}
+function showDataSummary(){
+  $('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');$('dataSummaryView').classList.remove('hidden');renderMonthlyTop();
+}
+
+async function showLogs(){const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';$('today').classList.add('hidden');$('settings').classList.add('hidden');$('data').classList.add('hidden');$('routeDb').classList.add('hidden');$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${x.dayType==='rest_nonpublic'||x.dayType==='rest'?'🏠 休（非・公）':x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':x.dayType==='parttime'?'💰 アルバイト':'🚕 勤務'}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||((x.destination||'')+(x.course?' → '+x.course:''))||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+function calcBreakTotalMinutes(log){
+ const pairs=[[log.break1Start,log.break1End],[log.break2Start,log.break2End],[log.break3Start,log.break3End]];
+ let total=0;
+ pairs.forEach(([start,end])=>{
+   if(!start||!end)return;
+   const [sh,sm]=String(start).split(':').map(Number);
+   const [eh,em]=String(end).split(':').map(Number);
+   if(!Number.isFinite(sh)||!Number.isFinite(sm)||!Number.isFinite(eh)||!Number.isFinite(em))return;
+   let a=sh*60+sm,b=eh*60+em;
+   if(b<a)b+=1440;
+   total+=Math.max(0,b-a);
+ });
+ return total;
+}
+function formatBreakTotal(log){
+ const total=calcBreakTotalMinutes(log);
+ if(total<=0)return '—';
+ const h=Math.floor(total/60),m=total%60;
+ return h?(`${h}時間${m?m+'分':''}`):`${m}分`;
+}
+
+async function showLogDetail(id){
+ const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
+ await updateTotal();
+ const weather=Array.isArray(x.weather)?x.weather.join('/'):(x.weather||'');const ev=Array.isArray(x.event)?x.event.join(' '):(x.event||'');const savedRoutes=Array.isArray(x.routes)?x.routes:((x.destination||x.course||x.photo)?[{destination:x.destination||'',course:x.course||'',photo:x.photo||''}]:[]);
+ const routeHtml=savedRoutes.length?savedRoutes.map((r,i)=>`<div class="dailyBox dailyFull"><div class="dailyLabel">🗺️ 道順 ${i+1}</div><div class="dailyValue">${r.destination||'—'}${r.course?' → '+r.course:''}</div>${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}</div>`).join(''):'';
+
+ const rest=isRestDay(x.dayType), parttime=x.dayType==='parttime';
+ $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
+ $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">休憩時間合計</div><div class="dailyValue">${formatBreakTotal(x)}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${x.km?Number(x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
+}
+
+async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();showLogs()}
+function resetSaveButton(){
+  const b=document.getElementById('saveButton');
+  if(b)b.classList.remove('savePressed');
+}
+function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAvgLater'].forEach(id=>$(id)?.classList.add('hidden'))}
+function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';applySettings()}
+async function showAreaAvgLater(){
+  resetSaveButton();
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
+  hideAllMainViews();
+  $('areaAvgLater').classList.remove('hidden');
+  await renderAreaAvgLater();
+}
+async function showRestAdvice(){
+  resetSaveButton();
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
+  hideAllMainViews();
+  window.location.href='rest-advice/?v=2';
+}
+
+// ===== 休み方設定 =====
+function saveRestSettings(){
+  const payday=$('paydayBase')?.value||'25';
+  localStorage.setItem('taxiPaydayBase',payday);
+  const allowance=$('holidayAllowanceYes')?.checked?'1':'0';
+  localStorage.setItem('taxiHolidayAllowance',allowance);
+  const note=$('holidayAllowanceNote');
+  if(note)note.classList.toggle('hidden',allowance!=='1');
+  const source=isAreaAvgEnabled()&&$('analysisSourceArea')?.checked?'area':'own';
+  localStorage.setItem('taxiRestAnalysisSource',source);
+  if($('restSettingsStatus'))$('restSettingsStatus').textContent='現在：給料日基準 '+payday+'日／祝日手当 '+(allowance==='1'?'あり':'なし')+'／学習データ '+(source==='own'?'自分の売上':'エリア平均');
+  updateRestSourceUI();
+}
+function updateRestSourceUI(){
+  const areaAvgOn=isAreaAvgEnabled();
+  const own=!areaAvgOn||restAnalysisSource()==='own';
+  if(!areaAvgOn&&localStorage.getItem('taxiRestAnalysisSource')!=='own')localStorage.setItem('taxiRestAnalysisSource','own');
+  const areaRadio=$('analysisSourceArea');
+  const ownRadio=$('analysisSourceOwn');
+  if(areaRadio)areaRadio.disabled=!areaAvgOn;
+  if(ownRadio)ownRadio.checked=own;
+  if(areaRadio)areaRadio.checked=areaAvgOn&&!own;
+  const label=own?'自分の売上':'エリア平均';
+  if($('restLearningSourceLabel'))$('restLearningSourceLabel').textContent=label;
+  if($('areaAvgLearningExplain')){
+    $('areaAvgLearningExplain').innerHTML=own
+      ? '会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較に使われます。'
+      : '会社から後日発表されたエリア平均売上を、ログに追加できます。<br>入力したエリア平均は、営業データの比較や「休み方アドバイス」の学習に使われます。';
+  }
+}
+function restAnalysisSource(){
+  return localStorage.getItem('taxiRestAnalysisSource')||'area';
+}
+function resetRestAnalysis(){
+  const resetDate=todayYMD();
+  if(!confirm('休み方分析をリセットします。\n\nこれまでの売上ログやカレンダーは削除されません。\n今日以降のデータを新しい勤務スタイル・会社・エリアの学習データとして使います。\n\nリセットしますか？'))return;
+  localStorage.setItem('taxiRestAnalysisResetDate',resetDate);
+  alert('休み方分析をリセットしました。');
+}
+
+function getAreaAvgHiddenDates(){
+  try{return JSON.parse(localStorage.getItem('taxiAreaAvgHiddenDates')||'[]')}catch(e){return[]}
+}
+function setAreaAvgHiddenDate(key){
+  const list=getAreaAvgHiddenDates();
+  if(!list.includes(key)){list.push(key);localStorage.setItem('taxiAreaAvgHiddenDates',JSON.stringify(list))}
+}
+async function updateLogAreaAverage(id,value,dayType,key){
+  const avg=String(value??'').trim();
+  if(!avg){alert('エリア平均を入力してください。');return}
+  const all=await getLogs();
+  const existing=all.find(x=>Number(x.id)===Number(id));
+  if(existing){
+    existing.avg=avg;
+    existing.savedAt=new Date().toISOString();
+    await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(existing);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});
+  }else{
+    await addLog({date:String(id),dayType:dayType||'rest_nonpublic',weather:[],event:[],out:'',in:'',hours:'',km:'',sales:'',loadedRate:'',tripCount:'',avg,routes:[],destination:'',course:'',eventNote:'',photo:'',parttimeTakeHome:0,savedAt:new Date().toISOString()});
+  }
+  const after=await getLogs();
+  await saveMonthlySnapshot(after);
+  setAreaAvgHiddenDate(key);
+  await renderAreaAvgLater();
+}
+function deleteAreaAvgEntry(key){
+  if(!confirm('この日のエリア平均入力を一覧から削除しますか？'))return;
+  setAreaAvgHiddenDate(key);
+  renderAreaAvgLater();
+}
+async function renderAreaAvgLater(){
+  const box=$('areaAvgRows');
+  if(!box)return;
+  const hiddenDates=new Set(getAreaAvgHiddenDates());
+  const logs=await getLogs();
+  const byDate=new Map();
+  logs.forEach(x=>{const d=parseDutyDate(x.date);if(d)byDate.set(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),x)});
+  const today=new Date();today.setHours(0,0,0,0);
+  const plans=getWorkPlans();
+  const rows=[];
+  for(let i=1;i<=31;i++){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const log=byDate.get(key);
+    let type=log?.dayType||'';
+    if(!type){const arr=normalizePlansForDate(plans[key]);const p=arr[arr.length-1];type=p?.type||'rest_nonpublic';}
+    const label=type==='work'?'🚕 勤務':type==='parttime'?'💰 バイト':type==='paid'?'🌸 有休':type==='absent'?'🟫 欠勤':type==='other'?'🟪 その他':'🏠 休み';
+    if(!hiddenDates.has(key)) rows.push({d,key,log,type,label,existingAvg:log?String(log.avg??'').trim():''});
+  }
+  box.innerHTML=rows.map(r=>{
+    const dateText=`${r.d.getMonth()+1}/${r.d.getDate()}（${['日','月','火','水','木','金','土'][r.d.getDay()]}）`;
+    const inputId='areaAvgInput_'+r.key.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const recordId=r.log?String(r.log.id):r.key;
+    return `<div class="areaAvgRow">
+      <div class="areaAvgDate"><strong>${dateText}</strong><span>${r.label}</span></div>
+      <div class="areaAvgInputWrap"><input id="${inputId}" type="number" inputmode="numeric" placeholder="エリア平均" value="${escapeHtml(r.existingAvg)}"><span>円</span></div>
+      <div class="areaAvgActionBtns">
+        <button type="button" class="areaAvgRegister" onclick="updateLogAreaAverage('${escapeHtml(recordId)}',document.getElementById('${inputId}').value,'${r.type}','${r.key}')">登録</button>
+        <button type="button" class="areaAvgDelete" onclick="deleteAreaAvgEntry('${r.key}')">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
+
+async function goToToday(){
+  const ymd=todayYMD();
+  localStorage.setItem('taxiDutyDate',ymd);
+  const dateEl=$('date');
+  if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+  const dp=$('datePicker');
+  if(dp){dp.value=ymd;dp.max=ymd;}
+
+  // 今日のログが保存済みなら、その内容を読み込んで続きから使う
+  try{
+    const all=await getLogs();
+    const todayLog=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      if(!d)return false;
+      return d.getFullYear()===new Date().getFullYear() && d.getMonth()===new Date().getMonth() && d.getDate()===new Date().getDate();
+    });
+    if(todayLog){
+      await editLog(todayLog.id);
+      return;
+    }
+  }catch(e){console.error(e)}
+
+  // 今日のログがなければ、新規入力画面として開く
+  editingLogId=null;
+  photoData='';
+  document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+  document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+  const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+  if(none)none.classList.add('on');
+  const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
+  if(workBtn)setDayType(workBtn,'work');
+  ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  initRoutes([]);
+  duration();
+  const preview=$('preview');
+  if(preview)preview.innerHTML='';
+  const status=$('status');
+  if(status)status.textContent='📅 今日の記録を入力します';
+  showToday();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+let workCalendarCursor=new Date();
+let workCalendarSelectedKey='';
+function getWorkPlans(){
+  try{
+    const raw=JSON.parse(localStorage.getItem('taxiWorkPlans')||'{}');
+    // 旧版の「1日1件」形式を配列形式へ自動変換
+    Object.keys(raw).forEach(k=>{ if(raw[k] && !Array.isArray(raw[k])) raw[k]=[raw[k]]; });
+    return raw;
+  }catch(e){return {}}
+}
+function setWorkPlans(v){localStorage.setItem('taxiWorkPlans',JSON.stringify(v))}
+function dateKey(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function normalizePlansForDate(p){
+  if(!p)return [];
+  return (Array.isArray(p)?p:[p]).filter(x=>x && x.type && x.type!=='rest');
+}
+function openWorkCalendar(){
+  workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
+  const modal=$('workCalendarModal');if(modal){modal.classList.remove('hidden');const sheet=modal.querySelector('.calendarSheet');if(sheet)sheet.scrollTop=0;}
+  renderWorkCalendar();
+  toggleWorkPlanFields();
+}
+function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden')}
+function changeWorkCalendarMonth(delta){workCalendarCursor.setMonth(workCalendarCursor.getMonth()+delta);renderWorkCalendar()}
+function toggleWorkPlanFields(){
+  const type=$('workPlanType')?.value||'work';
+  const timeWrap=$('workPlanTimeWrap');
+  const iconWrap=$('workPlanEventIconWrap');
+  const memoWrap=$('workPlanMemoWrap');
+  if(timeWrap)timeWrap.classList.toggle('hidden',type!=='plan'&&type!=='event');
+  if(iconWrap)iconWrap.classList.toggle('hidden',type!=='event');
+  if(memoWrap)memoWrap.querySelector('label')?.classList?.toggle('hidden',false);
+  const memo=$('workPlanMemo');
+  if(memo){
+    memo.placeholder=type==='plan'?'例：病院、出世稲荷御祈祷、食事など':type==='event'?'例：阪神戦、ライブ、花火大会など':'例：病院、旅行、出勤予定など';
+  }
+}
+async function selectWorkCalendarDate(key){
+  workCalendarSelectedKey=key;
+  const plans=getWorkPlans(), arr=normalizePlansForDate(plans[key]);
+  const hasPlan=arr.some(x=>x.type==='plan');
+  const hasEvent=arr.some(x=>x.type==='event');
+  const p=arr[arr.length-1]||{};
+  $('workPlanType').value=hasPlan?'plan':hasEvent?'event':(p.type||'work');
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  const icon=$('workPlanEventIcon');if(icon)icon.value=(arr.find(x=>x.type==='event')||{}).eventIcon||'';
+  toggleWorkPlanFields();
+  renderWorkCalendar();
+
+  // カレンダーの日付をタップしたら、その日のログへ移動する。
+  // 既存ログがあれば編集画面、なければその日付の新規入力画面を開く。
+  try{
+    const all=await getLogs();
+    const target=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      if(!d)return false;
+      return restDateKey(d)===key;
+    });
+    if(target){
+      await editLog(target.id);
+      return;
+    }
+
+    localStorage.setItem('taxiDutyDate',key);
+    const dateEl=$('date');
+    if(dateEl)dateEl.textContent=formatDutyDate(new Date(key+'T00:00:00'));
+    const dp=$('datePicker');
+    if(dp){
+      dp.value=key;
+      dp.max=todayYMD();
+    }
+    editingLogId=null;
+    photoData='';
+    document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+    document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+    const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');
+    if(none)none.classList.add('on');
+    const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
+    if(workBtn)setDayType(workBtn,'work');
+    ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    initRoutes([]);
+    duration();
+    const status=$('status');
+    if(status)status.textContent='📅 '+key.replace(/-/g,'/')+'の記録を入力します';
+    showToday();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    console.error(e);
+  }
+}
+function planClass(type){
+  return {work:'work',paid:'paid',plan:'plan',event:'event',parttime:'parttime',other:'other',absent:'absent'}[type]||'other';
+}
+function planLabel(type){
+  return {work:'勤務',paid:'有休',plan:'予定',event:'イベント',parttime:'バイト',other:'その他',absent:'欠勤'}[type]||'予定';
+}
+function escapeHtml(value){
+  return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function renderWorkCalendar(){
+  const y=workCalendarCursor.getFullYear(),m=workCalendarCursor.getMonth();
+  $('workCalendarTitle').textContent=y+'年'+(m+1)+'月';
+  const grid=$('workCalendarGrid');if(!grid)return;
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),plans=getWorkPlans();
+  let html='';
+  for(let i=0;i<first;i++)html+='<button class="calDay empty" type="button" aria-hidden="true"></button>';
+  for(let d=1;d<=days;d++){
+    const key=dateKey(y,m,d), arr=normalizePlansForDate(plans[key]), sel=key===workCalendarSelectedKey?' selected':'';
+    const wd=new Date(y,m,d).getDay();
+    const dayCls=wd===0?'sun':wd===6?'sat':'';
+    const holidayName=getHolidayName(key);
+    const holidayCls=holidayName?' holiday':'';
+    const holidayTitle=holidayName?` title="${String(holidayName).replace(/"/g,'&quot;')}"`:'';
+    const base=`<div class="baseCube ${dayCls}${holidayCls}"${holidayTitle}><span class="baseDate">${d}</span></div>`;
+    const displayArr=[];
+    // ブロックの上下順は、同じ日の登録順をそのまま使う。
+    // 同じ種類（予定・イベントなど）の複数項目は1ブロックにまとめる。
+    const blockTypes=[];
+    arr.forEach(p=>{if(p.type && !blockTypes.includes(p.type))blockTypes.push(p.type);});
+    blockTypes.forEach(type=>{
+      const items=arr.filter(p=>p.type===type);
+      if(items.length)displayArr.push({type,memo:items[0].memo||'',eventIcon:items[0].eventIcon||''});
+    });
+    let blocks='';
+    if(displayArr.length){
+      const n=displayArr.length,gap=2,topPad=30,available=Math.max(30,100-topPad-gap*(n-1)),slot=available/n;
+      blocks=displayArr.map((p,i)=>{
+        const top=topPad+i*(slot+gap),z=i+10;
+        const label=p.type==='event'
+          ?((p.eventIcon?escapeHtml(p.eventIcon)+' ':'')+'イベント')
+          :(p.type==='other' && String(p.memo||'').trim()
+            ?escapeHtml(String(p.memo).trim().slice(0,4))
+            :planLabel(p.type));
+        return `<div class="planCube ${planClass(p.type)}" style="top:${top}%;height:${slot}%;z-index:${z}" title="${escapeHtml(p.memo||'')}"><span class="cubeLabel">${label}</span></div>`;
+      }).join('');
+    }
+    html+=`<button type="button" class="calDay${arr.length?' hasPlans':''}${sel}" onclick="selectWorkCalendarDate('${key}')"><div class="calDayFace">${base}${arr.length?`<div class="planCubes">${blocks}</div>`:''}</div></button>`;
+  }
+  grid.innerHTML=html;
+  renderCalendarDetail();
+}
+function renderCalendarDetail(){
+  const head=$('calendarDetailHead'),body=$('calendarDetailBody');
+  if(!head||!body)return;
+  if(!workCalendarSelectedKey){head.textContent='日付を押して選択してください';body.innerHTML='';return;}
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const m=workCalendarSelectedKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const dt=m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):null;
+  const wd=dt?'（'+['日','月','火','水','木','金','土'][dt.getDay()]+'）':'';
+  const holidayName=getHolidayName(workCalendarSelectedKey);
+  head.textContent=m?`${Number(m[2])}月${Number(m[3])}日 ${wd}${holidayName?' ・ '+holidayName:''}`:'日付を押して選択してください';
+  if(!arr.length){body.innerHTML='<div class="small">登録内容はありません</div>';return;}
+
+  const planItems=arr.filter(p=>p.type==='plan');
+  const eventItems=arr.filter(p=>p.type==='event');
+  const nonPlans=arr.filter(p=>p.type!=='plan'&&p.type!=='event');
+  let html='';
+  if(planItems.length){
+    html+=`<div class="calendarDetailSectionTitle">📌 予定</div><div class="calendarPlanList">${planItems.map((p,i)=>{
+      const time=p.time?`<span class="calendarPlanTime">${escapeHtml(p.time)}</span>`:'<span class="calendarPlanTime muted">時間なし</span>';
+      const memo=escapeHtml(p.memo||'予定');
+      return `<div class="calendarPlanItem"><div class="calendarPlanText">${time}<span class="calendarPlanMemo">${memo}</span></div><button type="button" class="calendarPlanDelete" onclick="deletePlanItem(${i})">削除</button></div>`;
+    }).join('')}</div>`;
+    html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddPlan()">＋ この日に予定を追加</button>`;
+  }
+  if(eventItems.length){
+    html+=`<div class="calendarDetailSectionTitle">🎪 イベント</div><div class="calendarPlanList eventList">${eventItems.map((p,i)=>{
+      const time=p.time?`<span class="calendarPlanTime">${escapeHtml(p.time)}</span>`:'<span class="calendarPlanTime muted">時間なし</span>';
+      const icon=p.eventIcon?`<span class="eventIconLarge">${escapeHtml(p.eventIcon)}</span>`:'';
+      const memo=escapeHtml(p.memo||'イベント');
+      return `<div class="calendarPlanItem eventItem"><div class="calendarPlanText">${icon}${time}<span class="calendarPlanMemo">${memo}</span></div><button type="button" class="calendarPlanDelete" onclick="deleteEventItem(${i})">削除</button></div>`;
+    }).join('')}</div>`;
+    html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddEvent()">＋ この日にイベントを追加</button>`;
+  }
+  if(nonPlans.length){
+    const p=nonPlans[nonPlans.length-1],cls=planClass(p.type);
+    html+=`<div class="calendarDetailRow"><div class="calendarDetailBadge ${cls}">${planLabel(p.type)}</div><div class="calendarDetailInfo">${escapeHtml(p.memo||'—')}</div><div class="calendarDetailActions"><button class="calendarAddBtn" type="button" onclick="document.getElementById('workPlanType').focus()">＋ 追加</button><button class="calendarPlanDelete calendarBlockDelete" type="button" onclick="deleteNonPlanItem('${escapeHtml(p.type)}')">削除</button></div></div>`;
+  }
+  const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
+  if(blockTypes.length===2){
+    html+=`<button class="calendarSwapBlocksBtn" type="button" onclick="swapCalendarBlocks()">↕️ ブロックの上下を入れ替える</button>`;
+  }
+  body.innerHTML=html+`<div class="calendarDetailHint">同じ日に複数の予定をまとめて登録できます</div>`;
+  const badge=body.querySelector('.calendarDetailBadge');
+  if(badge){const bg={work:'linear-gradient(145deg,#a7efff,#57c8ee)',paid:'linear-gradient(145deg,#ff9a84,#ee6b58)',plan:'linear-gradient(145deg,#fff06b,#f6c52e)',parttime:'linear-gradient(145deg,#ffc77c,#f29437)',other:'linear-gradient(145deg,#d9c2ff,#9b68e8)',absent:'linear-gradient(145deg,#d8b08a,#b47b4e)'}[badge.className.split(' ').pop()];badge.style.background=bg||'#eee';}
+}
+function swapCalendarBlocks(){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const blockTypes=[...new Set(arr.map(p=>p.type).filter(Boolean))];
+  if(blockTypes.length!==2)return;
+  const first=blockTypes[0],second=blockTypes[1];
+  const firstItems=arr.filter(p=>p.type===first);
+  const secondItems=arr.filter(p=>p.type===second);
+  // 各ブロック内の項目順はそのままにして、ブロック単位だけ上下を交換する。
+  plans[workCalendarSelectedKey]=[...secondItems,...firstItems];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+
+async function openSelectedDayLog(){
+  if(!workCalendarSelectedKey){
+    alert('先にカレンダーの日付を選択してください。');
+    return;
+  }
+  try{
+    const all=await getLogs();
+    const target=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      return d && restDateKey(d)===workCalendarSelectedKey;
+    });
+    if(target){
+      closeWorkCalendar();
+      await showLogDetail(target.id);
+      return;
+    }
+    alert(workCalendarSelectedKey.replace(/-/g,'/')+' のログはまだ登録されていません。');
+  }catch(e){
+    console.error(e);
+    alert('ログを開けませんでした。');
+  }
+}
+function prepareAddPlan(){
+  $('workPlanType').value='plan';
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  toggleWorkPlanFields();
+  $('workPlanMemo')?.focus();
+}
+function prepareAddEvent(){
+  $('workPlanType').value='event';
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  const icon=$('workPlanEventIcon');if(icon)icon.value='⚾️';
+  toggleWorkPlanFields();
+  $('workPlanMemo')?.focus();
+}
+function deleteEventItem(index){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const eventItems=arr.filter(p=>p.type==='event');
+  if(index<0||index>=eventItems.length)return;
+  const target=eventItems[index],targetPos=arr.indexOf(target);
+  if(targetPos>=0)arr.splice(targetPos,1);
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function deletePlanItem(index){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const planItems=arr.filter(p=>p.type==='plan');
+  if(index<0||index>=planItems.length)return;
+  const target=planItems[index];
+  const targetPos=arr.indexOf(target);
+  if(targetPos>=0)arr.splice(targetPos,1);
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function deleteNonPlanItem(type){
+  if(!workCalendarSelectedKey||!type)return;
+  const plans=getWorkPlans(),arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  const kept=arr.filter(p=>p.type!==type);
+  if(kept.length)plans[workCalendarSelectedKey]=kept;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  renderWorkCalendar();
+}
+function saveWorkPlan(){
+  if(!workCalendarSelectedKey){alert('登録する日付を押して選択してください。');return}
+  const type=$('workPlanType').value;
+  const memo=$('workPlanMemo').value||'';
+  const time=$('workPlanTime')?.value||'';
+  // 「予定」「イベント」「その他」は内容なしでもブロックだけ登録できる。
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  // カレンダー上のブロックは1日最大2種類まで。既存ブロックへの追加は許可する。
+  const blockTypes=[...new Set(arr.map(p=>p.type))];
+  if(!blockTypes.includes(type) && blockTypes.length>=2){
+    alert('⚠️ ブロックは2つまで登録できます。\nこれ以上追加する場合は、既存のブロックを削除してください。');
+    return;
+  }
+  const item={type,memo,updatedAt:new Date().toISOString()};
+  if(type==='plan'||type==='event')item.time=time;
+  if(type==='event')item.eventIcon=$('workPlanEventIcon')?.value||'';
+  if(type!=='plan'&&type!=='event'){
+    // 勤務・有休・バイト・その他・欠勤は「同じ種類だけ」1日1件にする。
+    // 別の種類の既存ブロック（例：勤務）を消さずに残す。
+    const kept=arr.filter(p=>p.type!==type);
+    kept.push(item);
+    plans[workCalendarSelectedKey]=kept;
+  }else{
+    arr.push(item);
+    plans[workCalendarSelectedKey]=arr;
+  }
+  setWorkPlans(plans);
+  $('workPlanMemo').value='';
+  const timeInput=$('workPlanTime');if(timeInput)timeInput.value='';
+  toggleWorkPlanFields();
+  renderWorkCalendar();
+}
+function deleteWorkPlan(){
+  if(!workCalendarSelectedKey)return;
+  const plans=getWorkPlans();
+  const arr=normalizePlansForDate(plans[workCalendarSelectedKey]);
+  if(!arr.length)return;
+  const type=$('workPlanType').value;
+  if(type==='plan'){
+    const idx=arr.map(p=>p.type).lastIndexOf('plan');
+    if(idx>=0)arr.splice(idx,1);
+  }else if(type==='event'){
+    const idx=arr.map(p=>p.type).lastIndexOf('event');
+    if(idx>=0)arr.splice(idx,1);
+  }else{
+    const idx=arr.map(p=>p.type).lastIndexOf(type);
+    if(idx>=0)arr.splice(idx,1);
+    else arr.pop();
+  }
+  if(arr.length)plans[workCalendarSelectedKey]=arr;else delete plans[workCalendarSelectedKey];
+  setWorkPlans(plans);
+  $('workPlanMemo').value='';
+  const time=$('workPlanTime');if(time)time.value='';
+  renderWorkCalendar();
+}
+document.addEventListener('input',function(e){
+  if(e.target && (e.target.id==='salesDataRideDistance'||e.target.id==='salesDataRunDistance')) updateLoadedRateCalc();
+  if(e.target && e.target.id==='salesDataRunDistance'){
+    const km=$('km'); if(km)km.value=e.target.value;
+  }
+});
+</script>
+
+<style id="calendar-block-shift-v114">
+/* v114: 予定ブロック全体を日付マス内で少し右へ */
+.planCube{
+  left:8px!important;
+  width:calc(100% - 8px)!important;
+}
+@media(max-width:430px){
+  .planCube{left:7px!important;width:calc(100% - 7px)!important;}
+}
+</style>
+<style id="holiday-settings-menu-v136">
+.holidayMenuBtn{background:#fff7f7!important;color:#c62828!important;border:1px solid #f1d1d1!important}
+.holidayMenuBtn:active{transform:scale(.99)}
+</style>
+<style id="holiday-settings-v132">
+.holidayYearRow{display:grid;grid-template-columns:auto 150px 1fr;gap:10px;align-items:center;margin-top:10px}
+.holidayYearRow label{font-weight:900;font-size:15px}
+.holidayYearRow select{width:100%;box-sizing:border-box;padding:11px 10px;border:2px solid #ddd;border-radius:12px;font-size:16px;background:#fafafa;font-weight:800}
+.holidayYearCount{font-size:13px;color:#777;font-weight:800}
+.holidayAddRow{display:grid;grid-template-columns:1fr 1.4fr auto;gap:7px;margin-top:10px}
+.holidayAddRow input{width:100%;box-sizing:border-box;padding:11px 9px;border:2px solid #ddd;border-radius:12px;font-size:14px;background:#fff}
+.holidayAddRow button{border:0;border-radius:12px;padding:0 14px;background:#ffe7e7;color:#c62828;font-weight:900;font-size:15px}
+.holidaySettingsList{margin-top:10px}
+.holidaySettingRow{display:grid;grid-template-columns:82px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid #eee}
+.holidaySettingDate{font-weight:900;color:#c62828;font-size:14px}
+.holidaySettingName{font-weight:800;font-size:14px}
+.holidaySettingDelete{border:0;background:#f3f3f3;color:#777;border-radius:10px;padding:7px 9px;font-weight:800}
+.baseCube.holiday .baseDate{color:#df1717!important}
+@media(max-width:430px){.holidayYearRow{grid-template-columns:auto 125px 1fr;gap:7px}.holidayYearRow label{font-size:14px}.holidayYearRow select{font-size:14px}.holidayAddRow{grid-template-columns:1fr 1.3fr auto}.holidayAddRow input{font-size:13px}.holidaySettingRow{grid-template-columns:72px 1fr auto}}
+</style>
+<style id="selected-date-v121">
+/* v121: タップした日付そのものを青枠で表示。カレンダーの位置・立体感は変更しない */
+.calDay.selected{outline:none!important;}
+.calDay.selected .baseCube{outline:none!important;}
+.calDay.selected .baseCube .baseDate{
+  outline:3px solid #4aa1ff!important;
+  outline-offset:1px!important;
+  color:#1765cc!important;
+}
+</style>
+
+
+<style id="calendar-event-v140">
+.calendarLegendBox.event{background:linear-gradient(145deg,#a5efbf,#59c97d)}
+.planCube.event{background:linear-gradient(145deg,#91e9ae 0%,#55cb7a 58%,#38ad60 100%)!important;color:#fff!important}
+.calendarDetailSectionTitle{font-size:16px;font-weight:900;margin:10px 0 7px}
+.eventItem{background:#effbf3!important;border-color:#a9e1ba!important}
+.eventIconLarge{font-size:21px;margin-right:5px}
+</style>
+<style id="sales-data-calc-v173">
+.salesDataCalculatedBox{height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;background:#fafafa;display:flex;align-items:center;justify-content:center;gap:4px;font-size:17px}
+.salesDataCalculatedBox strong{font-size:22px;color:#1677b7}
+.salesDataCalculatedBox span{font-size:16px;color:#555}
+</style>
+<style id="sales-data-calc-v172">
+.salesDataCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;margin-top:2px}
+.salesDataCalcField .small{font-size:14px;font-weight:700;color:#555;margin-bottom:7px}
+.salesDataCalcField input{font-size:17px;padding:13px 10px}
+.salesDataCalculatedBox{width:100%;min-height:49px;padding:13px 10px;border:2px solid #ddd;border-radius:12px;background:#fafafa;display:flex;align-items:center;gap:5px;font-size:17px}
+.salesDataCalculatedBox strong{font-size:24px;color:#1677b7}
+.salesDataCalculatedBox span{font-size:17px;color:#555}
+.salesDataCalcFormula{margin-top:9px;text-align:center;font-size:12px;color:#777}
+@media(max-width:430px){.salesDataCalcGrid{gap:14px 18px}.salesDataCalcField input{font-size:16px}}
+</style>
+<style id="loaded-rate-formula-v169">
+.loadedRateHelp{cursor:pointer;color:#1677b7;text-decoration:underline;text-underline-offset:2px}
+.loadedRateFormula{display:block!important;margin-top:8px;padding:9px 10px;border-radius:10px;background:#eef7ff;border:1px solid #cfe5f7;color:#17608d;font-size:13px;font-weight:700;line-height:1.5}
+.loadedRateCalc{margin-top:10px;padding:11px;border-radius:12px;background:#fff;border:1px solid #d7e7f3}
+.loadedRateCalcTitle{font-size:13px;font-weight:900;margin-bottom:8px;color:#17608d}
+.loadedRateCalcGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.loadedRateCalcGrid label{display:block;font-size:11px;color:#666;margin-bottom:4px}
+.loadedRateCalcGrid input{padding:10px 8px;font-size:16px;background:#fafafa}
+.loadedRateCalcResult{margin-top:9px;padding:9px;border-radius:10px;background:#f5f8fb;text-align:center;font-size:14px}
+.loadedRateCalcResult strong{font-size:22px;color:#1677b7}
+.loadedRateUseBtn{width:100%;margin-top:8px;border:0;border-radius:10px;padding:10px;background:#e8f4ff;color:#1677b7;font-size:13px;font-weight:800}
+</style>
+<style>
+/* v100: 日付の正方形を予定キューブと同じスケールに調整 */
+.calendarGrid{gap:5px}
+.calDay{height:54px!important;min-height:54px!important}
+.baseCube{height:54px!important;inset:0!important;border-radius:11px!important;padding:0 0 6px 8px!important;box-shadow:0 5px 0 #c8d5df,0 8px 11px rgba(55,80,105,.13),inset 0 1px 0 rgba(255,255,255,.95)!important}
+.baseCube .baseDate{font-size:15px!important;padding:3px 7px!important;border-radius:8px!important}
+.planCubes{top:-8px!important;bottom:4px!important;left:3px!important;right:3px!important}
+.planCube{width:92%!important;height:48px!important;min-height:48px!important;border-radius:9px 9px 7px 7px!important}
+.planCube .cubeDate{font-size:15px!important}
+.planCube .cubeLabel{font-size:11px!important;margin-top:3px!important}
+.planCube + .planCube{margin-top:-10px!important}
+@media(max-width:430px){
+  .calDay{height:52px!important;min-height:52px!important}
+  .baseCube{height:52px!important}
+  .planCube{height:46px!important;min-height:46px!important;width:94%!important}
+}
+</style>
+
+<style>
+/* v101: 予定キューブを下から順番に積む。後から登録したものが上に来る */
+.planCubes{display:flex!important;flex-direction:column-reverse!important;align-items:center!important;justify-content:flex-start!important;top:-8px!important;bottom:4px!important;}
+.planCube{position:relative!important;flex:0 0 48px!important;}
+.planCube + .planCube{margin-top:-10px!important;}
+@media(max-width:430px){.planCube{flex-basis:46px!important;height:46px!important;min-height:46px!important}.planCube + .planCube{margin-top:-10px!important}}
+</style>
+<style>
+/* v109: 予定カードを各日付マスの中だけで立体的に積む */
+.calendarGrid{gap:6px!important;align-items:stretch!important}
+.calDay{height:72px!important;min-height:72px!important;overflow:visible!important;position:relative!important}
+.calDayFace{position:absolute!important;inset:0!important;overflow:visible!important}
+.baseCube{height:72px!important;inset:0!important;padding:5px 6px!important;align-items:flex-start!important;justify-content:flex-start!important;z-index:1!important}
+.baseCube .baseDate{font-size:14px!important;padding:3px 7px!important;border-radius:8px!important;z-index:8!important}
+.planCubes{position:absolute!important;left:4px!important;right:4px!important;top:30px!important;bottom:auto!important;height:36px!important;display:block!important;z-index:6!important;pointer-events:none!important;overflow:visible!important}
+.planCube{position:absolute!important;left:0!important;top:var(--stack-top,0px)!important;width:100%!important;height:30px!important;min-height:30px!important;margin:0!important;border-radius:9px 9px 7px 7px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;z-index:var(--stack-z,10)!important;pointer-events:auto!important;padding:1px 2px!important}
+.planCube .cubeDate{font-size:13px!important;line-height:1!important}
+.planCube .cubeLabel{font-size:10px!important;line-height:1!important;margin-top:2px!important}
+.planCube:before{left:4px!important;right:-4px!important;bottom:-5px!important;height:5px!important}
+.planCube:after{right:-5px!important;top:4px!important;width:5px!important;height:calc(100% - 4px)!important}
+/* renderWorkCalendar の top 値をスタック位置として利用 */
+@media(max-width:430px){
+  .calDay{height:72px!important;min-height:72px!important}
+  .baseCube{height:72px!important}
+  .planCubes{top:30px!important;height:36px!important;left:4px!important;right:4px!important}
+  .planCube{height:30px!important;min-height:30px!important}
+}
+</style>
+<script>
+/* v109: 2件なら18px、3件なら18pxずつ重ねる。最新登録が最前面。 */
+/* v109 stack wrapper disabled by v112 fit design */
+
+// 拘束時間警告は、勤務中も自動更新する
+setInterval(updateConstraintWarning,30000);
+</script>
+
+<style id="calendar-color-text-v119">
+/* v119: 色と表示文字だけ変更。位置・大きさ・3D・厚みは変更しない */
+.planCube.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;color:#10202d!important;}
+.calendarLegendBox.work{background:linear-gradient(145deg,#b8f5ff 0%,#63d4f1 58%,#39b5dc 100%)!important;}
+</style>
+
+<style id="calendar-quick-button-v127">
+/* v127: カレンダーボタンをさらに5px左へ。サイズは現状のまま */
+.floatingCalendarBtn{
+  position:fixed;
+  left:max(6px,calc((100vw - 520px)/2 + 6px));
+  bottom:68px;
+  width:min(60%,312px);
+  min-width:0;
+  height:48px;
+  transform:none;
+  z-index:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 16px;
+  border:1px solid #b7dcff;
+  border-radius:999px;
+  background:linear-gradient(145deg,#ffffff 0%,#edf8ff 100%);
+  color:#1677d2;
+  font-size:14px;
+  font-weight:900;
+  box-shadow:0 5px 12px rgba(55,105,150,.18),inset 0 1px 0 rgba(255,255,255,.95);
+  -webkit-tap-highlight-color:transparent;
+}
+.floatingCalendarBtn:active{
+  transform:translateY(2px);
+  box-shadow:0 2px 6px rgba(55,105,150,.16),inset 0 1px 0 rgba(255,255,255,.95);
+}
+.floatingCalendarIcon{font-size:20px;line-height:1;transform:translateX(1px)}
+@media(max-width:430px){
+  .floatingCalendarBtn{
+    left:0;
+    bottom:68px;
+    width:180px;
+    height:48px;
+    font-size:13px;
+    padding:0 0 0 32px;
+    justify-content:flex-start;
+  }
+}
+</style>
+
+<style id="landscape-daily-sales-v163">
+/* v163: iPhoneを横向きにしたとき、営業データ表を画面幅に合わせて一覧表示 */
+@media screen and (orientation: landscape){
+  .app{
+    width:100%;
+    max-width:none;
+    padding-bottom:64px;
+  }
+  #data{
+    width:100%;
+    max-width:none;
+    padding:8px 12px 72px;
+  }
+  #dataDetailView > .card{max-width:none;width:100%;}
+  .dailySalesWrap{margin-top:10px;}
+  .dailySalesTitle{font-size:18px;margin-bottom:5px;}
+  .dailySalesSub{font-size:10px;margin-bottom:5px;}
+  .dailySalesHint{font-size:10px;padding:4px 7px;margin-bottom:5px;}
+  .dailySalesScrollerBar{display:none;}
+  .dailySalesScroll{
+    width:100%;
+    max-width:none;
+    overflow-x:hidden;
+    overflow-y:visible;
+    -webkit-overflow-scrolling:auto;
+    touch-action:auto;
+    border-radius:12px;
+  }
+  .dailySalesScroll::after{display:none;}
+  .dailySalesTable{
+    width:100%;
+    min-width:0;
+    table-layout:fixed;
+    font-size:12px;
+  }
+  .dailySalesTable th,.dailySalesTable td{
+    padding:7px 4px;
+    height:40px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .dailySalesTable th{position:sticky;top:0;z-index:4;}
+  .dailySalesTable th:first-child,.dailySalesTable td:first-child{
+    position:static;
+    width:9%;
+    min-width:0;
+    box-shadow:none;
+  }
+  .dailySalesTable th:nth-child(2){width:16%;min-width:0;}
+  .dailySalesTable th:nth-child(3){width:14%;min-width:0;}
+  .dailySalesTable th:nth-child(4){width:20%;min-width:0;}
+  .dailySalesTable th:nth-child(5){width:14%;min-width:0;}
+  .dailySalesTable th:nth-child(6){width:13%;min-width:0;}
+  .dailySalesTable th:nth-child(7){width:14%;min-width:0;}
+  .dailySalesDayType{font-size:9px;margin-top:1px;}
+  nav{padding:5px 8px;font-size:11px;}
+  .floatingCalendarBtn{display:none;}
+}
+</style>
+
+<style id="event-icon-none-v143">
+/* v143: アイコンなしを選んだイベントはアイコンを表示せず、イベント文字を白字にする */
+.planCube.event .cubeLabel{color:#fff!important}
+
+/* v162: 横向き画面では営業データ表を横スクロールなしで一覧表示 */
+@media (orientation: landscape) and (max-height: 600px){
+  .app{max-width:100%;width:100%;}
+  #data{padding:10px 14px 82px;max-width:100%;}
+  #dataDetailView > .card{max-width:100%;}
+  .dailySalesWrap{margin-top:12px;}
+  .dailySalesTitle{font-size:18px;margin-bottom:6px;}
+  .dailySalesSub{font-size:10px;margin-bottom:6px;}
+  .dailySalesHint{font-size:10px;padding:5px 8px;margin-bottom:6px;}
+  .dailySalesScrollerBar{display:none;}
+  .dailySalesScroll{overflow-x:hidden;overflow-y:visible;-webkit-overflow-scrolling:auto;touch-action:auto;border-radius:14px;}
+  .dailySalesScroll::after{display:none;}
+  .dailySalesTable{width:100%;min-width:0;table-layout:fixed;font-size:12px;}
+  .dailySalesTable th,.dailySalesTable td{padding:8px 5px;height:42px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dailySalesTable th{position:sticky;top:0;z-index:4;}
+  .dailySalesTable th:first-child,.dailySalesTable td:first-child{position:static;width:9%;min-width:0;box-shadow:none;}
+  .dailySalesTable th:nth-child(2){width:15%;min-width:0;}
+  .dailySalesTable th:nth-child(3){width:14%;min-width:0;}
+  .dailySalesTable th:nth-child(4){width:20%;min-width:0;}
+  .dailySalesTable th:nth-child(5){width:14%;min-width:0;}
+  .dailySalesTable th:nth-child(6){width:14%;min-width:0;}
+  .dailySalesTable th:nth-child(7){width:14%;min-width:0;}
+  .dailySalesDayType{font-size:9px;margin-top:1px;}
+}
+</style>
+<style id="daily-break-total-v187">
+/* v187: 月間営業データに休憩時間合計を追加。横向き画面でも一覧表示 */
+.dailySalesTable .breakTotalCell{font-weight:700}
+@media screen and (orientation: landscape){
+  .dailySalesTable th:nth-child(1),.dailySalesTable td:nth-child(1){width:8%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(2),.dailySalesTable td:nth-child(2){width:14%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(3),.dailySalesTable td:nth-child(3){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(4),.dailySalesTable td:nth-child(4){width:13%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(5),.dailySalesTable td:nth-child(5){width:15%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(6),.dailySalesTable td:nth-child(6){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(7),.dailySalesTable td:nth-child(7){width:12%!important;min-width:0!important}
+  .dailySalesTable th:nth-child(8),.dailySalesTable td:nth-child(8){width:14%!important;min-width:0!important}
+  .dailySalesTable th,.dailySalesTable td{padding-left:3px!important;padding-right:3px!important;font-size:11px!important}
+}
+</style>
+</body></html>
+  const box=$('annualData'); if(!box)return;
+  let logs=[]; try{logs=await getLogs()}catch(e){box.innerHTML='<div class="dataNote">保存したログを読み込めませんでした。</div>';return}
+  const currentYear=getFiscalYearStartYear();
+  const available=getAvailableFiscalYears(logs);
+  const year=available.includes(Number(selectedYear))?Number(selectedYear):currentYear;
+  const areaAvgOn=isAreaAvgEnabled();
+  const periods=getFiscalPeriods(year);
+  const rows=periods.map((p,i)=>{
+    const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+    const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
+    const areaWorkRows=work.filter(x=>Number(x.avg)>0);
+    const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
+    const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
+    const areaSales=areaWorkRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    const areaTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
+    return {label:periodMonthLabel(p),sales,areaSales,areaTotal,duties:work.length,detail:p};
+  });
+  const annualAreaGraphMode=localStorage.getItem('taxiAnnualAreaGraphMode')==='sales'?'sales':'total';
+  const graphAreaLabel=annualAreaGraphMode==='sales'?'乗務エリアの売上':'乗務エリアの総売上';
+  const graphAreaKey=annualAreaGraphMode==='sales'?'areaSales':'areaTotal';
+  const max=Math.max(1,...rows.map(r=>Math.max(r.sales,Number(r[graphAreaKey])||0)));
+  const totalSales=rows.reduce((n,r)=>n+r.sales,0);
+  const totalAreaSales=rows.reduce((n,r)=>n+r.areaSales,0);
+  const totalArea=rows.reduce((n,r)=>n+r.areaTotal,0);
+  const active=rows.filter(r=>r.duties>0);
+  const avgSales=active.length?Math.round(totalSales/active.length):0;
+  const avgArea=active.length?Math.round(totalAreaSales/active.length):0;
+  const graph=`<div class="annualGraphWrap">
+    ${areaAvgOn?`<div class="annualGraphSwitch" role="group" aria-label="グラフの乗務エリア表示">
+      <button type="button" class="annualGraphSwitchBtn ${annualAreaGraphMode==='sales'?'on':''}" onclick="setAnnualAreaGraphMode('sales',${year})">乗務エリアの売上</button>
+      <button type="button" class="annualGraphSwitchBtn ${annualAreaGraphMode==='total'?'on':''}" onclick="setAnnualAreaGraphMode('total',${year})">乗務エリアの総売上</button>
+    </div>`:''}
+    <div class="annualLegend"><span><b style="color:#4d8bd8">■</b> 自分の売上</span>${areaAvgOn?`<span><b style="color:#aab2bd">■</b> ${graphAreaLabel}</span>`:''}</div>
+    <div class="annualGraph">${rows.map(r=>{const areaValue=Number(r[graphAreaKey])||0;const h1=r.sales?Math.max(4,Math.round(r.sales/max*150)):0;const h2=areaValue?Math.max(4,Math.round(areaValue/max*150)):0;return `<div class="annualGroup"><div class="annualBars"><div class="annualBar self" style="height:${h1}px" title="${r.label} 自分 ${r.sales?yen(r.sales):'—'}"></div>${areaAvgOn?`<div class="annualBar area" style="height:${h2}px" title="${r.label} ${graphAreaLabel} ${areaValue?yen(areaValue):'—'}"></div>`:''}</div><div class="annualMonth">${r.label}</div></div>`}).join('')}</div>
   </div>`;
   const table=`<div class="annualTable">${rows.map((r,i)=>`<button type="button" class="annualRow annualMonthBtn" onclick="annualMonthTap(${year},${i},this)" aria-label="${r.label}の月間売上詳細を開く"><div class="annualMonthCell">${r.label}</div><div class="annualDivider" aria-hidden="true"></div><div><div class="dataLabel">自分の売上</div><div class="annualValue">${r.sales?yen(r.sales):'—'}</div></div>${areaAvgOn?`<div><div class="dataLabel">乗務エリアの売上</div><div class="annualValue">${r.areaSales?yen(r.areaSales):'—'}</div></div>`:''} </button>`).join('')}</div>`;
   const summary=`<div class="dataGrid annualSummary">
