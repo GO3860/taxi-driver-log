@@ -3505,7 +3505,7 @@ setInterval(updateConstraintWarning,30000);
     const el=document.getElementById('seasonalTaxiCard');
     if(!el)return;
     const dateEl=document.getElementById('date');
-    const raw=(dateEl?.textContent||'').match(/(\\d{4})年(\\d{1,2})月(\\d{1,2})日/);
+    const raw=(dateEl?.textContent||'').match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
     if(!raw){el.classList.remove('show');return;}
     const dateStr=raw[1]+'-'+String(raw[2]).padStart(2,'0')+'-'+String(raw[3]).padStart(2,'0');
     const info=seasonalInfo(dateStr);
