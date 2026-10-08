@@ -3483,7 +3483,7 @@ setInterval(updateConstraintWarning,30000);
   function seasonalInfo(dateStr){
     const m=Number(dateStr.slice(5,7)), d=Number(dateStr.slice(8,10));
     const md=m*100+d;
-    if(md===1231) return {kind:'newyear',icon:'🎆',title:'大晦日',message:'よいお年をお迎えください。'};
+    if(md===1231) return {kind:'newyear',icon:'🎆',title:'大晦日',message:'今年も一年お疲れ様でした。<br>良いお年をお迎えください。'};
     if(md>=101 && md<=103) return {kind:'newyear',icon:'🎍🚕',title:'お正月',message:'あけましておめでとうございます！今年も安全運転でいきましょう。'};
     if(md===1224||md===1225) return {kind:'newyear',icon:'🎅🛷',title:'メリークリスマス！',message:'今日はクリスマス。サンタタクシーで出発です🎄'};
     if(md===1031) return {icon:'🎃🚕',title:'ハロウィン',message:'今日はハロウィン。夜道もいつも以上に安全運転で👻'};
