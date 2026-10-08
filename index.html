@@ -284,7 +284,41 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .seasonalTaxiCard.newyear .seasonalTaxiIcon{font-size:45px}
 .seasonalTaxiCard.newyear .seasonalTaxiTitle{font-size:17px;color:#9a6500}
 .seasonalTaxiCard.newyear .seasonalTaxiMessage{font-size:13px;color:#735a2a}
-</style></style>
+</style>
+<style id="christmas-eve-v1">
+.seasonalTaxiCard.christmas{
+  padding:14px 14px;
+  background:linear-gradient(135deg,#fffdf2,#fff7d8);
+  border-color:#f1d98a;
+  box-shadow:0 5px 16px rgba(180,130,20,.10);
+}
+.seasonalTaxiCard.christmas .seasonalTaxiIcon{
+  min-width:128px;
+  width:128px;
+  font-size:30px;
+  line-height:1.05;
+  text-align:center;
+}
+.christmasDecorTop{font-size:38px;line-height:1.05;white-space:nowrap}
+.christmasDecorBottom{font-size:27px;line-height:1.1;white-space:nowrap;margin-top:5px;letter-spacing:-3px}
+.seasonalTaxiCard.christmas .seasonalTaxiTitle{
+  font-size:18px;
+  color:#9a6500;
+}
+.seasonalTaxiCard.christmas .seasonalTaxiMessage{
+  font-size:14px;
+  color:#735a2a;
+  line-height:1.55;
+}
+@media(max-width:430px){
+  .seasonalTaxiCard.christmas{gap:8px;padding:14px 10px}
+  .seasonalTaxiCard.christmas .seasonalTaxiIcon{min-width:112px;width:112px}
+  .christmasDecorTop{font-size:34px}
+  .christmasDecorBottom{font-size:22px;letter-spacing:-3px}
+  .seasonalTaxiCard.christmas .seasonalTaxiTitle{font-size:17px}
+  .seasonalTaxiCard.christmas .seasonalTaxiMessage{font-size:13px}
+}
+</style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -3486,7 +3520,8 @@ setInterval(updateConstraintWarning,30000);
     if(md===1231) return {kind:'newyear',icon:'☃️',title:'大晦日',message:'今年も一年お疲れ様でした。<br>良いお年をお迎えください。'};
     if(md===101) return {kind:'newyear',icon:'🎍',title:'元旦',message:'あけましておめでとうございます！<br>今年も安全運転でいきましょう。'};
     if(md>=102 && md<=103) return {kind:'newyear',icon:'🎍',title:'お正月',message:'今年も安全運転でいきましょう。'};
-    if(md===1224||md===1225) return {kind:'newyear',icon:'🦌🛷',title:'メリークリスマス！',message:'今日はクリスマス。サンタタクシーで出発です🎄'};
+    if(md===1224) return {kind:'christmas',icon:'<div class="christmasDecorTop">🦌🛷</div><div class="christmasDecorBottom">🎄🎁🎁🎁🎁🎁🎁🎁</div>',title:'メリークリスマス！',message:'今日はクリスマスイブ。<br>サンタタクシーで出発です！'};
+    if(md===1225) return {kind:'christmas',icon:'<div class="christmasDecorTop">🦌🛷</div><div class="christmasDecorBottom">🎄🎁🎁🎁🎁🎁🎁🎁</div>',title:'メリークリスマス！',message:'今日はクリスマス。<br>サンタタクシーで出発です！'};
     if(md===1031) return {icon:'🎃',title:'ハロウィン',message:'今日はハロウィン。夜道はいつも以上に安全運転で👻'};
     const terms={
       120:{icon:'🥶',title:'大寒',message:'一年で最も寒いころ。あたたかくして安全運転で。'},
@@ -3511,10 +3546,11 @@ setInterval(updateConstraintWarning,30000);
     const dateStr=raw[1]+'-'+String(raw[2]).padStart(2,'0')+'-'+String(raw[3]).padStart(2,'0');
     const info=seasonalInfo(dateStr);
     if(!info){el.classList.remove('show');el.style.display='none';return;}
-    document.getElementById('seasonalTaxiIcon').textContent=info.icon;
+    document.getElementById('seasonalTaxiIcon').innerHTML=info.icon;
     document.getElementById('seasonalTaxiTitle').textContent=info.title;
     document.getElementById('seasonalTaxiMessage').innerHTML=info.message;
     el.classList.toggle('newyear',info.kind==='newyear');
+    el.classList.toggle('christmas',info.kind==='christmas');
     el.classList.add('show');el.style.display='flex';
   }
   window.updateSeasonalTaxi=updateSeasonalTaxi;
