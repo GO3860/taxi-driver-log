@@ -1911,6 +1911,7 @@ async function renderAnnualData(selectedYear){
     ${graph}${summary}${table}
     <div id="fiscalComparisonSection"></div>
   </div>`;
+  renderFiscalComparison();
 }
 function fiscalComparisonOptions(years, selected){
   return years.map(y=>`<option value="${y}" ${Number(y)===Number(selected)?'selected':''}>${y}年度</option>`).join('');
