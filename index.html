@@ -47,6 +47,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .routeItemTitle{font-weight:800;margin-bottom:8px}
 .routeRemove{margin-top:8px;background:#f1f2f4;color:#666}
 .routeAdd{margin-top:10px}
+.fiscalCompareCard{margin-top:20px;padding:16px;border:1px solid #e1e5ea;border-radius:18px;background:#fff}
+.fiscalCompareHead{display:flex;flex-direction:column;gap:12px}.fiscalCompareTitle{font-size:18px;font-weight:900}
+.fiscalCompareSelectors{display:flex;align-items:flex-end;gap:8px}.fiscalCompareSelectors label{flex:1;font-size:12px;font-weight:800;color:#555}
+.fiscalCompareSelectors select{display:block;width:100%;margin-top:5px;padding:10px;border:2px solid #ddd;border-radius:12px;background:#fafafa;font-size:15px;font-weight:800}
+.fiscalCompareVs{font-weight:900;color:#777;padding-bottom:11px}.fiscalCompareGraphCard{margin-top:16px;padding:13px 8px;background:#f7f8fa;border-radius:15px}
+.fiscalCompareGraphTitle{font-weight:900;font-size:15px;margin-bottom:8px}.fiscalCompareLegend{display:flex;justify-content:flex-end;gap:12px;font-size:11px;color:#555;margin-bottom:8px}
+.fiscalLegendSelf{color:#4d8bd8}.fiscalLegendArea{color:#aab2bd}.fiscalCompareGraph{height:185px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid #ddd;padding:0 2px}
+.fiscalCompareGroup{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.fiscalCompareBars{height:160px;display:flex;align-items:flex-end;justify-content:center;gap:2px}
+.fiscalCompareBar{width:42%;max-width:15px;border-radius:4px 4px 0 0}.fiscalCompareBar.self{background:#4d8bd8}.fiscalCompareBar.other{background:#aab2bd}
+.fiscalCompareMonth{text-align:center;font-size:9px;font-weight:700;color:#555;margin-top:5px;white-space:nowrap}
 .annualGraphWrap{margin-top:14px;padding:14px 8px 10px;background:#f7f8fa;border-radius:16px}.annualLegend{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;font-size:12px;color:#333;margin-bottom:10px}.annualGraph{height:190px;display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid #ddd;padding:0 2px}.annualGroup{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.annualBars{height:160px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px}.annualBar{width:34%;max-width:16px;border-radius:4px 4px 0 0}.annualBar.self{background:#4d8bd8}.annualBar.area{background:#aab2bd}.annualMonth{font-size:11px;font-weight:700;margin-top:6px;white-space:nowrap}.annualSummary{margin-top:14px}.annualTable{margin-top:16px}.annualRow{display:grid;grid-template-columns:68px 1px 1fr 1fr;gap:7px;margin:8px 0;padding:12px 10px;border:1.5px solid #d9dee5;border-radius:18px;align-items:center;background:linear-gradient(145deg,#ffffff,#f1f4f7);box-shadow:0 5px 10px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.08);transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease}.annualMonthCell{font-weight:800;font-size:17px;text-align:center}.annualDivider{width:1px;height:44px;background:#aeb5bd;border-radius:1px}.annualValue{font-weight:800;font-size:15px}.annualMonthBtn{width:100%;border:1.5px solid #d9dee5;border-radius:18px;background:linear-gradient(145deg,#ffffff,#f1f4f7);color:inherit;text-align:left;font:inherit;cursor:pointer;box-shadow:0 5px 10px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.08);transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease}.annualMonthBtn:hover{border-color:#b9c8dc}.annualMonthBtn:active,.annualMonthBtn.pressed,.annualMonthBtn.selected{transform:translateY(3px);background:linear-gradient(145deg,#dcebff,#c8e0fb);border-color:#6fa5ef;box-shadow:inset 0 3px 7px rgba(0,0,0,.16),0 1px 2px rgba(0,0,0,.05)}.annualChevron{font-size:28px;line-height:1;color:#2580ee;align-self:center;text-align:right}.analysisButtons{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.analysisBtn{background:#f3f5f7;color:#2580ee;border:1px solid #dfe3e8;font-weight:800;font-size:16px;padding:14px 12px}.backData{border:0;background:#eef1f4;color:#2580ee;border-radius:999px;padding:12px 16px;font-size:15px;font-weight:700;width:100%;margin-bottom:10px}
 
 
@@ -1828,7 +1838,7 @@ function getAvailableFiscalYears(logs){
   const current=getFiscalYearStartYear();
   const years=new Set();
   // 過去5年度＋現在年度を常に選択可能にし、保存ログがある年度も追加。
-  for(let i=0;i<6;i++) years.add(current-i);
+  for(let i=-2;i<=5;i++) years.add(current-i);
   (logs||[]).forEach(x=>{
     const d=parseDutyDate(x.date);
     if(!d)return;
@@ -1899,7 +1909,72 @@ async function renderAnnualData(selectedYear){
     </div>
     <div class="dataNote">対象期間：${periods[0].start.getFullYear()}年${periods[0].start.getMonth()+1}月${periods[0].start.getDate()}日〜${periods[11].end.getFullYear()}年${periods[11].end.getMonth()+1}月${periods[11].end.getDate()}日</div>
     ${graph}${summary}${table}
+    <div id="fiscalComparisonSection"></div>
   </div>`;
+}
+function fiscalComparisonOptions(years, selected){
+  return years.map(y=>\`<option value="\${y}" \${Number(y)===Number(selected)?'selected':''}>\${y}年度</option>\`).join('');
+}
+function fiscalComparisonRows(logs, year){
+  const periods=getFiscalPeriods(year);
+  return periods.map(p=>{
+    const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+    const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
+    const areaWork=work.filter(x=>Number(x.avg)>0);
+    const areaAll=periodLogs.filter(x=>{
+      const type=x.dayType||'work';
+      return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;
+    });
+    return {
+      label:periodMonthLabel(p),
+      self:work.reduce((n,x)=>n+(Number(x.sales)||0),0),
+      areaSales:areaWork.reduce((n,x)=>n+(Number(x.avg)||0),0),
+      areaTotal:areaAll.reduce((n,x)=>n+(Number(x.avg)||0),0)
+    };
+  });
+}
+function fiscalComparisonGraph(title, rowsA, rowsB, key, yearA, yearB){
+  const max=Math.max(1,...rowsA.map(r=>Number(r[key])||0),...rowsB.map(r=>Number(r[key])||0));
+  return \`<div class="fiscalCompareGraphCard">
+    <div class="fiscalCompareGraphTitle">\${title}</div>
+    <div class="fiscalCompareLegend"><span><b class="fiscalLegendSelf">■</b> \${yearA}年度</span><span><b class="fiscalLegendArea">■</b> \${yearB}年度</span></div>
+    <div class="fiscalCompareGraph">
+      \${rowsA.map((r,i)=>{
+        const a=Number(r[key])||0,b=Number(rowsB[i]?.[key])||0;
+        const h1=a?Math.max(4,Math.round(a/max*150)):0;
+        const h2=b?Math.max(4,Math.round(b/max*150)):0;
+        return \`<div class="fiscalCompareGroup"><div class="fiscalCompareBars"><div class="fiscalCompareBar self" style="height:\${h1}px" title="\${yearA}年度 \${r.label} ¥\${a.toLocaleString()}"></div><div class="fiscalCompareBar other" style="height:\${h2}px" title="\${yearB}年度 \${r.label} ¥\${b.toLocaleString()}"></div></div><div class="fiscalCompareMonth">\${r.label}</div></div>\`;
+      }).join('')}
+    </div>
+  </div>\`;
+}
+async function renderFiscalComparison(){
+  const box=$('fiscalComparisonSection'); if(!box)return;
+  let logs=[];try{logs=await getLogs()}catch(e){return}
+  const current=getFiscalYearStartYear(),years=getAvailableFiscalYears(logs);
+  const savedA=Number(localStorage.getItem('taxiFiscalCompareYearA')),savedB=Number(localStorage.getItem('taxiFiscalCompareYearB'));
+  const yearA=years.includes(savedA)?savedA:(years.includes(current)?current:years[0]);
+  const yearB=years.includes(savedB)?savedB:(years.includes(current-1)?current-1:years.find(y=>y!==yearA)||yearA);
+  localStorage.setItem('taxiFiscalCompareYearA',String(yearA));
+  localStorage.setItem('taxiFiscalCompareYearB',String(yearB));
+  const rowsA=fiscalComparisonRows(logs,yearA),rowsB=fiscalComparisonRows(logs,yearB),areaOn=isAreaAvgEnabled();
+  box.innerHTML=\`<div class="fiscalCompareCard">
+    <div class="fiscalCompareHead">
+      <div><div class="fiscalCompareTitle">📊 年度別グラフ比較</div><div class="small">2つの年度を選んで、12か月の売上を比較できます。</div></div>
+      <div class="fiscalCompareSelectors">
+        <label>年度①<select onchange="changeFiscalCompareYear('A',this.value)" aria-label="比較する年度1">\${fiscalComparisonOptions(years,yearA)}</select></label>
+        <span class="fiscalCompareVs">VS</span>
+        <label>年度②<select onchange="changeFiscalCompareYear('B',this.value)" aria-label="比較する年度2">\${fiscalComparisonOptions(years,yearB)}</select></label>
+      </div>
+    </div>
+    \${fiscalComparisonGraph('自分の売上',rowsA,rowsB,'self',yearA,yearB)}
+    \${areaOn?fiscalComparisonGraph('乗務エリアの平均売上',rowsA,rowsB,'areaSales',yearA,yearB):''}
+    \${areaOn?fiscalComparisonGraph('乗務エリアの総売上',rowsA,rowsB,'areaTotal',yearA,yearB):''}
+  </div>\`;
+}
+function changeFiscalCompareYear(which,value){
+  localStorage.setItem(which==='A'?'taxiFiscalCompareYearA':'taxiFiscalCompareYearB',String(Number(value)));
+  renderFiscalComparison();
 }
 function analysisStats(work, getter, names){
   return names.map(name=>{
