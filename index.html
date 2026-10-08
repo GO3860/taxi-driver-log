@@ -1913,7 +1913,7 @@ async function renderAnnualData(selectedYear){
   </div>`;
 }
 function fiscalComparisonOptions(years, selected){
-  return years.map(y=>\`<option value="\${y}" \${Number(y)===Number(selected)?'selected':''}>\${y}年度</option>\`).join('');
+  return years.map(y=>`<option value="${y}" ${Number(y)===Number(selected)?'selected':''}>${y}年度</option>`).join('');
 }
 function fiscalComparisonRows(logs, year){
   const periods=getFiscalPeriods(year);
@@ -1935,18 +1935,18 @@ function fiscalComparisonRows(logs, year){
 }
 function fiscalComparisonGraph(title, rowsA, rowsB, key, yearA, yearB){
   const max=Math.max(1,...rowsA.map(r=>Number(r[key])||0),...rowsB.map(r=>Number(r[key])||0));
-  return \`<div class="fiscalCompareGraphCard">
-    <div class="fiscalCompareGraphTitle">\${title}</div>
-    <div class="fiscalCompareLegend"><span><b class="fiscalLegendSelf">■</b> \${yearA}年度</span><span><b class="fiscalLegendArea">■</b> \${yearB}年度</span></div>
+  return `<div class="fiscalCompareGraphCard">
+    <div class="fiscalCompareGraphTitle">${title}</div>
+    <div class="fiscalCompareLegend"><span><b class="fiscalLegendSelf">■</b> ${yearA}年度</span><span><b class="fiscalLegendArea">■</b> ${yearB}年度</span></div>
     <div class="fiscalCompareGraph">
-      \${rowsA.map((r,i)=>{
+      ${rowsA.map((r,i)=>{
         const a=Number(r[key])||0,b=Number(rowsB[i]?.[key])||0;
         const h1=a?Math.max(4,Math.round(a/max*150)):0;
         const h2=b?Math.max(4,Math.round(b/max*150)):0;
-        return \`<div class="fiscalCompareGroup"><div class="fiscalCompareBars"><div class="fiscalCompareBar self" style="height:\${h1}px" title="\${yearA}年度 \${r.label} ¥\${a.toLocaleString()}"></div><div class="fiscalCompareBar other" style="height:\${h2}px" title="\${yearB}年度 \${r.label} ¥\${b.toLocaleString()}"></div></div><div class="fiscalCompareMonth">\${r.label}</div></div>\`;
+        return `<div class="fiscalCompareGroup"><div class="fiscalCompareBars"><div class="fiscalCompareBar self" style="height:${h1}px" title="${yearA}年度 ${r.label} ¥${a.toLocaleString()}"></div><div class="fiscalCompareBar other" style="height:${h2}px" title="${yearB}年度 ${r.label} ¥${b.toLocaleString()}"></div></div><div class="fiscalCompareMonth">${r.label}</div></div>`;
       }).join('')}
     </div>
-  </div>\`;
+  </div>`;
 }
 async function renderFiscalComparison(){
   const box=$('fiscalComparisonSection'); if(!box)return;
@@ -1958,19 +1958,19 @@ async function renderFiscalComparison(){
   localStorage.setItem('taxiFiscalCompareYearA',String(yearA));
   localStorage.setItem('taxiFiscalCompareYearB',String(yearB));
   const rowsA=fiscalComparisonRows(logs,yearA),rowsB=fiscalComparisonRows(logs,yearB),areaOn=isAreaAvgEnabled();
-  box.innerHTML=\`<div class="fiscalCompareCard">
+  box.innerHTML=`<div class="fiscalCompareCard">
     <div class="fiscalCompareHead">
       <div><div class="fiscalCompareTitle">📊 年度別グラフ比較</div><div class="small">2つの年度を選んで、12か月の売上を比較できます。</div></div>
       <div class="fiscalCompareSelectors">
-        <label>年度①<select onchange="changeFiscalCompareYear('A',this.value)" aria-label="比較する年度1">\${fiscalComparisonOptions(years,yearA)}</select></label>
+        <label>年度①<select onchange="changeFiscalCompareYear('A',this.value)" aria-label="比較する年度1">${fiscalComparisonOptions(years,yearA)}</select></label>
         <span class="fiscalCompareVs">VS</span>
-        <label>年度②<select onchange="changeFiscalCompareYear('B',this.value)" aria-label="比較する年度2">\${fiscalComparisonOptions(years,yearB)}</select></label>
+        <label>年度②<select onchange="changeFiscalCompareYear('B',this.value)" aria-label="比較する年度2">${fiscalComparisonOptions(years,yearB)}</select></label>
       </div>
     </div>
-    \${fiscalComparisonGraph('自分の売上',rowsA,rowsB,'self',yearA,yearB)}
-    \${areaOn?fiscalComparisonGraph('乗務エリアの平均売上',rowsA,rowsB,'areaSales',yearA,yearB):''}
-    \${areaOn?fiscalComparisonGraph('乗務エリアの総売上',rowsA,rowsB,'areaTotal',yearA,yearB):''}
-  </div>\`;
+    ${fiscalComparisonGraph('自分の売上',rowsA,rowsB,'self',yearA,yearB)}
+    ${areaOn?fiscalComparisonGraph('乗務エリアの平均売上',rowsA,rowsB,'areaSales',yearA,yearB):''}
+    ${areaOn?fiscalComparisonGraph('乗務エリアの総売上',rowsA,rowsB,'areaTotal',yearA,yearB):''}
+  </div>`;
 }
 function changeFiscalCompareYear(which,value){
   localStorage.setItem(which==='A'?'taxiFiscalCompareYearA':'taxiFiscalCompareYearB',String(Number(value)));
