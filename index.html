@@ -3487,18 +3487,18 @@ setInterval(updateConstraintWarning,30000);
     if(md===101) return {kind:'newyear',icon:'🎍',title:'元旦',message:'あけましておめでとうございます！<br>今年も安全運転でいきましょう。'};
     if(md>=102 && md<=103) return {kind:'newyear',icon:'🎍',title:'お正月',message:'今年も安全運転でいきましょう。'};
     if(md===1224||md===1225) return {kind:'newyear',icon:'🎅🛷',title:'メリークリスマス！',message:'今日はクリスマス。サンタタクシーで出発です🎄'};
-    if(md===1031) return {icon:'🎃🚕',title:'ハロウィン',message:'今日はハロウィン。夜道もいつも以上に安全運転で👻'};
+    if(md===1031) return {icon:'🎃',title:'ハロウィン',message:'今日はハロウィン。夜道もいつも以上に安全運転で👻'};
     const terms={
-      120:{icon:'🥶🚕',title:'大寒',message:'一年で最も寒いころ。あたたかくして安全運転で。'},
-      204:{icon:'🌱🚕',title:'立春',message:'暦の上では春の始まりです。'},
+      120:{icon:'🥶',title:'大寒',message:'一年で最も寒いころ。あたたかくして安全運転で。'},
+      204:{icon:'🌱',title:'立春',message:'暦の上では春の始まりです。'},
       305:{icon:'🐛🌱',title:'啓蟄',message:'冬ごもりしていた生き物が動き始めるころです。'},
-      320:{icon:'🌸🚕',title:'春分',message:'春分の日。昼と夜がほぼ同じ長さです。'},
-      505:{icon:'🌿🚕',title:'立夏',message:'暦の上では夏の始まりです。'},
-      621:{icon:'☀️🚕',title:'夏至',message:'一年で昼が最も長いころです。'},
-      807:{icon:'🌻🚕',title:'立秋',message:'暦の上では秋の始まりです。'},
-      923:{icon:'🍁🚕',title:'秋分',message:'秋分の日。季節の変わり目です。'},
-      1107:{icon:'🍂🚕',title:'立冬',message:'暦の上では冬の始まりです。'},
-      1221:{icon:'❄️🚕',title:'冬至',message:'一年で昼が最も短いころ。あたたかくしてどうぞ。'}
+      320:{icon:'🌸',title:'春分',message:'春分の日。昼と夜がほぼ同じ長さです。'},
+      505:{icon:'🌿',title:'立夏',message:'暦の上では夏の始まりです。'},
+      621:{icon:'☀️',title:'夏至',message:'一年で昼が最も長いころです。'},
+      807:{icon:'🌻',title:'立秋',message:'暦の上では秋の始まりです。'},
+      923:{icon:'🍁',title:'秋分',message:'秋分の日。季節の変わり目です。'},
+      1107:{icon:'🍂',title:'立冬',message:'暦の上では冬の始まりです。'},
+      1221:{icon:'❄️',title:'冬至',message:'一年で昼が最も短いころ。あたたかくしてどうぞ。'}
     };
     return terms[m*100+d]||null;
   }
