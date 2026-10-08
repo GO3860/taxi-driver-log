@@ -710,7 +710,35 @@ function formatDutyDate(date){
 function todayYMD(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
 function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
 function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
-function changeDutyDate(value){if(!value)return;localStorage.setItem('taxiDutyDate',value);const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}$('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';if(window.db)renderConstraintWarning();}
+async function loadSavedLogForDutyDate(value){
+  if(!db||!value)return false;
+  try{
+    const target=value;
+    const all=await getLogs();
+    const found=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      if(!d)return false;
+      const ymd=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      return ymd===target;
+    });
+    if(found){
+      await editLog(found.id);
+      return true;
+    }
+  }catch(e){console.error('保存済みログの復元に失敗:',e)}
+  return false;
+}
+async function changeDutyDate(value){
+  if(!value)return;
+  localStorage.setItem('taxiDutyDate',value);
+  const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));
+  const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}
+  $('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';
+  if(window.db){
+    const restored=await loadSavedLogForDutyDate(value);
+    if(!restored)renderConstraintWarning();
+  }
+}
 function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
 document.addEventListener('DOMContentLoaded',()=>{
   startDutyDate();
@@ -718,7 +746,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   migrateOptionalSettings();
   initSettings();
   initRoutes();
-  initDB().then(()=>Promise.all([updateTotal(),renderSalesGoal(),renderConstraintWarning()])).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
+  initDB().then(async()=>{
+    const currentDate=localStorage.getItem('taxiDutyDate')||todayYMD();
+    const restored=await loadSavedLogForDutyDate(currentDate);
+    await updateTotal();
+    await renderSalesGoal();
+    await renderConstraintWarning();
+    if(!restored && currentDate===todayYMD()) $('status').textContent='この端末に保存します';
+  }).catch(()=>{const s=$('status');if(s)s.textContent='⚠️ この環境では端末保存を利用できません'});
 });
 
 let routeData=[];
