@@ -292,7 +292,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   border-color:#f1d98a;
   box-shadow:0 5px 16px rgba(180,130,20,.10);
 }
-.seasonalTaxiCard.christmas-eve .seasonalTaxiIcon,
+.seasonalTaxiCard.christmas-eve .seasonalTaxiIcon{
+  min-width:225px;
+  width:225px;
+  font-size:30px;
+  line-height:1;
+  text-align:center;
+}
 .seasonalTaxiCard.christmas .seasonalTaxiIcon{
   min-width:145px;
   width:145px;
@@ -300,7 +306,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   line-height:1;
   text-align:center;
 }
-.christmasMainIcons{font-size:70px;line-height:1;white-space:nowrap;margin-top:2px}.christmasBottomIcons{font-size:28px;line-height:1.1;margin-top:8px;white-space:nowrap;letter-spacing:-3px}
+.christmasMainIcons{font-size:76px;line-height:1;white-space:nowrap;margin-top:2px}.christmasBottomIcons{font-size:28px;line-height:1.1;margin-top:8px;white-space:nowrap;letter-spacing:-3px}
 .christmasCakes{font-size:30px;line-height:1.1;margin-top:5px;white-space:nowrap;letter-spacing:-2px}
 .christmasGifts{font-size:30px;line-height:1.1;margin-top:5px;white-space:nowrap;letter-spacing:-2px}
 .seasonalTaxiCard.christmas .seasonalTaxiTitle{
@@ -328,8 +334,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 }
 @media(max-width:430px){
   .seasonalTaxiCard.christmas{gap:7px;padding:16px 8px}
-  .seasonalTaxiCard.christmas .seasonalTaxiIcon{min-width:125px;width:125px}
+  .seasonalTaxiCard.christmas-eve{gap:5px;padding:16px 8px}
+  .seasonalTaxiCard.christmas-eve .seasonalTaxiIcon{min-width:150px;width:150px}
   .christmasTreeLarge{font-size:68px}
+  .christmasMainIcons{font-size:58px}
   .christmasCakes,.christmasGifts{font-size:25px;letter-spacing:-3px}
   .seasonalTaxiCard.christmas .seasonalTaxiTitle{font-size:17px}
   .seasonalTaxiCard.christmas .seasonalTaxiMessage{font-size:13px}
