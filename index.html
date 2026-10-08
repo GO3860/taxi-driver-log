@@ -289,8 +289,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
 
-<div id="seasonalTaxiCard" class="seasonalTaxiCard" aria-live="polite">
-  <div id="seasonalTaxiIcon" class="seasonalTaxiIcon">🚕</div>
+<div id="seasonalTaxiCard" class="seasonalTaxiCard" aria-live="polite" style="display:none!important">
+  <div id="seasonalTaxiIcon" class="seasonalTaxiIcon"></div>
   <div class="seasonalTaxiText">
     <div id="seasonalTaxiTitle" class="seasonalTaxiTitle"></div>
     <div id="seasonalTaxiMessage" class="seasonalTaxiMessage"></div>
@@ -3506,15 +3506,15 @@ setInterval(updateConstraintWarning,30000);
     if(!el)return;
     const dateEl=document.getElementById('date');
     const raw=(dateEl?.textContent||'').match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-    if(!raw){el.classList.remove('show');return;}
+    if(!raw){el.classList.remove('show');el.style.display='none';return;}
     const dateStr=raw[1]+'-'+String(raw[2]).padStart(2,'0')+'-'+String(raw[3]).padStart(2,'0');
     const info=seasonalInfo(dateStr);
-    if(!info){el.classList.remove('show');return;}
+    if(!info){el.classList.remove('show');el.style.display='none';return;}
     document.getElementById('seasonalTaxiIcon').textContent=info.icon;
     document.getElementById('seasonalTaxiTitle').textContent=info.title;
     document.getElementById('seasonalTaxiMessage').textContent=info.message;
     el.classList.toggle('newyear',info.kind==='newyear');
-    el.classList.add('show');
+    el.classList.add('show');el.style.display='flex';
   }
   window.updateSeasonalTaxi=updateSeasonalTaxi;
   document.addEventListener('DOMContentLoaded',()=>{
