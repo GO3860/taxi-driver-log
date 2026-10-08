@@ -2090,7 +2090,10 @@ async function showEventBreakdown(year,index){
   const counts=Object.fromEntries(names.map(n=>[n,0]));
   periodLogs.forEach(x=>{
     (Array.isArray(x.event)?x.event:[]).forEach(e=>{
-      if(e!=='なし' && Object.prototype.hasOwnProperty.call(counts,e)) counts[e]++;
+      let key=e;
+      if(e==='🏮 夏祭り') key='🏮 まつり';
+      if(e==='🚨 自身の事故') key='🚨 事故';
+      if(e!=='なし' && Object.prototype.hasOwnProperty.call(counts,key)) counts[key]++;
     });
   });
   const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${n}</span><strong>${counts[n]}回</strong></div>`).join('');
