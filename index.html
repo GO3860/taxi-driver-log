@@ -273,10 +273,29 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   .periodRangeSelectors select{font-size:14px;padding:10px 7px}
   .periodRangeBoxValue{font-size:20px}
 }
-</style>
+
+<style id="seasonal-taxi-v188">
+/* v188: 季節・年中行事のさりげないタクシー演出 */
+.seasonalTaxiCard{display:none;align-items:center;gap:12px;padding:11px 14px;margin:0 14px 12px;border:1px solid #e5e9ee;border-radius:16px;background:linear-gradient(135deg,#fff,#f7fafc);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.seasonalTaxiCard.show{display:flex}
+.seasonalTaxiIcon{font-size:36px;line-height:1;min-width:52px;text-align:center}
+.seasonalTaxiText{min-width:0}.seasonalTaxiTitle{font-size:14px;font-weight:900}.seasonalTaxiMessage{font-size:12px;color:#68727c;margin-top:3px;line-height:1.45}
+.seasonalTaxiCard.newyear{padding:15px 14px;background:linear-gradient(135deg,#fffdf2,#fff7d8);border-color:#f1d98a;box-shadow:0 5px 16px rgba(180,130,20,.10)}
+.seasonalTaxiCard.newyear .seasonalTaxiIcon{font-size:45px}
+.seasonalTaxiCard.newyear .seasonalTaxiTitle{font-size:17px;color:#9a6500}
+.seasonalTaxiCard.newyear .seasonalTaxiMessage{font-size:13px;color:#735a2a}
+</style></style>
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
+
+<div id="seasonalTaxiCard" class="seasonalTaxiCard" aria-live="polite">
+  <div id="seasonalTaxiIcon" class="seasonalTaxiIcon">🚕</div>
+  <div class="seasonalTaxiText">
+    <div id="seasonalTaxiTitle" class="seasonalTaxiTitle"></div>
+    <div id="seasonalTaxiMessage" class="seasonalTaxiMessage"></div>
+  </div>
+</div>
 
 <main id="today">
 <div class="card"><div class="duty-date-block"><div class="duty-date-label">📅業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button">📅 乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
@@ -3457,4 +3476,52 @@ setInterval(updateConstraintWarning,30000);
 }
 </style>
 
+
+<script id="seasonal-taxi-v188-js">
+/* v188: 日付に応じて季節・年中行事のタクシー表示を切り替える */
+(function(){
+  function seasonalInfo(dateStr){
+    const m=Number(dateStr.slice(5,7)), d=Number(dateStr.slice(8,10));
+    const md=m*100+d;
+    if(md===1231) return {kind:'newyear',icon:'🎆🚕',title:'大晦日',message:'今年も一年、お疲れさまでした。よいお年を！'};
+    if(md>=101 && md<=103) return {kind:'newyear',icon:'🎍🚕',title:'お正月',message:'あけましておめでとうございます！今年も安全運転でいきましょう。'};
+    if(md===1224||md===1225) return {kind:'newyear',icon:'🎅🛷',title:'メリークリスマス！',message:'今日はクリスマス。サンタタクシーで出発です🎄'};
+    if(md===1031) return {icon:'🎃🚕',title:'ハロウィン',message:'今日はハロウィン。夜道もいつも以上に安全運転で👻'};
+    const terms={
+      120:{icon:'🥶🚕',title:'大寒',message:'一年で最も寒いころ。あたたかくして安全運転で。'},
+      204:{icon:'🌱🚕',title:'立春',message:'暦の上では春の始まりです。'},
+      305:{icon:'🐛🌱',title:'啓蟄',message:'冬ごもりしていた生き物が動き始めるころです。'},
+      320:{icon:'🌸🚕',title:'春分',message:'春分の日。昼と夜がほぼ同じ長さです。'},
+      505:{icon:'🌿🚕',title:'立夏',message:'暦の上では夏の始まりです。'},
+      621:{icon:'☀️🚕',title:'夏至',message:'一年で昼が最も長いころです。'},
+      807:{icon:'🌻🚕',title:'立秋',message:'暦の上では秋の始まりです。'},
+      923:{icon:'🍁🚕',title:'秋分',message:'秋分の日。季節の変わり目です。'},
+      1107:{icon:'🍂🚕',title:'立冬',message:'暦の上では冬の始まりです。'},
+      1221:{icon:'❄️🚕',title:'冬至',message:'一年で昼が最も短いころ。あたたかくしてどうぞ。'}
+    };
+    return terms[m*100+d]||null;
+  }
+  function updateSeasonalTaxi(){
+    const el=document.getElementById('seasonalTaxiCard');
+    if(!el)return;
+    const dateEl=document.getElementById('date');
+    const raw=(dateEl?.textContent||'').match(/(\\d{4})年(\\d{1,2})月(\\d{1,2})日/);
+    if(!raw){el.classList.remove('show');return;}
+    const dateStr=raw[1]+'-'+String(raw[2]).padStart(2,'0')+'-'+String(raw[3]).padStart(2,'0');
+    const info=seasonalInfo(dateStr);
+    if(!info){el.classList.remove('show');return;}
+    document.getElementById('seasonalTaxiIcon').textContent=info.icon;
+    document.getElementById('seasonalTaxiTitle').textContent=info.title;
+    document.getElementById('seasonalTaxiMessage').textContent=info.message;
+    el.classList.toggle('newyear',info.kind==='newyear');
+    el.classList.add('show');
+  }
+  window.updateSeasonalTaxi=updateSeasonalTaxi;
+  document.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(updateSeasonalTaxi,300);
+    const dateEl=document.getElementById('date');
+    if(dateEl)new MutationObserver(updateSeasonalTaxi).observe(dateEl,{childList:true,subtree:true});
+  });
+})();
+</script>
 </body></html>
