@@ -1,0 +1,17 @@
+{
+  "name": "マイ・ビールログ",
+  "short_name": "ビールログ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f5ef",
+  "theme_color": "#173f35",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
