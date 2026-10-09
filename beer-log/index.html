@@ -16,7 +16,10 @@ header{background:linear-gradient(135deg,var(--green),var(--green2));color:white
 h2{font-size:17px;margin:0 0 13px}
 label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
 input,select,button{font:inherit}
-input[type=date],input[type=number],select{width:100%;border:1px solid #d5ddd5;border-radius:11px;background:white;padding:12px;color:var(--ink);min-height:46px}
+input[type=date],input[type=number],select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;border:1px solid #d5ddd5;border-radius:11px;background:white;padding:12px;color:var(--ink);min-height:46px}
+input[type=date]{-webkit-appearance:none;appearance:none;min-height:54px}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input[type=date]::-webkit-calendar-picker-indicator{margin:0 0 0 4px}
 .field{margin-bottom:13px}
 .cans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .can{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcf8}
