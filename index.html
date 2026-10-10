@@ -1367,7 +1367,7 @@ async function renderRouteDatabase(){
       if((destination||course)&&(!q||hay.includes(q)))rows.push({date:log.date||'',destination,course,photo:r?.photo||'',index:i});
     });
   });
-  rows.sort((a,b)=>String(b.date).localeCompare(String(a.date),'ja'));
+  rows.sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);const ta=da?da.getTime():0,tb=db?db.getTime():0;return tb-ta;});
   box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem">
     <div class="routeDbTitle">📍 ${escapeHtml(r.destination||'目的地なし')}</div>
     ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
