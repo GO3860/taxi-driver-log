@@ -133,6 +133,11 @@ $('saveBtn').addEventListener('click',()=>{
  $('monthPick').value=date.slice(0,7);if(!$('yearPick').querySelector('option[value="'+date.slice(0,4)+'"]'))addYear(date.slice(0,4));$('yearPick').value=date.slice(0,4);
  resetForm();renderStats();alert('記録を保存しました！');
 });
+['qty350','qty500'].forEach(id=>{
+ const field=$(id);
+ field.addEventListener('focus',()=>{if(field.value==='0')field.value='';});
+ field.addEventListener('blur',()=>{if(field.value==='')field.value='0';});
+});
 $('clearBtn').addEventListener('click',resetForm);
 $('monthPick').addEventListener('change',renderStats);
 $('yearPick').addEventListener('change',renderStats);
