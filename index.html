@@ -2857,7 +2857,9 @@ async function openSelectedDayLog(){
     const all=await getLogs();
     const target=all.find(x=>{
       const d=parseDutyDate(x.date);
-      return d && restDateKey(d)===selectedKey;
+      if(!d)return false;
+      const logKey=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      return logKey===selectedKey;
     });
     if(target){
       // 詳細画面は「ログ」タブ内にあるため、先にログ画面へ切り替えてから開く。
