@@ -2853,20 +2853,23 @@ async function openSelectedDayLog(){
     return;
   }
   try{
+    const selectedKey=workCalendarSelectedKey;
     const all=await getLogs();
     const target=all.find(x=>{
       const d=parseDutyDate(x.date);
-      return d && restDateKey(d)===workCalendarSelectedKey;
+      return d && restDateKey(d)===selectedKey;
     });
     if(target){
+      // 詳細画面は「ログ」タブ内にあるため、先にログ画面へ切り替えてから開く。
       closeWorkCalendar();
+      await showLogs();
       await showLogDetail(target.id);
       return;
     }
-    alert(workCalendarSelectedKey.replace(/-/g,'/')+' のログはまだ登録されていません。');
+    alert(selectedKey.replace(/-/g,'/')+' の乗務ログはまだ保存されていません。\n「今日」画面で日付を選んで記録・保存してください。');
   }catch(e){
-    console.error(e);
-    alert('ログを開けませんでした。');
+    console.error('カレンダーからログを開く際に失敗:',e);
+    alert('ログを開けませんでした。もう一度お試しください。');
   }
 }
 function prepareAddPlan(){
