@@ -1221,7 +1221,8 @@ function setDayType(el,type){
   }
   if($('salesLabel')) $('salesLabel').textContent='売上';
   if(th){ th.classList.toggle('hidden', !parttime); th.style.display=parttime?'':'none'; }
-  if(af){ af.classList.toggle('hidden', parttime); af.style.display=parttime?'none':''; }
+  // アルバイトの日も、乗務エリアの平均売上は入力・集計できるようにする。
+  if(af){ af.classList.remove('hidden'); af.style.display=''; }
   if(df){ df.classList.toggle('hidden', parttime); df.style.display=parttime?'none':''; }
   const sg=$('salesGoalCard');
   if(sg){ sg.style.display=parttime?'none':''; }
@@ -1310,9 +1311,9 @@ async function renderConstraintWarning(){
 async function saveLog(){
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
- const restAverage = isRestDay(dayType)
+ const restAverage = (dayType==='work'||dayType==='parttime'||isRestDay(dayType))
    ? String($('avg')?.value ?? '').trim()
-   : (dayType==='work' ? String($('avg')?.value ?? '').trim() : '');
+   : '';
   let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
@@ -2008,10 +2009,10 @@ async function renderPeriodRangeSummary(resetSelectors=false){
   const periodStart=periods[0].period.start, periodEnd=periods[periods.length-1].period.end;
   const periodLogs=logs.filter(x=>{const d=dateOnly(x.date);return d&&d>=periodStart&&d<=periodEnd;});
   const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
-  const areaWork=work.filter(x=>Number(x.avg)>0);
+  const areaWork=periodLogs.filter(x=>['work','parttime'].includes(x.dayType||'work')&&Number(x.avg)>0);
   const areaAll=periodLogs.filter(x=>{
     const type=x.dayType||'work';
-    return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;
+    return (type==='work'||type==='parttime'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;
   });
   const ownTotal=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
   const areaSalesTotal=areaWork.reduce((n,x)=>n+(Number(x.avg)||0),0);
@@ -2087,8 +2088,8 @@ async function renderAnnualData(selectedYear){
   const rows=periods.map((p,i)=>{
     const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
     const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
-    const areaWorkRows=work.filter(x=>Number(x.avg)>0);
-    const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
+    const areaWorkRows=periodLogs.filter(x=>['work','parttime'].includes(x.dayType||'work')&&Number(x.avg)>0);
+    const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='parttime'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
     const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
     const areaSales=areaWorkRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
     const areaTotal=areaAllRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
