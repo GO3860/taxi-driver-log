@@ -12,6 +12,7 @@ h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.7;margin-top:4px}main{pa
 .card{background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #0000000a}
 .label{font-weight:700;font-size:13px;margin-bottom:10px}.chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip,.btn{border:0;border-radius:999px;background:#eef0f3;padding:10px 13px;font-size:15px}
+.duty-date-large.is-red-date{color:#d32f2f}
 .dateChangeWrap{position:relative;display:inline-block}.datePickerOverlay{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;margin:0;padding:0}.dateChangeWrap .btn{width:100%;height:100%;pointer-events:none}.chip.on{background:#d9f0ff;color:#12608a}.chip.on.second{background:#7fc1f5;color:#0b4f7a;font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:28px;row-gap:18px;min-width:0;overflow:visible}.grid>div{min-width:0;width:100%}input,textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}input[type="time"]{-webkit-appearance:none;appearance:none;min-width:0;width:100%}.hoursbox{display:flex;align-items:center;min-height:49px;width:100%;padding:10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa}
 textarea{min-height:70px;resize:none}.small{font-size:12px;color:#777;margin-top:7px}.help-text{font-size:12px;color:#777;margin-top:7px}.help-text.hidden-help{display:none}.full{width:100%;margin-top:8px}
@@ -814,7 +815,20 @@ function formatDutyDate(date){
   return date.getFullYear()+'年'+(date.getMonth()+1)+'月'+date.getDate()+'日（'+['日','月','火','水','木','金','土'][date.getDay()]+'）';
 }
 function todayYMD(){const now=new Date();return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');}
-function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
+function isSundayOrHolidayDate(date){
+  if(!(date instanceof Date)||Number.isNaN(date.getTime()))return false;
+  if(date.getDay()===0)return true;
+  const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  const data=getHolidayData();
+  const yearData=data[String(date.getFullYear())]||{};
+  return Boolean(yearData[key]);
+}
+function updateDutyDateColor(dateValue){
+  const el=$('date');if(!el)return;
+  const date=new Date((dateValue||localStorage.getItem('taxiDutyDate')||todayYMD())+'T00:00:00');
+  el.classList.toggle('is-red-date',isSundayOrHolidayDate(date));
+}
+function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}updateDutyDateColor(saved);const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
 function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
 async function loadSavedLogForDutyDate(value){
   if(!db||!value)return false;
@@ -838,6 +852,7 @@ async function changeDutyDate(value){
   if(!value)return;
   localStorage.setItem('taxiDutyDate',value);
   const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));
+  updateDutyDateColor(value);
   const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}
   $('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';
   if(window.db){
