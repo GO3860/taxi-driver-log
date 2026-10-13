@@ -830,8 +830,10 @@ function updateDutyDateColor(dateValue){
   const date=match?new Date(Number(match[1]),Number(match[2])-1,Number(match[3])):new Date(value);
   const isRed=isSundayOrHolidayDate(date);
   el.classList.toggle('is-red-date',isRed);
-  // クラス状態がブラウザ復帰後に古いまま残らないよう、文字色も明示的に更新
-  el.style.color=isRed?'#d32f2f':'';
+  // Safariのスタイル再計算の遅れに影響されないよう、文字色を優先指定する
+  if(isRed) el.style.setProperty('color','#d32f2f','important');
+  else el.style.removeProperty('color');
+  // class/style適用後にも再判定できるようにする
 }
 function refreshDutyDateDisplay(){
   const saved=localStorage.getItem('taxiDutyDate')||todayYMD();
@@ -871,6 +873,8 @@ async function changeDutyDate(value){
   $('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';
   if(window.db){
     const restored=await loadSavedLogForDutyDate(value);
+    // ログ復元処理が終わってからも色を再適用する
+    updateDutyDateColor(value);
     if(!restored)renderConstraintWarning();
   }
 }
@@ -891,6 +895,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   initDB().then(async()=>{
     const currentDate=localStorage.getItem('taxiDutyDate')||todayYMD();
     const restored=await loadSavedLogForDutyDate(currentDate);
+    // 保存済みログの復元で画面が更新された後、業務日色を最終適用する
+    updateDutyDateColor(currentDate);
     await updateTotal();
     await renderSalesGoal();
     await renderConstraintWarning();
