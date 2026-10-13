@@ -826,7 +826,7 @@ function isSundayOrHolidayDate(date){
 function updateDutyDateColor(dateValue){
   const el=$('date');if(!el)return;
   const value=dateValue||localStorage.getItem('taxiDutyDate')||todayYMD();
-  const match=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   const date=match?new Date(Number(match[1]),Number(match[2])-1,Number(match[3])):new Date(value);
   const isRed=isSundayOrHolidayDate(date);
   el.classList.toggle('is-red-date',isRed);
