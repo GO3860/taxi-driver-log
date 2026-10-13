@@ -1351,12 +1351,29 @@ async function renderConstraintWarning(){
 }
 
 async function saveLog(){
+ // 保存先の日付は画面の文字列ではなく、選択中の日付キーを基準にする。
+ const selectedDateKey=localStorage.getItem('taxiDutyDate')||todayYMD();
+ const selectedDateObj=new Date(selectedDateKey+'T00:00:00');
+ if(Number.isNaN(selectedDateObj.getTime())){
+   alert('保存先の日付を確認できません。データ保護のため保存を中止しました。');
+   return;
+ }
+ if(editingLogId!==null){
+   const existingLogs=await getLogs();
+   const editingRecord=existingLogs.find(x=>Number(x.id)===Number(editingLogId));
+   const editingDate=parseDutyDate(editingRecord?.date);
+   const editingDateKey=editingDate?restDateKey(editingDate):'';
+   if(!editingRecord || editingDateKey!==selectedDateKey){
+     alert('編集中のログと選択中の日付が一致しません。別の日のデータを上書きしないよう、保存を中止しました。ログ一覧から対象の日を開き直してください。');
+     return;
+   }
+ }
  let dayType=getDayType();
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = (dayType==='work'||dayType==='parttime'||isRestDay(dayType))
    ? String($('avg')?.value ?? '').trim()
    : '';
-  let log={date:$('date').textContent,dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',runDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRunDistance')?.value||$('km').value):'',rideDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRideDistance')?.value||''):'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+  let log={date:formatDutyDate(selectedDateObj),dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',runDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRunDistance')?.value||$('km').value):'',rideDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRideDistance')?.value||''):'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:getRouteData(),destination:getRouteData()[0]?.destination||'',course:getRouteData()[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
  let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
