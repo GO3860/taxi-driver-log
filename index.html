@@ -825,8 +825,22 @@ function isSundayOrHolidayDate(date){
 }
 function updateDutyDateColor(dateValue){
   const el=$('date');if(!el)return;
-  const date=new Date((dateValue||localStorage.getItem('taxiDutyDate')||todayYMD())+'T00:00:00');
-  el.classList.toggle('is-red-date',isSundayOrHolidayDate(date));
+  const value=dateValue||localStorage.getItem('taxiDutyDate')||todayYMD();
+  const match=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  const date=match?new Date(Number(match[1]),Number(match[2])-1,Number(match[3])):new Date(value);
+  const isRed=isSundayOrHolidayDate(date);
+  el.classList.toggle('is-red-date',isRed);
+  // クラス状態がブラウザ復帰後に古いまま残らないよう、文字色も明示的に更新
+  el.style.color=isRed?'#d32f2f':'';
+}
+function refreshDutyDateDisplay(){
+  const saved=localStorage.getItem('taxiDutyDate')||todayYMD();
+  const el=$('date');
+  if(el){
+    el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));
+    el.style.display='block';
+  }
+  updateDutyDateColor(saved);
 }
 function startDutyDate(){let saved=localStorage.getItem('taxiDutyDate');if(!saved){saved=todayYMD();localStorage.setItem('taxiDutyDate',saved)}const el=$('date');if(el){el.textContent=formatDutyDate(new Date(saved+'T00:00:00'));el.style.display='block';}updateDutyDateColor(saved);const dp=$('datePicker');if(dp){dp.value=saved;dp.max=todayYMD();}}
 function openDatePicker(){const dp=$('datePicker');if(!dp)return;dp.max=todayYMD();if(!dp.value)dp.value=localStorage.getItem('taxiDutyDate')||todayYMD();dp.focus();}
@@ -861,6 +875,13 @@ async function changeDutyDate(value){
   }
 }
 function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
+// Safariがページをキャッシュから復元した場合や、別画面から戻った場合も日付色を再判定
+window.addEventListener('pageshow',refreshDutyDateDisplay);
+window.addEventListener('focus',refreshDutyDateDisplay);
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)refreshDutyDateDisplay();
+});
+
 document.addEventListener('DOMContentLoaded',()=>{
   startDutyDate();
   rememberTimes();
