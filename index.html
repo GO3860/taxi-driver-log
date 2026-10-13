@@ -925,57 +925,40 @@ function addRoute(data){
   const list=$('routeList');
   if(!list)return;
   const i=routeData.length;
+  const legacyHighway=data?.type==='highway';
   routeData.push({
-    type:data?.type||'city',
-    start:data?.start||'',
-    destination:data?.destination||'',
-    road:data?.road||'',
-    waypoints:data?.waypoints||'',
-    caution:data?.caution||'',
-    course:data?.course||'',
-    photo:data?.photo||''
+    type:'city',
+    start:legacyHighway?'':(data?.start||''),
+    destination:legacyHighway?'':(data?.destination||''),
+    entranceIC:data?.entranceIC||(legacyHighway?data?.start:'')||'',
+    exitIC:data?.exitIC||(legacyHighway?data?.destination:'')||'',
+    highwayUsed:!!(data?.highwayUsed||data?.entranceIC||data?.exitIC||legacyHighway),
+    road:data?.road||'',waypoints:data?.waypoints||'',caution:data?.caution||'',course:data?.course||'',photo:data?.photo||''
   });
-  const r=routeData[i];
-  const item=document.createElement('div');
-  item.className='routeItem';
-  item.dataset.index=i;
+  const r=routeData[i], item=document.createElement('div');
+  item.className='routeItem';item.dataset.index=i;
   item.innerHTML=`<div class="routeItemTitle">道ログ ${i+1}</div>
-    <label class="routeFieldLabel">ルートの種類</label>
-    <select class="routeType">
-      <option value="city" ${r.type==='city'?'selected':''}>乗車地・出発地 → 目的地</option>
-      <option value="highway" ${r.type==='highway'?'selected':''}>高速道路の入口IC → 出口IC</option>
-    </select>
     <div class="routeStructuredGrid">
-      <div><label class="routeFieldLabel routeStartLabel">${r.type==='highway'?'入口IC':'出発地・乗車地'}</label><input class="routeStart" type="text" placeholder="${r.type==='highway'?'例：尼崎IC':'例：阪神尼崎駅'}" value="${escapeHtml(r.start)}"></div>
-      <div><label class="routeFieldLabel routeDestinationLabel">${r.type==='highway'?'出口IC':'目的地・降車地'}</label><input class="routeDestination" type="text" placeholder="${r.type==='highway'?'例：目的地側の出口IC':'例：大阪なんば'}" value="${escapeHtml(r.destination)}"></div>
+      <div><label class="routeFieldLabel">乗車地・出発地（必須）</label><input class="routeStart" type="text" required aria-required="true" placeholder="例：阪神尼崎駅" value="${escapeHtml(r.start)}"></div>
+      <div><label class="routeFieldLabel">目的地・降車地（必須）</label><input class="routeDestination" type="text" required aria-required="true" placeholder="例：大阪なんば" value="${escapeHtml(r.destination)}"></div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;font-weight:700"><input class="routeHighwayUsed" type="checkbox" style="width:20px;height:20px;margin:0" ${r.highwayUsed?'checked':''}>高速道路を使用した</label>
+    <div class="routeHighwayFields ${r.highwayUsed?'':'hidden'}"><div class="routeStructuredGrid">
+      <div><label class="routeFieldLabel">高速道路の入口IC</label><input class="routeEntranceIC" type="text" placeholder="例：尼崎IC" value="${escapeHtml(r.entranceIC)}"></div>
+      <div><label class="routeFieldLabel">高速道路の出口IC</label><input class="routeExitIC" type="text" placeholder="例：湊川IC" value="${escapeHtml(r.exitIC)}"></div>
+    </div></div>
     <details class="routeMoreDetails" style="margin-top:10px">
       <summary style="cursor:pointer;font-size:13px;font-weight:700;padding:7px 0">＋ 詳しい道順・注意点（任意）</summary>
-      <label class="routeFieldLabel">主な道路・高速道路名</label>
-      <input class="routeRoad" type="text" placeholder="例：国道2号線、阪神高速…" value="${escapeHtml(r.road)}">
-      <label class="routeFieldLabel">通過地点・曲がる場所</label>
-      <textarea class="routeWaypoints" placeholder="例：○○交差点を右折 → △△交差点を直進">${escapeHtml(r.waypoints)}</textarea>
-      <label class="routeFieldLabel">目印・施設入口・注意点</label>
-      <textarea class="routeCourse" placeholder="例：病院の北側に入口。右折に注意。">${escapeHtml(r.course||r.caution)}</textarea>
-      <label class="routeFieldLabel">道順の写真（任意）</label>
-      <input class="routePhoto" type="file" accept="image/*" onchange="photo(this)">
-      <div class="preview routePreview">${r.photo?`<img src="${r.photo}" alt="道順の写真">`:''}</div>
+      <label class="routeFieldLabel">主な道路・高速道路名</label><input class="routeRoad" type="text" placeholder="例：国道2号線、阪神高速…" value="${escapeHtml(r.road)}">
+      <label class="routeFieldLabel">通過地点・曲がる場所</label><textarea class="routeWaypoints" placeholder="例：○○交差点を右折 → △△交差点を直進">${escapeHtml(r.waypoints)}</textarea>
+      <label class="routeFieldLabel">目印・施設入口・注意点</label><textarea class="routeCourse" placeholder="例：病院の北側に入口。右折に注意。">${escapeHtml(r.course||r.caution)}</textarea>
+      <label class="routeFieldLabel">道順の写真（任意）</label><input class="routePhoto" type="file" accept="image/*" onchange="photo(this)"><div class="preview routePreview">${r.photo?`<img src="${r.photo}" alt="道順の写真">`:''}</div>
     </details>
     ${i>0?'<button type="button" class="btn full routeRemove" onclick="removeRoute(this)">この道ログを削除</button>':''}`;
   list.appendChild(item);
-  const typeSelect=item.querySelector('.routeType');
-  if(typeSelect)typeSelect.addEventListener('change',()=>updateRouteTypeLabels(item));
+  const check=item.querySelector('.routeHighwayUsed');
+  if(check)check.addEventListener('change',()=>item.querySelector('.routeHighwayFields')?.classList.toggle('hidden',!check.checked));
 }
-function updateRouteTypeLabels(item){
-  const highway=item?.querySelector('.routeType')?.value==='highway';
-  const sl=item?.querySelector('.routeStartLabel'), dl=item?.querySelector('.routeDestinationLabel');
-  const si=item?.querySelector('.routeStart'), di=item?.querySelector('.routeDestination');
-  if(sl)sl.textContent=highway?'入口IC':'出発地・乗車地';
-  if(dl)dl.textContent=highway?'出口IC':'目的地・降車地';
-  if(si)si.placeholder=highway?'例：尼崎IC':'例：阪神尼崎駅';
-  if(di)di.placeholder=highway?'例：目的地側の出口IC':'例：大阪なんば';
-}
-
 function escapeHtml(s){
   return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -997,16 +980,14 @@ function refreshRouteTitles(){
 
 function getRouteData(){
   return [...document.querySelectorAll('#routeList .routeItem')].map((el,i)=>({
-    type:el.querySelector('.routeType')?.value||'city',
-    start:el.querySelector('.routeStart')?.value.trim()||'',
+    type:'city',start:el.querySelector('.routeStart')?.value.trim()||'',
     destination:el.querySelector('.routeDestination')?.value.trim()||'',
-    road:el.querySelector('.routeRoad')?.value.trim()||'',
-    waypoints:el.querySelector('.routeWaypoints')?.value.trim()||'',
-    caution:el.querySelector('.routeCourse')?.value.trim()||'',
-    // 旧版との互換性のため、従来のcourseにも注意点を保存する
-    course:el.querySelector('.routeCourse')?.value||'',
-    photo:routeData[i]?.photo||''
-  })).filter(x=>x.start||x.destination||x.road||x.waypoints||x.course||x.photo);
+    highwayUsed:!!el.querySelector('.routeHighwayUsed')?.checked,
+    entranceIC:el.querySelector('.routeEntranceIC')?.value.trim()||'',
+    exitIC:el.querySelector('.routeExitIC')?.value.trim()||'',
+    road:el.querySelector('.routeRoad')?.value.trim()||'',waypoints:el.querySelector('.routeWaypoints')?.value.trim()||'',
+    caution:el.querySelector('.routeCourse')?.value.trim()||'',course:el.querySelector('.routeCourse')?.value||'',photo:routeData[i]?.photo||''
+  })).filter(x=>x.start||x.destination||x.entranceIC||x.exitIC||x.road||x.waypoints||x.course||x.photo);
 }
 
 function photo(input){
@@ -1475,18 +1456,18 @@ async function renderRouteDatabase(){
     routes.forEach((r,i)=>{
       const start=String(r?.start||'').trim();
       const destination=String(r?.destination||'').trim();
-      const type=String(r?.type||'city');
-      const road=String(r?.road||'').trim();
-      const waypoints=String(r?.waypoints||'').trim();
-      const course=String(r?.course||r?.caution||'').trim();
-      const hay=(start+' '+destination+' '+road+' '+waypoints+' '+course).toLowerCase();
-      if((start||destination||road||waypoints||course)&&(!q||hay.includes(q)))rows.push({date:log.date||'',start,destination,type,road,waypoints,course,photo:r?.photo||'',index:i});
+      const legacyHighway=String(r?.type||'')==='highway';
+      const entranceIC=String(r?.entranceIC||(legacyHighway?r?.start:'')||'').trim();
+      const exitIC=String(r?.exitIC||(legacyHighway?r?.destination:'')||'').trim();
+      const road=String(r?.road||'').trim(),waypoints=String(r?.waypoints||'').trim(),course=String(r?.course||r?.caution||'').trim();
+      const hay=(start+' '+destination+' '+entranceIC+' '+exitIC+' '+road+' '+waypoints+' '+course).toLowerCase();
+      if((start||destination||entranceIC||exitIC||road||waypoints||course)&&(!q||hay.includes(q)))rows.push({date:log.date||'',start:legacyHighway?'':start,destination:legacyHighway?'':destination,entranceIC,exitIC,highwayUsed:!!(r?.highwayUsed||entranceIC||exitIC||legacyHighway),road,waypoints,course,photo:r?.photo||'',index:i});
     });
   });
   rows.sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);const ta=da?da.getTime():0,tb=db?db.getTime():0;return tb-ta;});
   box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem" role="button" tabindex="0" data-route-date="${escapeHtml(r.date)}" aria-label="${escapeHtml(r.date)}の乗務ログを開く" onclick="openRouteLog(this.dataset.routeDate)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRouteLog(this.dataset.routeDate)}">
     <div class="routeDbTitle">📍 ${escapeHtml(r.start||'出発地未登録')} → ${escapeHtml(r.destination||'目的地未登録')}</div>
-    <div class="routeDbRouteType">${r.type==='highway'?'高速ICルート':'一般道・乗降地ルート'}</div>
+    ${r.highwayUsed?'<div class="routeDbRouteType">高速道路：入口IC '+escapeHtml(r.entranceIC||'未記録')+' → 出口IC '+escapeHtml(r.exitIC||'未記録')+'</div>':''}
     ${r.road?`<div class="routeDbCourse">道路：${escapeHtml(r.road)}</div>`:''}
     ${r.waypoints?`<div class="routeDbCourse">通過地点：${escapeHtml(r.waypoints)}</div>`:''}
     ${r.course?`<div class="routeDbCourse">注意点：${escapeHtml(r.course)}</div>`:''}
