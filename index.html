@@ -878,7 +878,15 @@ async function changeDutyDate(value){
     if(!restored)renderConstraintWarning();
   }
 }
-function rememberTimes(){const o=localStorage.getItem('taxiDefaultOut');const i=localStorage.getItem('taxiDefaultIn');if(o)$('out').value=o;if(i)$('in').value=i;duration()}
+function rememberTimes(){
+  // 出庫・入庫時刻は新規入力時の初期値を空欄にする。
+  // 以前の端末保存値が残っていても、新しい日付へ引き継がない。
+  localStorage.removeItem('taxiDefaultOut');
+  localStorage.removeItem('taxiDefaultIn');
+  if($('out'))$('out').value='';
+  if($('in'))$('in').value='';
+  duration();
+}
 // Safariがページをキャッシュから復元した場合や、別画面から戻った場合も日付色を再判定
 window.addEventListener('pageshow',refreshDutyDateDisplay);
 window.addEventListener('focus',refreshDutyDateDisplay);
