@@ -1370,7 +1370,7 @@ async function saveLog(){
    const existingLogs=await getLogs();
    const editingRecord=existingLogs.find(x=>Number(x.id)===Number(editingLogId));
    const editingDate=parseDutyDate(editingRecord?.date);
-   const editingDateKey=editingDate?restDateKey(editingDate):'';
+   const editingDateKey=editingDate?editingDate.getFullYear()+'-'+String(editingDate.getMonth()+1).padStart(2,'0')+'-'+String(editingDate.getDate()).padStart(2,'0'):'';
    if(!editingRecord || editingDateKey!==selectedDateKey){
      alert('編集中のログと選択中の日付が一致しません。別の日のデータを上書きしないよう、保存を中止しました。ログ一覧から対象の日を開き直してください。');
      return;
