@@ -2542,7 +2542,34 @@ async function showLogDetail(id){
  $('logDetail').innerHTML=`<div class="dailyCard"><div class="dailyTitle">${x.date}</div><div class="dailyGrid"><div class="dailyBox dailyFull"><div class="dailyLabel">状態</div><div class="dailyValue">${x.dayType==='rest_leaveabsence'?'🌸 休（有・欠）':rest?'🏠 休（非・公）':parttime?'💰 アルバイト':'🚕 勤務'}</div></div>${rest?`<div class="dailyBox dailyFull"><div class="dailyLabel">同じエリアの平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">天気</div><div class="dailyValue">${weather||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">イベント</div><div class="dailyValue">${ev||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">出庫</div><div class="dailyValue">${x.out||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">入庫</div><div class="dailyValue">${x.in||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">拘束時間</div><div class="dailyValue">${x.hours||'—'}</div></div><div class="dailyBox"><div class="dailyLabel">休憩時間合計</div><div class="dailyValue">${formatBreakTotal(x)}</div></div><div class="dailyBox"><div class="dailyLabel">走行距離</div><div class="dailyValue">${(x.runDistance??x.km)!==''&&(x.runDistance??x.km)!=null?Number(x.runDistance??x.km).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">乗車距離</div><div class="dailyValue">${x.rideDistance!==''&&x.rideDistance!=null?Number(x.rideDistance).toLocaleString()+' km':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">実車率</div><div class="dailyValue">${x.loadedRate!==''&&x.loadedRate!=null?Number(x.loadedRate).toLocaleString()+'%':'—'}</div></div><div class="dailyBox"><div class="dailyLabel">売上</div><div class="dailyValue">¥${Number(x.sales||0).toLocaleString()}</div></div>${parttime?`<div class="dailyBox"><div class="dailyLabel">当日持ち帰り</div><div class="dailyValue">¥${Number(x.parttimeTakeHome||0).toLocaleString()}</div></div>`:`<div class="dailyBox"><div class="dailyLabel">エリア平均</div><div class="dailyValue">${localStorage.getItem('taxiShowAreaAvg')==='0'?'—':(x.avg?'¥'+Number(x.avg).toLocaleString():'—')}</div></div>`}${routeHtml}${x.eventNote?`<div class="dailyBox dailyFull"><div class="dailyLabel">本日の営業での出来事</div><div class="dailyValue">${x.eventNote}</div></div>`:''}`}</div>${x.photo?`<img class="photoThumb" src="${x.photo}" alt="道順の写真">`:''}</div>`;
 }
 
-async function deleteLog(id){if(!confirm('このログを削除しますか？'))return;await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});const all=await getLogs();await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();showLogs()}
+async function deleteLog(id){
+ if(!confirm('このログを削除しますか？'))return;
+ const before=await getLogs();
+ const deleted=before.find(x=>Number(x.id)===Number(id));
+ await new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)});
+ const all=await getLogs();
+ await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();
+ // 削除したログが今日のものなら、古い編集内容を画面に残さず空の新規入力に戻す。
+ const deletedDate=parseDutyDate(deleted?.date);
+ const isToday=deletedDate&&deletedDate.getFullYear()===new Date().getFullYear()&&deletedDate.getMonth()===new Date().getMonth()&&deletedDate.getDate()===new Date().getDate();
+ if(isToday){
+   editingLogId=null;currentLogDetailId=null;
+   localStorage.setItem('taxiDutyDate',todayYMD());
+   const dateEl=$('date');if(dateEl)dateEl.textContent=formatDutyDate(new Date(todayYMD()+'T00:00:00'));
+   updateDutyDateColor(todayYMD());
+   photoData='';
+   document.querySelectorAll('#weather .chip').forEach(b=>{b.classList.remove('on','first','second');delete b.dataset.weatherOrder;});
+   document.querySelectorAll('#events .chip').forEach(b=>b.classList.remove('on'));
+   const none=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()==='なし');if(none)none.classList.add('on');
+   const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');if(workBtn)setDayType(workBtn,'work');
+   ['out','in','km','salesDataRunDistance','salesDataRideDistance','loadedRate','tripCount','break1Start','break1End','break2Start','break2End','break3Start','break3End','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+   if($('sales'))delete $('sales').dataset.lastSales;
+   updateLoadedRateCalc();initRoutes([]);duration();
+   const preview=$('preview');if(preview)preview.innerHTML='';
+   const status=$('status');if(status)status.textContent='📅 今日の記録を入力します';
+   showToday();window.scrollTo({top:0,behavior:'smooth'});
+ }else{showLogs()}
+}
 function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
