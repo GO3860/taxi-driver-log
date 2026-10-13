@@ -2682,7 +2682,9 @@ async function goToToday(){
   if(none)none.classList.add('on');
   const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
   if(workBtn)setDayType(workBtn,'work');
-  ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  ['out','in','km','salesDataRunDistance','salesDataRideDistance','loadedRate','tripCount','break1Start','break1End','break2Start','break2End','break3Start','break3End','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  if($('sales')){delete $('sales').dataset.lastSales;}
+  updateLoadedRateCalc();
   initRoutes([]);
   duration();
   const preview=$('preview');
@@ -2775,7 +2777,9 @@ async function selectWorkCalendarDate(key){
     if(none)none.classList.add('on');
     const workBtn=[...document.querySelectorAll('#dayType .chip')].find(b=>b.dataset.type==='work');
     if(workBtn)setDayType(workBtn,'work');
-    ['out','in','km','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    ['out','in','km','salesDataRunDistance','salesDataRideDistance','loadedRate','tripCount','break1Start','break1End','break2Start','break2End','break3Start','break3End','sales','avg','restAvg','parttimeTakeHomeInput','eventNote'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  if($('sales')){delete $('sales').dataset.lastSales;}
+  updateLoadedRateCalc();
     initRoutes([]);
     duration();
     const status=$('status');
