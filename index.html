@@ -1469,6 +1469,7 @@ async function editLog(id){
 
   const dateEl=$('date');
   if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+  updateDutyDateColor(ymd);
 
   const dp=$('datePicker');
   if(dp){
@@ -2654,6 +2655,7 @@ async function goToToday(){
   localStorage.setItem('taxiDutyDate',ymd);
   const dateEl=$('date');
   if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
+  updateDutyDateColor(ymd);
   const dp=$('datePicker');
   if(dp){dp.value=ymd;dp.max=ymd;}
 
@@ -2759,6 +2761,7 @@ async function selectWorkCalendarDate(key){
     localStorage.setItem('taxiDutyDate',key);
     const dateEl=$('date');
     if(dateEl)dateEl.textContent=formatDutyDate(new Date(key+'T00:00:00'));
+    updateDutyDateColor(key);
     const dp=$('datePicker');
     if(dp){
       dp.value=key;
