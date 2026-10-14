@@ -1223,32 +1223,51 @@ async function renderSalesGoal(){
   const closing=Number(localStorage.getItem('taxiClosingDay')||15);
   const now=new Date();
   const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const period=getDataPeriod(today);
+  const endDate=period.end;
+  const daysElapsed=Math.max(1,Math.floor((today-period.start)/86400000)+1);
+  const daysRemaining=Math.max(0,Math.floor((endDate-today)/86400000));
+  const periodWorkLogs=(logs||[]).filter(x=>{
+    const d=dateOnly(x.date);
+    return d&&d>=period.start&&d<=today&&(x.dayType||'work')==='work';
+  });
+  const workedDays=periodWorkLogs.length;
+  const averagePerWorkday=workedDays?sales/workedDays:0;
+  // 勤務予定の登録に頼らず、これまでの実際の勤務頻度から締日までの見込みを算出する。
+  const workFrequency=workedDays/daysElapsed;
+  const expectedRemainingWorkdays=workFrequency*daysRemaining;
+  const forecast=sales+(averagePerWorkday*expectedRemainingWorkdays);
+  const forecastPct=goal>0?forecast/goal*100:0;
   const month=(today>new Date(today.getFullYear(),today.getMonth(),closing)?today.getMonth()+1:today.getMonth())+'月';
-  let message;
-  if(sales>=goal){
-    message='🎉 目標達成！おめでとう！';
-  }else if(pct>=90){
-    message='🚕 あと少し！安全運転で！';
-  }else if(pct>=80){
-    message='🐱 無理しないでね';
-  }else if(pct>=70){
-    message='🚕 もうひと踏ん張り！';
-  }else if(pct>=60){
-    message='🚕 順調、順調♪';
-  }else if(pct>=40){
-    message='🚕 半分まで来たよ！';
-  }else if(pct>=20){
-    message='🚕 いいスタート！その調子！';
+  let message='',messageTone='kind';
+  if(goal>0&&sales>=goal){
+    message='🎉 目標に届いたね！今月もお疲れさま。安全に乗務してくれてありがとう。';
+  }else if(workedDays===0){
+    message='🌱 これから少しずつ記録していこう。今月の見込みは、乗務データが増えると分かりやすくなるよ。';
+  }else if(daysRemaining===0){
+    message=forecast>=goal?'🌸 今月の目標に届いたね。お疲れさまでした！':'🐱 こんな月もあるよね。今月もお疲れさま。来月に期待だね。';
+  }else if(forecastPct>=100){
+    message='🚕 今のペースなら目標に届く可能性がありそう。安全が1番の売上だよ。';
+  }else if(forecastPct>=85){
+    message='🍀 目標に近づけそうなペースだね。無理せず、いつもの安全運転でいこう。';
+  }else if(forecastPct>=60){
+    message='🌷 思ったようにいかない月もあるよね。体を大切に、安全第一でいこう。';
   }else{
-    message='🚕 目標に向かって、がんばろう！';
+    message='🐱 こんな月もあるよね。売上だけがすべてじゃないよ。来月に期待だね。';
   }
+  const forecastLabel=workedDays<3?'参考の見込み':(daysRemaining===0?'今月の結果':'このペースでの見込み');
+  const estimateText=workedDays===0?'記録が増えると表示できます':yen(Math.round(forecast/1000)*1000);
   box.innerHTML=`<div class="salesGoalHead"><div class="salesGoalTitle">🚩 今月の売上目標</div><button type="button" class="salesGoalChange" onclick="showSettings()">設定で変更</button></div>
     <div class="salesGoalNumbers"><div><div class="salesGoalSmall">${month}の累計売上</div><div class="salesGoalAmount">¥${sales.toLocaleString()}</div></div><div class="salesGoalTarget"><div class="salesGoalSmall">目標金額</div><div class="salesGoalAmount">¥${goal.toLocaleString()}</div></div></div>
     <div class="salesRoad"><div class="salesRoadDone" style="width:${width}%"></div><div class="salesTaxi" style="left:calc(${width}% - 22px)">🚕</div><div class="salesFlag">🏁</div></div>
     <div class="salesGoalBottom"><strong>${pct}%</strong><span>${sales>=goal?'目標達成！':'あと ¥'+remain.toLocaleString()}</span></div>
-    <div class="salesGoalMessage">${message} 🐱</div>`;
+    <div style="margin:12px auto 0;padding:10px 12px;background:#fff;border:1px solid #dcecf8;border-radius:14px;text-align:center">
+      <div style="font-size:12px;color:#66717c">${forecastLabel}（勤務予定の登録は不要）</div>
+      <div style="font-size:21px;font-weight:900;margin-top:3px">${estimateText}</div>
+      <div style="font-size:11px;color:#777;margin-top:4px">記録済み勤務 ${workedDays}日・締日まで ${daysRemaining}日／実際の勤務頻度から計算した参考値です</div>
+    </div>
+    <div class="salesGoalMessage">${message}</div>`;
 }
-
 function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }
 
 // 休みの日のエリア平均は、画面上の入力欄だけでなく端末内の下書きにも保持する。
