@@ -413,11 +413,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="salesDataCalcFormula">実車率 ＝ 乗車距離 ÷ 走行距離 × 100</div>
 </div>
 
-<div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道ログを記録</div>
+<div id="routeCardHome"><div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道ログを記録</div>
 <div class="help-text">出発地と目的地だけでもOK。詳しい道順は必要なときだけ追加できます。</div>
 <div id="routeList"></div>
 <button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道ログを追加</button>
-</div>
+</div></div>
 
 <div class="card"><div class="label">🗣️ 本日の営業での出来事</div><textarea id="eventNote" placeholder="その日の出来事を、そのまま話してOK"></textarea></div>
 
@@ -755,6 +755,17 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     </div>
   </div>
 </main>
+<main id="generalRoutePage" class="hidden">
+  <div class="card">
+    <div class="label">🗺️ 一般道ログ</div>
+    <div class="help-text">覚えておきたい道順を記録します。今日の売上や勤務時間の入力とは分けて保存できます。</div>
+  </div>
+  <div id="generalRouteMount"></div>
+  <button type="button" class="save" onclick="saveGeneralRouteOnly()">道ログを保存</button>
+  <div class="status" id="generalRouteStatus">この端末に保存します</div>
+  <button type="button" class="btn full" onclick="showRouteChoice()">← 高速・一般の選択に戻る</button>
+</main>
+
 <main id="routeChoice" class="hidden">
   <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card">
@@ -2695,7 +2706,7 @@ function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
 }
-function hideAllMainViews(){['today','logs','settings','data','routeChoice','routeDb','areaAvgLater','highwayLog'].forEach(id=>$(id)?.classList.add('hidden'))}
+function hideAllMainViews(){['today','logs','settings','data','routeChoice','routeDb','generalRoutePage','areaAvgLater','highwayLog'].forEach(id=>$(id)?.classList.add('hidden'))}
 
 const HW_MEMOS_KEY='taxiHighwayLogMemosV1';
 const HW_ROUTES_KEY='taxiHighwayLogRoutesV1';
@@ -2796,7 +2807,7 @@ function deleteHighwayRoute(id){
   const routes=hwRead(HW_ROUTES_KEY).filter(r=>r.id!==id);hwWrite(HW_ROUTES_KEY,routes);renderHighwayRoutes();
 }
 
-function showToday(){resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';applySettings()}
+function showToday(){returnRouteCardHome();resetSaveButton();hideAllMainViews();$('today').classList.remove('hidden');const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';applySettings()}
 async function showAreaAvgLater(){
   resetSaveButton();
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
@@ -2914,7 +2925,51 @@ async function renderAreaAvgLater(){
   }).join('');
 }
 function showRouteChoice(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeChoice').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
-function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';showToday();const card=$('routeCard');if(card){card.classList.remove('hidden');card.scrollIntoView({behavior:'smooth',block:'start'})}}
+function showRouteDatabase(){
+  resetSaveButton();
+  const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
+  hideAllMainViews();
+  const page=$('generalRoutePage');if(page)page.classList.remove('hidden');
+  const card=$('routeCard'),mount=$('generalRouteMount');
+  if(card&&mount){mount.appendChild(card);card.classList.remove('hidden')}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function returnRouteCardHome(){
+  const card=$('routeCard'),home=$('routeCardHome');
+  if(card&&home&&card.parentElement!==home){home.appendChild(card);card.classList.add('hidden')}
+}
+async function saveGeneralRouteOnly(){
+  const routes=getRouteData();
+  if(!routes.length){alert('目的地かコースを入力してください。');return}
+  const status=$('generalRouteStatus');
+  try{
+    const selectedKey=localStorage.getItem('taxiDutyDate')||todayYMD();
+    const dateObj=new Date(selectedKey+'T00:00:00');
+    if(Number.isNaN(dateObj.getTime()))throw new Error('日付を確認できません');
+    const displayDate=formatDutyDate(dateObj);
+    const all=await getLogs();
+    const existing=all.find(x=>{
+      const d=parseDutyDate(x.date);
+      return d&&d.getFullYear()===dateObj.getFullYear()&&d.getMonth()===dateObj.getMonth()&&d.getDate()===dateObj.getDate();
+    });
+    if(existing){
+      existing.routes=routes;
+      existing.destination=routes[0]?.destination||'';
+      existing.course=routes[0]?.course||'';
+      existing.savedAt=new Date().toISOString();
+      await new Promise((resolve,reject)=>{const req=db.transaction(STORE,'readwrite').objectStore(STORE).put(existing);req.onsuccess=resolve;req.onerror=()=>reject(req.error)});
+    }else{
+      const record={date:displayDate,dayType:'work',weather:[],event:[],out:'',in:'',hours:'',km:'',runDistance:'',rideDistance:'',sales:'',loadedRate:'',tripCount:'',avg:'',routes,destination:routes[0]?.destination||'',course:routes[0]?.course||'',eventNote:'',photo:'',savedAt:new Date().toISOString()};
+      await addLog(record);
+    }
+    if(status)status.textContent='✅ 道ログを保存しました（'+displayDate+'）';
+    alert('道ログを保存しました。今日の売上や勤務時間は変更していません。');
+  }catch(e){
+    console.error(e);
+    if(status)status.textContent='保存できませんでした。もう一度お試しください。';
+    alert('道ログを保存できませんでした。入力内容は画面に残しています。');
+  }
+}
 
 async function goToToday(){
   const ymd=todayYMD();
