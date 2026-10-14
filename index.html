@@ -755,6 +755,25 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     </div>
   </div>
 </main>
+<main id="routeChoice" class="hidden">
+  <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
+  <div class="card">
+    <div class="label">🛣️ 道ログ</div>
+    <div class="help-text">記録したい道の種類を選んでください。</div>
+    <div class="routeChoiceGrid">
+      <button type="button" class="routeChoiceButton highwayChoice" onclick="showHighwayLog()">
+        <span class="routeChoiceIcon">🛣️</span>
+        <span class="routeChoiceTitle">高速</span>
+        <span class="routeChoiceDesc">高速ログを開く</span>
+      </button>
+      <button type="button" class="routeChoiceButton generalChoice" onclick="showRouteDatabase()">
+        <span class="routeChoiceIcon">🗺️</span>
+        <span class="routeChoiceTitle">一般</span>
+        <span class="routeChoiceDesc">従来の道ログを開く</span>
+      </button>
+    </div>
+  </div>
+</main>
 <main id="routeDb" class="hidden">
   <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card">
@@ -850,7 +869,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <span class="floatingCalendarIcon">🌿</span><span>休み方アドバイス</span>
   </button>
 </div>
-<nav><button class="navbtn" onclick="goToToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn hwNav" onclick="showHighwayLog()">🛣️ 高速ログ</button><button class="navbtn routeNav" onclick="showRouteDatabase()"><span class="navIcon">🛣️</span><span class="navLabel">道ログ</span></button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
+<nav><button class="navbtn" onclick="goToToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn routeNav" onclick="showRouteChoice()"><span class="navIcon">🛣️</span><span class="navLabel">道ログ</span></button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
 </div>
 
 <style id="area-average-disabled-v194">
@@ -2685,7 +2704,7 @@ function resetSaveButton(){
   const b=document.getElementById('saveButton');
   if(b)b.classList.remove('savePressed');
 }
-function hideAllMainViews(){['today','logs','settings','data','routeDb','areaAvgLater','highwayLog'].forEach(id=>$(id)?.classList.add('hidden'))}
+function hideAllMainViews(){['today','logs','settings','data','routeChoice','routeDb','areaAvgLater','highwayLog'].forEach(id=>$(id)?.classList.add('hidden'))}
 
 const HW_STATIONS={
   '尼崎市':['JR尼崎駅','阪神尼崎駅','阪急塚口駅','阪急武庫之荘駅'],
@@ -2934,6 +2953,7 @@ async function renderAreaAvgLater(){
     </div>`;
   }).join('');
 }
+function showRouteChoice(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeChoice').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
 async function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
 
 async function goToToday(){
@@ -3945,6 +3965,18 @@ setInterval(updateConstraintWarning,30000);
   });
 })();
 </script>
+
+<style id="route-choice-menu-v1">
+.routeChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.routeChoiceButton{min-width:0;min-height:150px;border:1px solid #dbe3e9;border-radius:18px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.routeChoiceButton:active{transform:translateY(2px)}
+.routeChoiceButton.highwayChoice{background:linear-gradient(145deg,#e4f8f5,#c9eee8);color:#086c65;border-color:#a9ddd5}
+.routeChoiceButton.generalChoice{background:linear-gradient(145deg,#edf4ff,#dce8fb);color:#24599a;border-color:#c8d9f3}
+.routeChoiceIcon{font-size:34px;line-height:1.1}
+.routeChoiceTitle{font-size:21px;font-weight:900}
+.routeChoiceDesc{font-size:12px;font-weight:700;text-align:center}
+@media(max-width:360px){.routeChoiceGrid{gap:8px}.routeChoiceButton{padding:14px 6px;min-height:138px}.routeChoiceTitle{font-size:19px}.routeChoiceDesc{font-size:11px}}
+</style>
 
 <style id="highway-log-v1">
 .hwNav{font-size:12px!important;font-weight:800;color:#087f8c!important}
