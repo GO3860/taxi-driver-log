@@ -2914,7 +2914,7 @@ async function renderAreaAvgLater(){
   }).join('');
 }
 function showRouteChoice(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeChoice').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
-async function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeDb').classList.remove('hidden');const q=$('routeDbSearch');if(q)q.value='';await renderRouteDatabase()}
+function showRouteDatabase(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';showToday();const card=$('routeCard');if(card){card.classList.remove('hidden');card.scrollIntoView({behavior:'smooth',block:'start'})}}
 
 async function goToToday(){
   const ymd=todayYMD();
