@@ -1267,6 +1267,9 @@ async function renderSalesGoal(){
       <div class="help-text" style="font-size:11px;color:#777;margin-top:4px">記録済み勤務 ${workedDays}日・締日まで ${daysRemaining}日／実際の勤務頻度から計算した参考値です</div>
     </div>
     <div class="salesGoalMessage">${message}</div>`;
+  // 売上目標カードは動的に作り直されるため、説明文ON/OFFを再適用する。
+  const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
+  box.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
 function isRestDay(type){ return type==='rest' || type==='rest_nonpublic' || type==='rest_leaveabsence'; }
 
