@@ -751,18 +751,18 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     </div>
   </div>
 </main>
-<div id="routeCardHome" class="hidden"><div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道ログを記録</div>
-<div class="help-text">出発地と目的地だけでもOK。詳しい道順は必要なときだけ追加できます。</div>
-<div id="routeList"></div>
-<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道ログを追加</button>
-</div></div>
+
 
 <main id="generalRoutePage" class="hidden">
   <div class="card">
     <div class="label">🗺️ 一般道ログ</div>
     <div class="help-text">覚えておきたい道順を記録します。今日の売上や勤務時間の入力とは分けて保存できます。</div>
   </div>
-  <div id="generalRouteMount"></div>
+  <div id="generalRouteMount"><div id="routeCardHome" class="hidden"><div id="routeCard" class="card optional-widget hidden"><div class="label">🗺️ 道ログを記録</div>
+<div class="help-text">出発地と目的地だけでもOK。詳しい道順は必要なときだけ追加できます。</div>
+<div id="routeList"></div>
+<button type="button" class="btn full routeAdd" onclick="addRoute()">＋ 道ログを追加</button>
+</div></div></div>
   <button type="button" class="save" onclick="saveGeneralRouteOnly()">道ログを保存</button>
   <div class="status" id="generalRouteStatus">この端末に保存します</div>
   <button type="button" class="btn full" onclick="showRouteChoice()">← 高速・一般の選択に戻る</button>
