@@ -801,13 +801,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <input id="hwMemoAliases" type="text" placeholder="例：梅田、キタ（複数は読点で区切る）">
     <label class="hwLabel" for="hwMemoNote">簡単なメモ（任意）</label>
     <textarea id="hwMemoNote" placeholder="例：入口ICをあとで確認する。分岐に注意。"></textarea>
-    <div class="hwLabel">高速道路を利用した？</div>
-    <div class="hwChoiceRow">
-      <label><input type="radio" name="hwMemoUse" value="yes" checked> 利用した</label>
-      <label><input type="radio" name="hwMemoUse" value="no"> 利用しなかった</label>
-    </div>
     <button type="button" class="save hwSaveButton" onclick="saveHighwayMemo()">簡易メモを保存</button>
-    <div class="small">「利用しなかった」を選ぶと、既存の道ログ入力画面を開きます。</div>
   </div>
   <div class="card">
     <div class="label">📝 未整理のメモ</div>
@@ -2723,16 +2717,8 @@ function saveHighwayMemo(){
   const station=String($('hwMemoStation').value||'').trim();
   const destination=String($('hwMemoDestination').value||'').trim();
   const aliases=String($('hwMemoAliases').value||'').trim();
-  const use=document.querySelector('input[name="hwMemoUse"]:checked')?.value||'yes';
   if(!station){alert('乗車地の最寄り駅を入力してください。');$('hwMemoStation').focus();return}
   if(!destination){alert('目的地域を入力してください。');$('hwMemoDestination').focus();return}
-  if(use==='no'){
-    showToday();
-    const card=$('routeCard');
-    if(card){card.classList.remove('hidden');card.scrollIntoView({behavior:'smooth',block:'start'})}
-    alert('既存の道ログ入力を開きました。一般道の記録は、いつもの道ログに入力してください。');
-    return;
-  }
   const date=$('hwMemoDate').value||hwToday();
   const note=String($('hwMemoNote').value||'').trim();
   const memo={id:hwId(),date:date,city:'',station:station,destination:destination,aliases:aliases,note:note,status:'pending',createdAt:new Date().toISOString()};
