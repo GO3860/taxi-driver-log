@@ -2782,7 +2782,7 @@ function saveHighwayRoute(){
   if(!entranceIC||!entranceRoad||!exitIC||!exitRoad){alert('乗るIC・乗る路線名・降りるIC・降りる路線名をすべて入力してください。');return}
   const routes=existingRoutes;
   const same=routes.filter(r=>r.id!==(editingRoute&&editingRoute.id)&&r.station===memo.station&&String(r.destination||'').toLowerCase()===String(memo.destination||'').toLowerCase());
-  const recommended=$('hwFormalRecommended').checked||same.length===0;
+  const recommended=$('hwFormalRecommended').checked||(!editingRoute&&same.length===0);
   const route={...(editingRoute||{}),id:editingRoute?editingRoute.id:hwId(),memoId:memo.id,date:memo.date,city:'',station:memo.station,destination:memo.destination,aliases:memo.aliases||'',entranceIC:entranceIC,entranceRoad:entranceRoad,exitIC:exitIC,exitRoad:exitRoad,road:'',waypoints:'',condition:$('hwFormalCondition').value,reason:$('hwFormalReason').value.trim(),notes:$('hwFormalNotes').value.trim(),recommended:recommended,createdAt:editingRoute?editingRoute.createdAt||new Date().toISOString():new Date().toISOString()};
   if(recommended)routes.forEach(r=>{if(r.station===route.station&&String(r.destination||'').toLowerCase()===String(route.destination||'').toLowerCase())r.recommended=r.id===route.id});
   if(editingRoute){const idx=routes.findIndex(r=>r.id===route.id);routes[idx]=route}else routes.unshift(route);hwWrite(HW_ROUTES_KEY,routes);
