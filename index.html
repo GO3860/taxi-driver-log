@@ -2633,8 +2633,10 @@ async function showAnalysis(type){
   }
 }
 async function showData(){
+  returnRouteCardHome();
+  ['today','logs','settings','routeChoice','routeDb','generalRoutePage','areaAvgLater','highwayLog'].forEach(id=>$(id)?.classList.add('hidden'));
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
-  $('today').classList.add('hidden');$('logs').classList.add('hidden');$('settings').classList.add('hidden');$('routeDb').classList.add('hidden');$('highwayLog').classList.add('hidden');$('data').classList.remove('hidden');
+  $('data').classList.remove('hidden');
   $('dataSummaryView').classList.remove('hidden');$('dataAnalysisView').classList.add('hidden');$('dataDetailView').classList.add('hidden');
   await renderMonthlyTop();
   await renderPeriodRangeSummary(true);
