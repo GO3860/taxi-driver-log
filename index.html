@@ -1308,7 +1308,7 @@ async function renderSalesGoal(){
   const expectedRemainingWorkdays=workFrequency*daysRemaining;
   const forecast=sales+(averagePerWorkday*expectedRemainingWorkdays);
   const forecastPct=goal>0?forecast/goal*100:0;
-  const month=(today>new Date(today.getFullYear(),today.getMonth(),closing)?today.getMonth()+1:today.getMonth())+'月';
+  const month=(period.start.getMonth()+1)+'月';
   let message='',messageTone='kind';
   if(goal>0&&sales>=goal){
     message='🎉 目標に届いたね！今月もお疲れさま。安全に乗務してくれてありがとう。';
