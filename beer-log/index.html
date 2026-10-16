@@ -25,6 +25,10 @@ input[type=date]{-webkit-appearance:none;appearance:none;min-height:54px}
 input[type=date]::-webkit-date-and-time-value{text-align:left}
 input[type=date]::-webkit-calendar-picker-indicator{margin:0 0 0 4px}
 .field{margin-bottom:13px}
+.radio-options{display:flex;gap:10px;flex-wrap:wrap}
+.radio-option{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfcf8;color:var(--ink);font-size:14px;cursor:pointer}
+.radio-option input{accent-color:var(--green);width:18px;height:18px;margin:0}
+.radio-option:has(input:checked){border-color:var(--green);background:#edf4ed}
 .cans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .can{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcf8}
 .can .size{font-weight:800;font-size:17px}.can .price{font-size:12px;color:var(--muted);margin:3px 0 9px}
@@ -51,6 +55,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:12px}
 <section class="card">
 <h2 id="formTitle">今日の記録</h2>
 <div class="field"><label for="drinkDate">日付</label><input id="drinkDate" type="date" required></div>
+<div class="field"><label>お医者さんから処方された薬</label><div class="radio-options" role="radiogroup" aria-label="処方薬を飲んだか"><label class="radio-option"><input type="radio" name="medication" value="taken">飲んだ</label><label class="radio-option"><input type="radio" name="medication" value="not_taken">飲んでいない</label><label class="radio-option"><input type="radio" name="medication" value="unrecorded" checked>未記録</label></div></div>
 <div class="field"><label for="regret">後悔・生活への影響（任意）</label><textarea id="regret" rows="3" placeholder="例：寝不足でしんどかった、予定をキャンセルした、出費が増えた…など"></textarea></div>
 <div class="cans">
 <div class="can"><div class="size">350ml 缶</div><div class="price">220円／本</div><label for="qty350">本数</label><input id="qty350" type="number" min="0" max="999" step="1" inputmode="numeric" placeholder="0" value="0"></div>
@@ -91,7 +96,7 @@ const fmt=n=>Number(n||0).toLocaleString('ja-JP');
 const yen=n=>fmt(n)+'円';
 const monthNow=localDate(today).slice(0,7);
 let records=loadRecords(), editingDate=null;
-function loadRecords(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>({date:r.date,q350:Math.max(0,parseInt(r.q350,10)||0),q500:Math.max(0,parseInt(r.q500,10)||0),regret:typeof r.regret==='string'?r.regret:''})):[]}catch(e){return []}}
+function loadRecords(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v.filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>({date:r.date,q350:Math.max(0,parseInt(r.q350,10)||0),q500:Math.max(0,parseInt(r.q500,10)||0),regret:typeof r.regret==='string'?r.regret:'',medication:['taken','not_taken','unrecorded'].includes(r.medication)?r.medication:'unrecorded'})):[]}catch(e){return []}}
 function persist(){localStorage.setItem(KEY,JSON.stringify(records))}
 function cost(r){return r.q350*PRICE350+r.q500*PRICE500}
 function total(rows){return rows.reduce((a,r)=>({q350:a.q350+r.q350,q500:a.q500+r.q500,cost:a.cost+cost(r),days:a.days+1}),{q350:0,q500:0,cost:0,days:0})}
@@ -116,20 +121,20 @@ function renderRecords(){
  let rows=records.filter(r=>mode==='all'||(mode==='month'?r.date.startsWith(m):r.date.startsWith(y+'-'))).sort((a,b)=>b.date.localeCompare(a.date));
  const box=$('records');
  if(!rows.length){box.innerHTML='<div class="empty">まだ記録がありません。<br>飲んだ本数を入力して保存してみよう。</div>';return}
- box.innerHTML=rows.map(r=>'<div class="record"><div><div class="record-date">'+dateLabel(r.date)+'</div><div class="record-sub">350ml：'+fmt(r.q350)+'本（'+yen(r.q350*PRICE350)+'）<br>500ml：'+fmt(r.q500)+'本（'+yen(r.q500*PRICE500)+'）'+(r.regret?'<br><span style="color:var(--ink)">後悔・生活への影響：'+escapeHtml(r.regret)+'</span>':'')+'</div></div><div class="record-right"><div class="record-cost">'+yen(cost(r))+'</div><div class="record-sub">合計 '+fmt(r.q350+r.q500)+'本</div><div class="actions" style="justify-content:flex-end"><button class="secondary" data-edit="'+r.date+'" style="padding:7px 10px;min-height:34px">修正</button><button class="danger" data-delete="'+r.date+'">削除</button></div></div></div>').join('');
+ box.innerHTML=rows.map(r=>'<div class="record"><div><div class="record-date">'+dateLabel(r.date)+'</div><div class="record-sub">350ml：'+fmt(r.q350)+'本（'+yen(r.q350*PRICE350)+'）<br>500ml：'+fmt(r.q500)+'本（'+yen(r.q500*PRICE500)+'）'+'<br>処方薬：'+(r.medication==='taken'?'飲んだ':r.medication==='not_taken'?'飲んでいない':'未記録')+(r.regret?'<br><span style="color:var(--ink)">後悔・生活への影響：'+escapeHtml(r.regret)+'</span>':'')+'</div></div><div class="record-right"><div class="record-cost">'+yen(cost(r))+'</div><div class="record-sub">合計 '+fmt(r.q350+r.q500)+'本</div><div class="actions" style="justify-content:flex-end"><button class="secondary" data-edit="'+r.date+'" style="padding:7px 10px;min-height:34px">修正</button><button class="danger" data-delete="'+r.date+'">削除</button></div></div></div>').join('');
  box.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>editRecord(b.dataset.edit)));
  box.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>deleteRecord(b.dataset.delete)));
 }
-function editRecord(date){const r=records.find(x=>x.date===date);if(!r)return;editingDate=date;$('drinkDate').value=r.date;$('qty350').value=r.q350;$('qty500').value=r.q500;$('regret').value=r.regret||'';$('formTitle').textContent=dateLabel(date)+'の記録を修正';$('saveBtn').textContent='修正を保存';window.scrollTo({top:0,behavior:'smooth'})}
-function resetForm(){editingDate=null;setDefaultDate();$('qty350').value='0';$('qty500').value='0';$('regret').value='';$('formTitle').textContent='今日の記録';$('saveBtn').textContent='記録を保存'}
+function editRecord(date){const r=records.find(x=>x.date===date);if(!r)return;editingDate=date;$('drinkDate').value=r.date;$('qty350').value=r.q350;$('qty500').value=r.q500;$('regret').value=r.regret||'';document.querySelectorAll('input[name="medication"]').forEach(el=>{el.checked=el.value===(r.medication||'unrecorded')});$('formTitle').textContent=dateLabel(date)+'の記録を修正';$('saveBtn').textContent='修正を保存';window.scrollTo({top:0,behavior:'smooth'})}
+function resetForm(){editingDate=null;setDefaultDate();$('qty350').value='0';$('qty500').value='0';$('regret').value='';document.querySelectorAll('input[name="medication"]').forEach(el=>{el.checked=el.value==='unrecorded'});$('formTitle').textContent='今日の記録';$('saveBtn').textContent='記録を保存'}
 function deleteRecord(date){const r=records.find(x=>x.date===date);if(!r)return;if(!confirm(dateLabel(date)+'の記録（'+(r.q350+r.q500)+'本、'+yen(cost(r))+'）を削除しますか？'))return;records=records.filter(x=>x.date!==date);persist();if(editingDate===date)resetForm();renderStats()}
 $('saveBtn').addEventListener('click',()=>{
- const date=$('drinkDate').value, q350=Number($('qty350').value||0), q500=Number($('qty500').value||0), regret=$('regret').value.trim();
+ const date=$('drinkDate').value, q350=Number($('qty350').value||0), q500=Number($('qty500').value||0), regret=$('regret').value.trim(), medication=document.querySelector('input[name="medication"]:checked')?.value||'unrecorded';
  if(!date){alert('日付を選んでください');return}
  if(!Number.isInteger(q350)||!Number.isInteger(q500)||q350<0||q500<0||q350>999||q500>999){alert('本数は0〜999の整数で入力してください');return}
  if(q350+q500===0&&!confirm('本数が0本です。この日の記録を保存しますか？'))return;
  const old=records.findIndex(r=>r.date===date);
- const item={date,q350,q500,regret};
+ const item={date,q350,q500,regret,medication};
  if(old>=0){if(!confirm(dateLabel(date)+'の既存記録をこの内容に更新しますか？'))return;records[old]=item}
  else records.push(item);
  records.sort((a,b)=>a.date.localeCompare(b.date));persist();
