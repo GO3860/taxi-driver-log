@@ -19,6 +19,7 @@ h1{margin:0;font-size:23px}.sub{font-size:12px;opacity:.7;margin-top:4px}main{pa
 textarea{min-height:70px;resize:none}.small{font-size:12px;color:#777;margin-top:7px}.help-text{font-size:12px;color:#777;margin-top:7px}.help-text.hidden-help{display:none}.full{width:100%;margin-top:8px}
 .preview img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px}
 .save{width:100%;border:0;border-radius:16px;background:#b8b8b8;color:#fff;padding:16px;font-size:17px;font-weight:700;box-shadow:0 5px 0 #888;transition:all .08s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hwMemoSaveButton{background:linear-gradient(180deg,#20a79e 0%,#087f78 100%);box-shadow:0 6px 0 #075f5a,0 8px 14px rgba(8,127,120,.22);font-size:19px;font-weight:900;letter-spacing:.02em;padding:18px 16px;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,box-shadow .08s ease,filter .08s ease}.hwMemoSaveButton:active{transform:translateY(5px);box-shadow:0 1px 0 #075f5a,0 2px 5px rgba(8,127,120,.2);filter:brightness(.92)}
 .routeSaveButton{background:linear-gradient(180deg,#35a5f5 0%,#1677d2 100%);box-shadow:0 6px 0 #105da8,0 8px 14px rgba(22,119,210,.22);font-size:19px;font-weight:900;letter-spacing:.03em;padding:18px 16px;margin-top:4px;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,box-shadow .08s ease,filter .08s ease}.routeSaveButton:active{transform:translateY(5px);box-shadow:0 1px 0 #105da8,0 2px 5px rgba(22,119,210,.2);filter:brightness(.92)}
 .savePressed{background:#151515;transform:translateY(5px);box-shadow:0 0 0 #151515}
 .save:not(:active):not(:focus){ }
@@ -814,7 +815,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <input id="hwMemoAliases" type="text" placeholder="例：梅田、キタ（複数は読点で区切る）">
     <label class="hwLabel" for="hwMemoNote">簡単なメモ（任意）</label>
     <textarea id="hwMemoNote" placeholder="例：入口ICをあとで確認する。分岐に注意。"></textarea>
-    <div class="hwButtonRow"><button id="hwMemoSaveButton" type="button" class="save hwSaveButton" onclick="saveHighwayMemo()">簡易メモを保存</button><button id="hwMemoCancelEdit" type="button" class="btn hidden" onclick="cancelHighwayMemoEdit()">キャンセル</button></div>
+    <div class="hwButtonRow"><button id="hwMemoSaveButton" type="button" class="save hwSaveButton hwMemoSaveButton" onclick="saveHighwayMemo()">📝 簡易メモを保存</button><button id="hwMemoCancelEdit" type="button" class="btn hidden" onclick="cancelHighwayMemoEdit()">キャンセル</button></div>
   </div>
   <div class="card">
     <div class="label">📝 未整理のメモ</div>
