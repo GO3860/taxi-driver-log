@@ -843,7 +843,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <label class="hwLabel" for="hwFormalNotes">注意点・実走メモ（任意）</label>
     <textarea id="hwFormalNotes" placeholder="実際に走って気づいたこと"></textarea>
     <label class="hwRecommendCheck"><input id="hwFormalRecommended" type="checkbox"> このルートを推奨ルートにする</label>
-    <div class="hwButtonRow"><button type="button" class="save hwSaveButton" onclick="saveHighwayRoute()">正式登録</button><button type="button" class="btn" onclick="cancelHighwayFormal()">キャンセル</button></div>
+    <div class="hwButtonRow"><button type="button" class="save hwSaveButton hwFormalSaveButton" onclick="saveHighwayRoute()">✅ 正式登録</button><button type="button" class="btn" onclick="cancelHighwayFormal()">キャンセル</button></div>
   </div>
   <div class="card">
     <div class="label">🔎 登録済み高速ルート</div>
@@ -4006,6 +4006,7 @@ setInterval(updateConstraintWarning,30000);
 .hwChoiceRow label,.hwRecommendCheck{display:flex;align-items:center;gap:7px;font-size:14px;padding:8px 10px;background:#f4f7f9;border-radius:10px}
 .hwChoiceRow input,.hwRecommendCheck input{width:20px;height:20px}
 .hwSaveButton{background:#0d827e!important;box-shadow:0 4px 0 #075c59!important;margin-top:10px}
+.hwFormalSaveButton{background:linear-gradient(180deg,#20a79e 0%,#087f78 100%)!important;box-shadow:0 6px 0 #075f5a,0 8px 14px rgba(8,127,120,.22)!important;font-size:19px;font-weight:900;letter-spacing:.02em;padding:18px 16px;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,box-shadow .08s ease,filter .08s ease}.hwFormalSaveButton:active{transform:translateY(5px);box-shadow:0 1px 0 #075f5a,0 2px 5px rgba(8,127,120,.2)!important;filter:brightness(.92)}
 .hwMemoItem,.hwRouteGroup{border:1px solid #e0e6eb;border-radius:14px;padding:12px;margin-top:10px;background:#fbfcfd}
 .hwItemTitle{font-size:16px;font-weight:900;line-height:1.45}
 .hwMeta{font-size:12px;color:#6c7680;margin-top:5px}
