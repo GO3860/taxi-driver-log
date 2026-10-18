@@ -794,6 +794,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
         <span class="routeChoiceTitle">一般</span>
       </button>
     </div>
+    <div class="routeChoiceGrid" style="margin-top:14px">
+      <button type="button" class="routeChoiceButton highwayChoice" onclick="showRegisteredHighwayRoutes()">
+        <span class="routeChoiceIcon">📚</span>
+        <span class="routeChoiceTitle">登録済み高速ログ</span>
+      </button>
+      <button type="button" class="routeChoiceButton generalChoice" onclick="showRegisteredGeneralRoutes()">
+        <span class="routeChoiceIcon">📚</span>
+        <span class="routeChoiceTitle">登録済み一般ログ</span>
+      </button>
+    </div>
   </div>
 </main>
 <main id="routeDb" class="hidden">
@@ -2954,6 +2964,16 @@ async function renderAreaAvgLater(){
   }).join('');
 }
 function showRouteChoice(){resetSaveButton();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';hideAllMainViews();$('routeChoice').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+function showRegisteredHighwayRoutes(){
+  showHighwayLog();
+  const card=document.getElementById('hwRouteList')?.closest('.card');
+  if(card)setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+function showRegisteredGeneralRoutes(){
+  showRouteDatabase();
+  const card=document.getElementById('generalRouteSavedCard');
+  if(card)setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
 function showRouteDatabase(){
   resetSaveButton();
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';
