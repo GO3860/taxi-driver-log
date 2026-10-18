@@ -769,6 +769,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div></div></div>
   <button type="button" class="save routeSaveButton" onclick="saveGeneralRouteOnly()">💾 道ログを保存</button>
   <div class="status" id="generalRouteStatus">この端末に保存します</div>
+  <div class="card" id="generalRouteSavedCard">
+    <div class="label">📚 登録済み一般道ログ</div>
+    <div class="help-text">保存した一般道の道順を一覧で確認できます。項目をタップすると、その日の乗務ログを開きます。</div>
+    <div class="routeDbSearch"><input id="generalRouteSearch" type="search" placeholder="🔎 目的地・コースを検索" oninput="renderGeneralRouteDatabase()"></div>
+    <div class="routeDbHint">目的地や道順の言葉で検索できます。</div>
+    <div id="generalRouteSavedList"></div>
+  </div>
   <button type="button" class="btn full" onclick="showRouteChoice()">← 高速・一般の選択に戻る</button>
 </main>
 
@@ -1506,6 +1513,36 @@ async function saveLog(){
  renderRouteDatabase();
  // 拘束時間の通知がある場合は、「保存しました！」の確認ウインドウ内だけに表示する。
  alert(currentConstraintMessage ? `保存しました！\n\n${currentConstraintMessage}` : '保存しました！');
+}
+
+async function renderGeneralRouteDatabase(){
+  const box=$('generalRouteSavedList');
+  if(!box)return;
+  let logs=[];
+  try{logs=await getLogs()}catch(e){box.innerHTML='<div class="routeDbEmpty">保存した道ログを読み込めませんでした。</div>';return}
+  const q=String($('generalRouteSearch')?.value||'').trim().toLowerCase();
+  const rows=[];
+  logs.forEach(log=>{
+    const routes=Array.isArray(log.routes)&&log.routes.length?log.routes:
+      ((log.destination||log.course||log.photo)?[{destination:log.destination||'',course:log.course||'',photo:log.photo||''}]:[]);
+    routes.forEach((r,i)=>{
+      const isHighway=String(r?.type||'')==='highway'||!!(r?.entranceIC||r?.exitIC||r?.highwayUsed);
+      if(isHighway)return;
+      const destination=String(r?.destination||'').trim();
+      const course=String(r?.course||r?.caution||'').trim();
+      const photoData=r?.photo||'';
+      const hay=(destination+' '+course).toLowerCase();
+      if((destination||course||photoData)&&(!q||hay.includes(q)))rows.push({date:log.date||'',destination,course,photo:photoData,index:i});
+    });
+  });
+  rows.sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);return (db?db.getTime():0)-(da?da.getTime():0)});
+  box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem" role="button" tabindex="0" onclick="openRouteLog(this.dataset.routeDate)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRouteLog(this.dataset.routeDate)}" data-route-date="${escapeHtml(r.date)}">
+    <div class="routeDbTitle">🗺️ ${escapeHtml(r.destination||'目的地未登録')}</div>
+    ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
+    ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
+    <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
+    <div class="routeDbHint">タップして乗務ログを確認</div>
+  </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
 
 async function renderRouteDatabase(){
@@ -2924,6 +2961,7 @@ function showRouteDatabase(){
   const page=$('generalRoutePage');if(page)page.classList.remove('hidden');
   const card=$('routeCard'),mount=$('generalRouteMount');
   if(card&&mount){mount.appendChild(card);card.classList.remove('hidden')}
+  renderGeneralRouteDatabase();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function returnRouteCardHome(){
@@ -2955,6 +2993,7 @@ async function saveGeneralRouteOnly(){
       await addLog(record);
     }
     if(status)status.textContent='✅ 道ログを保存しました（'+displayDate+'）';
+    await renderGeneralRouteDatabase();
     alert('道ログを保存しました。今日の売上や勤務時間は変更していません。');
   }catch(e){
     console.error(e);
