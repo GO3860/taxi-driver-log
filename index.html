@@ -1552,6 +1552,7 @@ async function renderGeneralRouteDatabase(){
     ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
     ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
     <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
+    <button type="button" class="detailEdit" onclick="changeGeneralRouteDate(event,${JSON.stringify(r.date)},${r.index})">日付を変更</button>
     <div class="routeDbHint">タップして乗務ログを確認</div>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
@@ -1587,6 +1588,25 @@ async function renderRouteDatabase(){
     ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
     <div class="routeDbMeta">記録日：${escapeHtml(r.date)}　・ 道順 ${r.index+1}</div>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する道順はありません。':'まだ道順の記録はありません。'}<br><span style="font-size:12px">毎日のログで出発地・目的地を登録すると、ここに貯まります。</span></div>`;
+}
+
+async function changeGeneralRouteDate(event,sourceDate,index){
+ event?.stopPropagation();
+ const input=prompt('変更後の日付を入力してください（例：2026-10-17）',String(sourceDate||''));if(input===null)return;
+ const m=String(input).trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);if(!m){alert('日付は YYYY-MM-DD 形式で入力してください。');return}
+ const d=new Date(+m[1],+m[2]-1,+m[3]);if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]){alert('正しい日付を入力してください。');return}
+ const newDate=formatDutyDate(d);if(!confirm('道ログの保存先を '+newDate+' に変更しますか？\n道ログの内容はそのまま移動します。'))return;
+ const all=await getLogs(),src=all.find(x=>String(x.date||'')===String(sourceDate||''));if(!src||!Array.isArray(src.routes)||!src.routes[index]){alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return}
+ const dst=all.find(x=>String(x.date||'')===newDate),route=src.routes[index];
+ try{if(dst&&dst.id!==src.id){if(!confirm('変更先の日付には既に乗務ログがあります。道ログだけを追加しますか？'))return;dst.routes=Array.isArray(dst.routes)?dst.routes:[];dst.routes.push(route);src.routes.splice(index,1);await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(dst);tx.objectStore(STORE).put(src);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});}else{src.date=newDate;await new Promise((resolve,reject)=>{const req=db.transaction(STORE,'readwrite').objectStore(STORE).put(src);req.onsuccess=resolve;req.onerror=()=>reject(req.error)});}await renderGeneralRouteDatabase();await renderRouteDatabase();alert('道ログの保存先を変更しました。');}catch(e){alert('変更に失敗しました。元の記録はそのままです。')}
+}
+function changeHighwayRouteDate(id){
+ const routes=hwRead(HW_ROUTES_KEY),route=routes.find(r=>r.id===id);if(!route){alert('対象の高速ルートが見つかりません。');return}
+ const input=prompt('変更後の走行日を入力してください（例：2026-10-17）',String(route.date||hwToday()));if(input===null)return;
+ const m=String(input).trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);if(!m){alert('日付は YYYY-MM-DD 形式で入力してください。');return}
+ const d=new Date(+m[1],+m[2]-1,+m[3]);if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]){alert('正しい日付を入力してください。');return}
+ const newDate=m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');if(!confirm('高速ルートの走行日を '+newDate+' に変更しますか？'))return;
+ route.date=newDate;hwWrite(HW_ROUTES_KEY,routes);const memos=hwRead(HW_MEMOS_KEY),memo=memos.find(x=>x.id===route.memoId);if(memo){memo.date=newDate;hwWrite(HW_MEMOS_KEY,memos)}renderHighwayRoutes();renderHighwayMemos();alert('高速ルートの走行日を変更しました。');
 }
 
 async function openRouteLog(date){
@@ -2834,7 +2854,7 @@ function renderHighwayRoutes(){
   box.innerHTML=ordered.length?ordered.map(key=>{
     const list=groups[key].slice().sort((a,b)=>(b.recommended?1:0)-(a.recommended?1:0)||String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
     const first=list[0];
-    return '<div class="hwRouteGroup"><div class="hwItemTitle">'+escapeHtml(first.destination)+'</div>'+(first.aliases?'<div class="hwMeta">別名・通称：'+escapeHtml(first.aliases)+'</div>':'')+'<div class="hwMeta">'+list.length+'ルート</div>'+list.map(r=>'<div class="hwRouteItem"><div class="hwRouteHead"><strong>'+escapeHtml(r.station)+' → '+escapeHtml(r.destination)+'</strong>'+(r.recommended?'<span class="hwRecommendBadge">★ 推奨ルート</span>':'')+'</div><div class="hwRouteDetail">乗るIC：'+escapeHtml(r.entranceIC||'未登録')+'（'+escapeHtml(r.entranceRoad||r.road||'路線名未登録')+'）</div><div class="hwRouteDetail">降りるIC：'+escapeHtml(r.exitIC||'未登録')+'（'+escapeHtml(r.exitRoad||r.road||'路線名未登録')+'）</div><div class="hwMeta">使う状況：'+escapeHtml(r.condition||'未設定')+' ・走行日 '+escapeHtml(r.date||'不明')+'</div>'+(r.reason?'<div class="hwRouteDetail">理由：'+escapeHtml(r.reason)+'</div>':'')+(r.notes?'<div class="hwRouteDetail">メモ：'+escapeHtml(r.notes)+'</div>':'')+'<div class="hwButtonRow">'+(!r.recommended?'<button type="button" class="detailEdit" onclick="setHighwayRecommended('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">★ 推奨にする</button>':'')+'<button type="button" class="detailEdit" onclick="editHighwayRoute('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">修正</button><button type="button" class="btn" onclick="deleteHighwayRoute('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">削除</button></div></div>').join('')+'</div>';
+    return '<div class="hwRouteGroup"><div class="hwItemTitle">'+escapeHtml(first.destination)+'</div>'+(first.aliases?'<div class="hwMeta">別名・通称：'+escapeHtml(first.aliases)+'</div>':'')+'<div class="hwMeta">'+list.length+'ルート</div>'+list.map(r=>'<div class="hwRouteItem"><div class="hwRouteHead"><strong>'+escapeHtml(r.station)+' → '+escapeHtml(r.destination)+'</strong>'+(r.recommended?'<span class="hwRecommendBadge">★ 推奨ルート</span>':'')+'</div><div class="hwRouteDetail">乗るIC：'+escapeHtml(r.entranceIC||'未登録')+'（'+escapeHtml(r.entranceRoad||r.road||'路線名未登録')+'）</div><div class="hwRouteDetail">降りるIC：'+escapeHtml(r.exitIC||'未登録')+'（'+escapeHtml(r.exitRoad||r.road||'路線名未登録')+'）</div><div class="hwMeta">使う状況：'+escapeHtml(r.condition||'未設定')+' ・走行日 '+escapeHtml(r.date||'不明')+'</div>'+'<button type="button" class="detailEdit" onclick="changeHighwayRouteDate('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">走行日を変更</button>'+(r.reason?'<div class="hwRouteDetail">理由：'+escapeHtml(r.reason)+'</div>':'')+(r.notes?'<div class="hwRouteDetail">メモ：'+escapeHtml(r.notes)+'</div>':'')+'<div class="hwButtonRow">'+(!r.recommended?'<button type="button" class="detailEdit" onclick="setHighwayRecommended('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">★ 推奨にする</button>':'')+'<button type="button" class="detailEdit" onclick="editHighwayRoute('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">修正</button><button type="button" class="btn" onclick="deleteHighwayRoute('+JSON.stringify(r.id).replace(/"/g,'&quot;')+')">削除</button></div></div>').join('')+'</div>';
   }).join(''):'<div class="routeDbEmpty">'+(q?'一致する高速ルートはありません。':'正式登録した高速ルートはまだありません。未整理メモから登録してください。')+'</div>';
 }
 function editHighwayRoute(id){const r=hwRead(HW_ROUTES_KEY).find(x=>x.id===id);if(!r)return;hwEditingRouteId=id;hwEditingMemo=null;$('hwFormalMemoId').value='';$('hwFormalSummary').textContent=(r.station||'')+' → '+(r.destination||'')+(r.aliases?'（'+r.aliases+'）':'');$('hwFormalEntrance').value=r.entranceIC||'';$('hwFormalEntranceRoad').value=r.entranceRoad||r.road||'';$('hwFormalExit').value=r.exitIC||'';$('hwFormalExitRoad').value=r.exitRoad||r.road||'';$('hwFormalCondition').value=r.condition||'通常時';$('hwFormalReason').value=r.reason||'';$('hwFormalNotes').value=r.notes||'';$('hwFormalRecommended').checked=!!r.recommended;$('hwFormalCard').querySelector('.label').textContent='🛣️ 高速ルートを修正';$('hwFormalCard').querySelector('.hwSaveButton').textContent='修正内容を保存';$('hwFormalCard').classList.remove('hidden');$('hwFormalCard').scrollIntoView({behavior:'smooth',block:'start'});}
