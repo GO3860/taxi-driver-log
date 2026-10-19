@@ -1556,6 +1556,7 @@ async function renderGeneralRouteDatabase(){
       <div class="routeDbHint">タップして乗務ログを確認</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button type="button" class="detailEdit generalRouteEditBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">修正</button>
       <button type="button" class="detailEdit generalRouteDateChangeBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">日付を変更</button>
       <button type="button" class="detailEdit generalRouteDeleteBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation;background:#fff0f0;color:#b42318;border:1px solid #f0b8b8" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">削除</button>
     </div>
@@ -1602,6 +1603,12 @@ window.openGeneralRouteDatePicker=function(button,sourceDate,index){
  }catch(error){console.error('一般ログの日付変更画面を開けませんでした',error);alert('日付変更画面を開けませんでした。画面を更新して再度お試しください。');}
 };
 document.addEventListener('click',function(event){
+ const editButton=event.target&&event.target.closest?event.target.closest('.generalRouteEditBtn'):null;
+ if(editButton){
+  event.preventDefault();event.stopPropagation();
+  editGeneralRoute(editButton.getAttribute('data-source-date'),Number(editButton.getAttribute('data-route-index')));
+  return;
+ }
  const deleteButton=event.target&&event.target.closest?event.target.closest('.generalRouteDeleteBtn'):null;
  if(deleteButton){
   event.preventDefault();event.stopPropagation();
@@ -1613,6 +1620,31 @@ document.addEventListener('click',function(event){
  event.preventDefault();event.stopPropagation();
  window.openGeneralRouteDatePicker(button,button.getAttribute('data-source-date'),Number(button.getAttribute('data-route-index')));
 },true);
+let generalRouteEditing=null;
+async function editGeneralRoute(sourceDate,index){
+ try{
+  const all=await getLogs();
+  const src=all.find(x=>String(x.date||'')===String(sourceDate||''));
+  if(!src){alert('修正する道ログが見つかりません。');return}
+  const route=Array.isArray(src.routes)&&src.routes.length?src.routes[index]:(index===0?{destination:src.destination||'',course:src.course||src.caution||'',photo:src.photo||''}:null);
+  if(!route){alert('修正する道ログが見つかりません。');return}
+  const parsed=parseDutyDate(sourceDate);
+  if(parsed){
+   const ymd=parsed.getFullYear()+'-'+String(parsed.getMonth()+1).padStart(2,'0')+'-'+String(parsed.getDate()).padStart(2,'0');
+   localStorage.setItem('taxiDutyDate',ymd);localStorage.setItem('taxiRouteDutyDate',ymd);
+  }
+  generalRouteEditing={date:sourceDate,index};
+  const card=$('routeCard'),home=$('routeCardHome');
+  if(card){card.classList.remove('hidden');}
+  if(home){home.classList.remove('hidden');}
+  initRoutes([route]);
+  const save=$('generalRoutePage')?.querySelector('.routeSaveButton');
+  if(save)save.textContent='💾 修正を保存';
+  const status=$('generalRouteStatus');if(status)status.textContent='修正中：'+sourceDate+' の道順 '+(index+1);
+  showRegisteredGeneralRoutes();
+  window.scrollTo({top:0,behavior:'smooth'});
+ }catch(error){console.error(error);alert('道ログを読み込めませんでした。')}
+}
 async function deleteGeneralRoute(sourceDate,index){
  if(!confirm('この一般道ログだけを削除しますか？\nその日の乗務ログや売上データは削除されません。'))return;
  try{
@@ -3095,6 +3127,28 @@ async function saveGeneralRouteOnly(){
   if(!routes.length){alert('目的地かコースを入力してください。');return}
   const status=$('generalRouteStatus');
   try{
+    if(generalRouteEditing){
+      const edit={...generalRouteEditing};
+      const all=await getLogs();
+      const existing=all.find(x=>String(x.date||'')===String(edit.date||''));
+      if(!existing){alert('修正対象の乗務ログが見つかりません。変更は保存されていません。');return}
+      if(Array.isArray(existing.routes)&&existing.routes.length){
+        if(!existing.routes[edit.index]){alert('修正対象の道ログが見つかりません。変更は保存されていません。');return}
+        existing.routes[edit.index]={...existing.routes[edit.index],...routes[0]};
+      }else if(edit.index===0&&(existing.destination||existing.course||existing.caution||existing.photo)){
+        existing.routes=[{destination:existing.destination||'',course:existing.course||existing.caution||'',photo:existing.photo||'',...routes[0]}];
+      }else{alert('修正対象の道ログが見つかりません。変更は保存されていません。');return}
+      existing.destination=existing.routes[0]?.destination||'';
+      existing.course=existing.routes[0]?.course||'';
+      existing.savedAt=new Date().toISOString();
+      await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(existing);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('保存を中止しました'))});
+      generalRouteEditing=null;
+      const save=$('generalRoutePage')?.querySelector('.routeSaveButton');if(save)save.textContent='💾 道ログを保存';
+      if(status)status.textContent='✅ 道ログを修正しました（'+existing.date+'）';
+      await renderGeneralRouteDatabase();await renderRouteDatabase();
+      alert('道ログを修正しました。他の道順や売上データは変更していません。');
+      return;
+    }
     const selectedKey=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||todayYMD();
     const dateObj=new Date(selectedKey+'T00:00:00');
     if(Number.isNaN(dateObj.getTime()))throw new Error('日付を確認できません');
