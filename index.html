@@ -1678,11 +1678,11 @@ async function deleteGeneralRoute(sourceDate,index){
 }
 async function changeGeneralRouteDate(event,sourceDate,index){
  event?.preventDefault?.();event?.stopPropagation?.();
- const currentMatch=String(sourceDate||'').match(/(\\d{4})[-年/](\\d{1,2})[-月/](\\d{1,2})/);
+ const currentMatch=String(sourceDate||'').match(/(\d{4})[-年/](\d{1,2})[-月/](\d{1,2})/);
  const currentDate=currentMatch?currentMatch[1]+'-'+String(currentMatch[2]).padStart(2,'0')+'-'+String(currentMatch[3]).padStart(2,'0'):'';
  const input=prompt('変更後の日付を入力してください（例：2026-10-17）',currentDate);
  if(input===null)return;
- const m=String(input).trim().match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})$/);
+ const m=String(input).trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
  if(!m){alert('日付は YYYY-MM-DD 形式で入力してください。');return}
  const d=new Date(+m[1],+m[2]-1,+m[3]);
  if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]){alert('正しい日付を入力してください。');return}
