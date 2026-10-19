@@ -1552,7 +1552,7 @@ async function renderGeneralRouteDatabase(){
     ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
     ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
     <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
-    <button type="button" class="detailEdit" onclick="changeGeneralRouteDate(event,${JSON.stringify(r.date)},${r.index})">日付を変更</button>
+    <button type="button" class="detailEdit" onclick="event.preventDefault();event.stopPropagation();changeGeneralRouteDate(event,${JSON.stringify(r.date)},${r.index})">日付を変更</button>
     <div class="routeDbHint">タップして乗務ログを確認</div>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
