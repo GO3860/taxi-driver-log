@@ -1555,7 +1555,7 @@ async function renderGeneralRouteDatabase(){
       <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
       <div class="routeDbHint">タップして乗務ログを確認</div>
     </div>
-    <button type="button" class="detailEdit" style="position:relative;z-index:20;pointer-events:auto;touch-action:manipulation" onpointerdown="event.stopPropagation()" ontouchstart="event.stopPropagation()" onclick="window.openGeneralRouteDatePicker(this,${JSON.stringify(r.date)},${r.index});return false">日付を変更</button>
+    <button type="button" class="detailEdit generalRouteDateChangeBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">日付を変更</button>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
 
@@ -1593,19 +1593,29 @@ async function renderRouteDatabase(){
 }
 
 window.openGeneralRouteDatePicker=function(button,sourceDate,index){
- const event={preventDefault:function(){},stopPropagation:function(){}};
- changeGeneralRouteDate(event,sourceDate,index);
+ try{
+  const prior=document.getElementById('routeDateChangeOverlay');if(prior)prior.remove();
+  changeGeneralRouteDate({preventDefault(){},stopPropagation(){}},sourceDate,index);
+ }catch(error){console.error('一般ログの日付変更画面を開けませんでした',error);alert('日付変更画面を開けませんでした。画面を更新して再度お試しください。');}
 };
+document.addEventListener('click',function(event){
+ const button=event.target&&event.target.closest?event.target.closest('.generalRouteDateChangeBtn'):null;
+ if(!button)return;
+ event.preventDefault();event.stopPropagation();
+ window.openGeneralRouteDatePicker(button,button.getAttribute('data-source-date'),Number(button.getAttribute('data-route-index')));
+},true);
 function changeGeneralRouteDate(event,sourceDate,index){
  event?.preventDefault?.();event?.stopPropagation?.();
  const prior=document.getElementById('routeDateChangeOverlay');if(prior)prior.remove();
  const overlay=document.createElement('div');overlay.id='routeDateChangeOverlay';
- overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;padding:20px;';
+ overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
  const rawDate=String(sourceDate||'');
- const match=rawDate.match(/(\\d{4})[-年/](\\d{1,2})[-月/](\\d{1,2})/);
+ const match=rawDate.match(/(\d{4})[-年/](\d{1,2})[-月/](\d{1,2})/);
  const initial=match?match[1]+'-'+String(match[2]).padStart(2,'0')+'-'+String(match[3]).padStart(2,'0'):'';
  overlay.innerHTML='<div style="background:#fff;border-radius:18px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px #0003;color:#222"><div style="font-size:19px;font-weight:700;margin-bottom:14px">📅 道ログの日付を変更</div><label for="routeDateChangeInput" style="display:block;margin-bottom:8px">変更後の日付</label><input id="routeDateChangeInput" type="date" value="'+initial+'" style="box-sizing:border-box;width:100%;font-size:18px;padding:12px;border:1px solid #bbb;border-radius:10px;background:#fff;color:#222"><div style="display:flex;gap:10px;margin-top:18px"><button type="button" id="routeDateChangeCancel" style="flex:1;padding:12px;border:0;border-radius:10px;background:#eee;color:#222;font-size:16px">キャンセル</button><button type="button" id="routeDateChangeSave" style="flex:1;padding:12px;border:0;border-radius:10px;background:#3478f6;color:#fff;font-size:16px;font-weight:700">この日付に変更</button></div></div>';
  document.body.appendChild(overlay);
+ const dateInput=overlay.querySelector('#routeDateChangeInput');
+ if(dateInput&&typeof dateInput.showPicker==='function'){try{dateInput.focus({preventScroll:true});}catch(e){}}
  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
  overlay.querySelector('#routeDateChangeCancel').onclick=()=>overlay.remove();
  overlay.querySelector('#routeDateChangeSave').onclick=async()=>{
