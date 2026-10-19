@@ -979,6 +979,7 @@ async function loadSavedLogForDutyDate(value){
 async function changeDutyDate(value){
   if(!value)return;
   localStorage.setItem('taxiDutyDate',value);
+  localStorage.setItem('taxiRouteDutyDate',value);
   const el=$('date');if(el)el.textContent=formatDutyDate(new Date(value+'T00:00:00'));
   updateDutyDateColor(value);
   const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}
@@ -1512,7 +1513,7 @@ async function saveLog(){
    }
  }
  await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
- if(!isRestDay(dayType)) localStorage.removeItem('taxiDutyDate');
+ if(!isRestDay(dayType)) { localStorage.setItem('taxiRouteDutyDate',selectedDateKey); localStorage.removeItem('taxiDutyDate'); }
  $('status').textContent='✅ 保存しました';
  await renderConstraintWarning();
  // 保存後はページ移動せず、現在の「今日」画面をそのまま更新する。
@@ -1636,6 +1637,7 @@ async function editLog(id){
     : todayYMD();
 
   localStorage.setItem('taxiDutyDate',ymd);
+  localStorage.setItem('taxiRouteDutyDate',ymd);
 
   const dateEl=$('date');
   if(dateEl) dateEl.textContent=formatDutyDate(new Date(ymd+'T00:00:00'));
@@ -2750,7 +2752,7 @@ function hwToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMon
 function showHighwayLog(){
   resetSaveButton();hideAllMainViews();$('highwayLog').classList.remove('hidden');
   const floating=$('floatingRestAdviceBtn');if(floating)floating.style.display='';
-  if(!$('hwMemoDate').value)$('hwMemoDate').value=hwToday();
+  if(!$('hwMemoDate').value)$('hwMemoDate').value=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
   renderHighwayMemos();renderHighwayRoutes();
   const destOptions=$('hwDestinationOptions');
   if(destOptions){const all=[...new Set(hwRead(HW_ROUTES_KEY).map(r=>r.destination).filter(Boolean))];destOptions.innerHTML=all.map(x=>'<option value="'+escapeHtml(x)+'"></option>').join('')}
@@ -2768,7 +2770,7 @@ function saveHighwayMemo(){
   if(hwEditingMemo){const target=memos.find(m=>m.id===hwEditingMemo);if(!target){alert('修正するメモが見つかりません。');return}Object.assign(target,{date,station,destination,aliases,note});hwWrite(HW_MEMOS_KEY,memos);hwEditingMemo=null;$('hwMemoSaveButton').textContent='簡易メモを保存';$('hwMemoCancelEdit').classList.add('hidden');}
   else {const memo={id:hwId(),date:date,city:'',station:station,destination:destination,aliases:aliases,note:note,status:'pending',createdAt:new Date().toISOString()};memos.unshift(memo);hwWrite(HW_MEMOS_KEY,memos);}
   $('hwMemoStation').value='';$('hwMemoDestination').value='';$('hwMemoAliases').value='';$('hwMemoNote').value='';
-  $('hwMemoDate').value=hwToday();
+  $('hwMemoDate').value=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
   renderHighwayMemos();renderHighwayRoutes();
   const destOptions=$('hwDestinationOptions');
   if(destOptions){const all=[...new Set(hwRead(HW_ROUTES_KEY).map(r=>r.destination).filter(Boolean))];destOptions.innerHTML=all.map(x=>'<option value="'+escapeHtml(x)+'"></option>').join('')}
@@ -2993,7 +2995,7 @@ async function saveGeneralRouteOnly(){
   if(!routes.length){alert('目的地かコースを入力してください。');return}
   const status=$('generalRouteStatus');
   try{
-    const selectedKey=localStorage.getItem('taxiDutyDate')||todayYMD();
+    const selectedKey=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||todayYMD();
     const dateObj=new Date(selectedKey+'T00:00:00');
     if(Number.isNaN(dateObj.getTime()))throw new Error('日付を確認できません');
     const displayDate=formatDutyDate(dateObj);
