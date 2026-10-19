@@ -1676,41 +1676,34 @@ async function deleteGeneralRoute(sourceDate,index){
   alert('削除に失敗しました。元の記録はそのままです。');
  }
 }
-function changeGeneralRouteDate(event,sourceDate,index){
+async function changeGeneralRouteDate(event,sourceDate,index){
  event?.preventDefault?.();event?.stopPropagation?.();
- const prior=document.getElementById('routeDateChangeOverlay');if(prior)prior.remove();
- const overlay=document.createElement('div');overlay.id='routeDateChangeOverlay';
- overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
- const rawDate=String(sourceDate||'');
- const match=rawDate.match(/(\d{4})[-年/](\d{1,2})[-月/](\d{1,2})/);
- const initial=match?match[1]+'-'+String(match[2]).padStart(2,'0')+'-'+String(match[3]).padStart(2,'0'):'';
- overlay.innerHTML='<div style="background:#fff;border-radius:18px;padding:22px;width:100%;max-width:360px;box-shadow:0 8px 32px #0003;color:#222"><div style="font-size:19px;font-weight:700;margin-bottom:14px">📅 道ログの日付を変更</div><label for="routeDateChangeInput" style="display:block;margin-bottom:8px">変更後の日付</label><input id="routeDateChangeInput" type="date" value="'+initial+'" style="box-sizing:border-box;width:100%;font-size:18px;padding:12px;border:1px solid #bbb;border-radius:10px;background:#fff;color:#222"><div style="display:flex;gap:10px;margin-top:18px"><button type="button" id="routeDateChangeCancel" style="flex:1;padding:12px;border:0;border-radius:10px;background:#eee;color:#222;font-size:16px">キャンセル</button><button type="button" id="routeDateChangeSave" style="flex:1;padding:12px;border:0;border-radius:10px;background:#3478f6;color:#fff;font-size:16px;font-weight:700">この日付に変更</button></div></div>';
- document.body.appendChild(overlay);
- const dateInput=overlay.querySelector('#routeDateChangeInput');
- if(dateInput&&typeof dateInput.showPicker==='function'){try{dateInput.focus({preventScroll:true});}catch(e){}}
- overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});
- overlay.querySelector('#routeDateChangeCancel').onclick=()=>overlay.remove();
- overlay.querySelector('#routeDateChangeSave').onclick=async()=>{
-  const newDate=overlay.querySelector('#routeDateChangeInput').value;
-  if(!newDate){alert('日付を選択してください。');return}
-  if(!confirm('道ログの保存先を '+newDate+' に変更しますか？\n道ログの内容はそのまま移動します。'))return;
-  try{
-   const all=await getLogs();
-   const src=all.find(x=>String(x.date||'')===String(sourceDate||''));
-   if(!src||!Array.isArray(src.routes)||!src.routes[index]){alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return}
-   const dst=all.find(x=>String(x.date||'')===newDate),route=src.routes[index];
-   if(dst&&dst.id!==src.id){
-    if(!confirm('変更先の日付には既に乗務ログがあります。道ログだけを追加しますか？'))return;
-    dst.routes=Array.isArray(dst.routes)?dst.routes:[];
-    dst.routes.push(route);src.routes.splice(index,1);
-    await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(dst);tx.objectStore(STORE).put(src);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
-   }else{
-    src.date=newDate;
-    await new Promise((resolve,reject)=>{const req=db.transaction(STORE,'readwrite').objectStore(STORE).put(src);req.onsuccess=resolve;req.onerror=()=>reject(req.error)});
-   }
-   overlay.remove();await renderGeneralRouteDatabase();await renderRouteDatabase();alert('道ログの保存先を変更しました。');
-  }catch(e){alert('変更に失敗しました。元の記録はそのままです。')}
- };
+ const currentMatch=String(sourceDate||'').match(/(\\d{4})[-年/](\\d{1,2})[-月/](\\d{1,2})/);
+ const currentDate=currentMatch?currentMatch[1]+'-'+String(currentMatch[2]).padStart(2,'0')+'-'+String(currentMatch[3]).padStart(2,'0'):'';
+ const input=prompt('変更後の日付を入力してください（例：2026-10-17）',currentDate);
+ if(input===null)return;
+ const m=String(input).trim().match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})$/);
+ if(!m){alert('日付は YYYY-MM-DD 形式で入力してください。');return}
+ const d=new Date(+m[1],+m[2]-1,+m[3]);
+ if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]){alert('正しい日付を入力してください。');return}
+ const newDate=m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');
+ if(!confirm('道ログの保存先を '+newDate+' に変更しますか？\\n道ログの内容はそのまま移動します。'))return;
+ try{
+  const all=await getLogs();
+  const src=all.find(x=>String(x.date||'')===String(sourceDate||''));
+  if(!src||!Array.isArray(src.routes)||!src.routes[index]){alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return}
+  const dst=all.find(x=>String(x.date||'')===newDate),route=src.routes[index];
+  if(dst&&dst.id!==src.id){
+   if(!confirm('変更先の日付には既に乗務ログがあります。道ログだけを追加しますか？'))return;
+   dst.routes=Array.isArray(dst.routes)?dst.routes:[];
+   dst.routes.push(route);src.routes.splice(index,1);
+   await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(dst);tx.objectStore(STORE).put(src);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
+  }else{
+   src.date=newDate;
+   await new Promise((resolve,reject)=>{const req=db.transaction(STORE,'readwrite').objectStore(STORE).put(src);req.onsuccess=resolve;req.onerror=()=>reject(req.error)});
+  }
+  await renderGeneralRouteDatabase();await renderRouteDatabase();alert('道ログの保存先を変更しました。');
+ }catch(e){alert('変更に失敗しました。元の記録はそのままです。')}
 }
 function changeHighwayRouteDate(id){
  const routes=hwRead(HW_ROUTES_KEY),route=routes.find(r=>r.id===id);if(!route){alert('対象の高速ルートが見つかりません。');return}
