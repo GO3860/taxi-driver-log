@@ -1634,14 +1634,14 @@ async function editGeneralRoute(sourceDate,index){
    localStorage.setItem('taxiDutyDate',ymd);localStorage.setItem('taxiRouteDutyDate',ymd);
   }
   generalRouteEditing={date:sourceDate,index};
+  showRouteDatabase();
   const card=$('routeCard'),home=$('routeCardHome');
-  if(card){card.classList.remove('hidden');}
-  if(home){home.classList.remove('hidden');}
+  if(card)card.classList.remove('hidden');
+  if(home)home.classList.remove('hidden');
   initRoutes([route]);
   const save=$('generalRoutePage')?.querySelector('.routeSaveButton');
   if(save)save.textContent='💾 修正を保存';
   const status=$('generalRouteStatus');if(status)status.textContent='修正中：'+sourceDate+' の道順 '+(index+1);
-  showRegisteredGeneralRoutes();
   window.scrollTo({top:0,behavior:'smooth'});
  }catch(error){console.error(error);alert('道ログを読み込めませんでした。')}
 }
