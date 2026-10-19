@@ -1547,13 +1547,15 @@ async function renderGeneralRouteDatabase(){
     });
   });
   rows.sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);return (db?db.getTime():0)-(da?da.getTime():0)});
-  box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem" role="button" tabindex="0" onclick="openRouteLog(this.dataset.routeDate)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRouteLog(this.dataset.routeDate)}" data-route-date="${escapeHtml(r.date)}">
-    <div class="routeDbTitle">🗺️ ${escapeHtml(r.destination||'目的地未登録')}</div>
-    ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
-    ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
-    <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
-    <button type="button" class="detailEdit" onclick="event.preventDefault();event.stopPropagation();changeGeneralRouteDate(event,${JSON.stringify(r.date)},${r.index})">日付を変更</button>
-    <div class="routeDbHint">タップして乗務ログを確認</div>
+  box.innerHTML=rows.length?rows.map(r=>`<div class="routeDbItem">
+    <div role="button" tabindex="0" data-route-date="${escapeHtml(r.date)}" onclick="openRouteLog(this.dataset.routeDate)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRouteLog(this.dataset.routeDate)}">
+      <div class="routeDbTitle">🗺️ ${escapeHtml(r.destination||'目的地未登録')}</div>
+      ${r.course?`<div class="routeDbCourse">${escapeHtml(r.course)}</div>`:''}
+      ${r.photo?`<img class="photoThumb" src="${r.photo}" alt="道順の写真">`:''}
+      <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
+      <div class="routeDbHint">タップして乗務ログを確認</div>
+    </div>
+    <button type="button" class="detailEdit" onclick="changeGeneralRouteDate(event,${JSON.stringify(r.date)},${r.index})">日付を変更</button>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
 
