@@ -1555,7 +1555,10 @@ async function renderGeneralRouteDatabase(){
       <div class="routeDbMeta">記録日：${escapeHtml(r.date)} ・ 道順 ${r.index+1}</div>
       <div class="routeDbHint">タップして乗務ログを確認</div>
     </div>
-    <button type="button" class="detailEdit generalRouteDateChangeBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">日付を変更</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button type="button" class="detailEdit generalRouteDateChangeBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">日付を変更</button>
+      <button type="button" class="detailEdit generalRouteDeleteBtn" style="position:relative;z-index:100;pointer-events:auto;touch-action:manipulation;background:#fff0f0;color:#b42318;border:1px solid #f0b8b8" data-source-date="${escapeHtml(r.date)}" data-route-index="${r.index}">削除</button>
+    </div>
   </div>`).join(''):`<div class="routeDbEmpty">${q?'「'+escapeHtml(q)+'」に一致する一般道ログはありません。':'まだ一般道ログの記録はありません。'}<br><span style="font-size:12px">「道ログを保存」で登録すると、ここに表示されます。</span></div>`;
 }
 
@@ -1599,11 +1602,48 @@ window.openGeneralRouteDatePicker=function(button,sourceDate,index){
  }catch(error){console.error('一般ログの日付変更画面を開けませんでした',error);alert('日付変更画面を開けませんでした。画面を更新して再度お試しください。');}
 };
 document.addEventListener('click',function(event){
+ const deleteButton=event.target&&event.target.closest?event.target.closest('.generalRouteDeleteBtn'):null;
+ if(deleteButton){
+  event.preventDefault();event.stopPropagation();
+  deleteGeneralRoute(deleteButton.getAttribute('data-source-date'),Number(deleteButton.getAttribute('data-route-index')));
+  return;
+ }
  const button=event.target&&event.target.closest?event.target.closest('.generalRouteDateChangeBtn'):null;
  if(!button)return;
  event.preventDefault();event.stopPropagation();
  window.openGeneralRouteDatePicker(button,button.getAttribute('data-source-date'),Number(button.getAttribute('data-route-index')));
 },true);
+async function deleteGeneralRoute(sourceDate,index){
+ if(!confirm('この一般道ログだけを削除しますか？\\nその日の乗務ログや売上データは削除されません。'))return;
+ try{
+  const all=await getLogs();
+  const src=all.find(x=>String(x.date||'')===String(sourceDate||''));
+  if(!src){alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return}
+  if(Array.isArray(src.routes)&&src.routes.length){
+   if(!src.routes[index]){alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return}
+   src.routes.splice(index,1);
+   if(src.routes.length===0){
+    delete src.destination;delete src.course;delete src.caution;delete src.photo;
+   }
+  }else if(index===0&&(src.destination||src.course||src.caution||src.photo)){
+   delete src.destination;delete src.course;delete src.caution;delete src.photo;
+  }else{
+   alert('対象の道ログが見つかりません。画面を更新して再度お試しください。');return;
+  }
+  await new Promise((resolve,reject)=>{
+   const tx=db.transaction(STORE,'readwrite');
+   tx.objectStore(STORE).put(src);
+   tx.oncomplete=resolve;
+   tx.onerror=()=>reject(tx.error);
+   tx.onabort=()=>reject(tx.error||new Error('削除を中止しました'));
+  });
+  await renderGeneralRouteDatabase();await renderRouteDatabase();
+  alert('一般道ログを削除しました。乗務ログや売上データは残っています。');
+ }catch(error){
+  console.error('一般道ログの削除に失敗しました',error);
+  alert('削除に失敗しました。元の記録はそのままです。');
+ }
+}
 function changeGeneralRouteDate(event,sourceDate,index){
  event?.preventDefault?.();event?.stopPropagation?.();
  const prior=document.getElementById('routeDateChangeOverlay');if(prior)prior.remove();
