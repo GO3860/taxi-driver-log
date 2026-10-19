@@ -1614,7 +1614,7 @@ document.addEventListener('click',function(event){
  window.openGeneralRouteDatePicker(button,button.getAttribute('data-source-date'),Number(button.getAttribute('data-route-index')));
 },true);
 async function deleteGeneralRoute(sourceDate,index){
- if(!confirm('この一般道ログだけを削除しますか？\\nその日の乗務ログや売上データは削除されません。'))return;
+ if(!confirm('この一般道ログだけを削除しますか？\nその日の乗務ログや売上データは削除されません。'))return;
  try{
   const all=await getLogs();
   const src=all.find(x=>String(x.date||'')===String(sourceDate||''));
