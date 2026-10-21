@@ -3137,6 +3137,8 @@ async function saveGeneralRouteOnly(){
       await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(existing);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('保存を中止しました'))});
       generalRouteEditing=null;
       const save=$('generalRoutePage')?.querySelector('.routeSaveButton');if(save)save.textContent='💾 道ログを保存';
+      // 保存成功後は入力欄だけ初期化し、保存済みデータは一覧に残す
+      initRoutes();
       if(status)status.textContent='✅ 道ログを修正しました（'+existing.date+'）';
       await renderGeneralRouteDatabase();await renderRouteDatabase();
       alert('道ログを修正しました。他の道順や売上データは変更していません。');
@@ -3161,9 +3163,11 @@ async function saveGeneralRouteOnly(){
       const record={date:displayDate,dayType:'work',weather:[],event:[],out:'',in:'',hours:'',km:'',runDistance:'',rideDistance:'',sales:'',loadedRate:'',tripCount:'',avg:'',routes,destination:routes[0]?.destination||'',course:routes[0]?.course||'',eventNote:'',photo:'',savedAt:new Date().toISOString()};
       await addLog(record);
     }
+    // 保存成功後は入力欄を空の初期状態に戻す。保存済みログは削除しない。
+    initRoutes();
     if(status)status.textContent='✅ 道ログを保存しました（'+displayDate+'）';
     await renderGeneralRouteDatabase();
-    alert('道ログを保存しました。今日の売上や勤務時間は変更していません。');
+    alert('道ログを保存しました。入力欄を初期状態に戻しました。今日の売上や勤務時間は変更していません。');
   }catch(e){
     console.error(e);
     if(status)status.textContent='保存できませんでした。もう一度お試しください。';
