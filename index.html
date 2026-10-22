@@ -1858,7 +1858,7 @@ function savePersonalData(){
   const data={};
   ids.forEach(id=>{const el=$(id);if(el)data[id]=el.value;});
   data.busySeasonMonths=[...document.querySelectorAll('.busyMonthCheck:checked')].map(el=>Number(el.value));
-  const breakDisplay=$('dailyBreakDisplay');if(breakDisplay)breakDisplay.value=formatMinutesAsHoursMinutes(Math.round(Number($('dailyBreakHours')?.value||0)*60)).replace('時間','時間 ').replace(/時間\s*/,'時間 ').replace('分','分');
+  const breakDisplay=$('dailyBreakDisplay');if(breakDisplay){const hval=Number($('dailyBreakHours')?.value||0);if(hval>0){const mins=Math.round(hval*60);breakDisplay.value=Math.floor(mins/60)+':'+String(mins%60).padStart(2,'0')}else if(!breakDisplay.matches(':focus'))breakDisplay.value='';}
   const workStyle=document.querySelector('input[name="workStyle"]:checked');
   if(workStyle)data.workStyle=workStyle.value;
   localStorage.setItem('taxiPersonalData',JSON.stringify(data));
