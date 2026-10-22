@@ -2828,12 +2828,15 @@ function updateDailyBreakFromClock(){
  const display=$('dailyBreakDisplay');
  const hours=$('dailyBreakHours');
  if(!display||!hours)return;
- const raw=display.value.trim();
- const match=raw.match(/^(\d{1,2})\s*[:：]\s*(\d{1,2})$/);
+ const raw=String(display.value||'').trim();
  if(!raw){hours.value='';savePersonalData();return;}
+ // iPhoneの時刻ピッカーは「02:20」の形式で値を返す
+ const match=raw.match(/^(\d{1,2}):([0-5]\d)$/);
  if(match){
   const h=Number(match[1]),m=Number(match[2]);
-  if(m>=0&&m<60){hours.value=String(h+m/60);savePersonalData();return;}
+  hours.value=String(h+m/60);
+  savePersonalData();
+  return;
  }
  const jp=raw.match(/^(\d+)時間(?:(\d+)分)?$/);
  if(jp){const h=Number(jp[1]),m=Number(jp[2]||0);if(m<60){hours.value=String(h+m/60);savePersonalData();return;}}
