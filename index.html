@@ -401,7 +401,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div><div class="small">休憩②</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="break2Start" type="time" aria-label="休憩②開始" oninput="updateBreakRequirement()" onchange="updateBreakRequirement()"><input id="break2End" type="time" aria-label="休憩②終了" oninput="updateBreakRequirement()" onchange="updateBreakRequirement()"></div></div>
     <div><div class="small">休憩③</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="break3Start" type="time" aria-label="休憩③開始" oninput="updateBreakRequirement()" onchange="updateBreakRequirement()"><input id="break3End" type="time" aria-label="休憩③終了" oninput="updateBreakRequirement()" onchange="updateBreakRequirement()"></div></div>
   </div>
-  <div id="breakRequirementStatus" class="small" role="status" aria-live="polite" style="margin-top:10px;font-weight:700">休憩時間を入力すると、目標までの残り時間を表示します。</div>
+  <div id="breakRequirementStatus" class="small" role="status" aria-live="polite" style="margin-top:10px;font-weight:700">休憩時間を入力すると、設定時間までの残り時間を表示します。</div>
   <div class="small" style="margin-top:6px">開始・終了時刻を記録します。休みの日には表示されません。</div>
 </div>
 <input id="km" type="hidden">
@@ -2849,15 +2849,15 @@ function updateBreakRequirement(){
   break3Start:$('break3Start')?.value||'',break3End:$('break3End')?.value||''
  });
  if(!(targetMinutes>0)){
-  status.textContent='設定で「1日の休憩時間」を入力すると、目標達成までの残り時間をお知らせします。';
+  status.textContent='設定で「1日の休憩時間」を入力すると、設定時間までの残り時間をお知らせします。';
   status.style.color='';
   return;
  }
  if(totalMinutes>=targetMinutes){
-  status.textContent='✅ 休憩時間の目標達成！ 合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 目標 '+formatMinutesAsHoursMinutes(targetMinutes);
+  status.textContent='✅ 休憩時間の目標達成！ 合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 設定 '+formatMinutesAsHoursMinutes(targetMinutes);
   status.style.color='#16803c';
  }else{
-  status.textContent='☕ 休憩時間：合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 目標 '+formatMinutesAsHoursMinutes(targetMinutes)+'（あと '+formatMinutesAsHoursMinutes(targetMinutes-totalMinutes)+'）';
+  status.textContent='☕ 休憩時間：合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 設定 '+formatMinutesAsHoursMinutes(targetMinutes)+'（あと '+formatMinutesAsHoursMinutes(targetMinutes-totalMinutes)+'）';
   status.style.color='#b45309';
  }
 }
