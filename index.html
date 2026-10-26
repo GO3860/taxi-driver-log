@@ -2186,12 +2186,17 @@ function applySettings(){
   const breakTimeCard=$('breakTimeCard');
   const salesDataWidget=$('salesDataWidget');
   const routeCard=$('routeCard');
+  const routeNav=document.querySelector('.routeNav');
+  const routeSettingOn=localStorage.getItem('taxiShowRoute')==='1';
   const areaAvgBtn=document.querySelector('.floatingAreaAvgBtn');
   const areaAvgOn=localStorage.getItem('taxiShowAreaAvg')!=='0';
   if(timeCard)timeCard.classList.toggle('hidden',localStorage.getItem('taxiShowTime')!=='1');
   if(breakTimeCard)breakTimeCard.classList.toggle('hidden',localStorage.getItem('taxiShowBreakTime')!=='1' || isRestDay(getDayType()));
   if(salesDataWidget)salesDataWidget.classList.toggle('hidden',localStorage.getItem('taxiShowSalesData')==='0');
-  if(routeCard)routeCard.classList.toggle('hidden',localStorage.getItem('taxiShowRoute')!=='1');
+  if(routeCard)routeCard.classList.toggle('hidden',!routeSettingOn);
+  // 「覚えておきたい道順」をOFFにしたら、今日の入力欄だけでなく下部の道ログタブも隠す。
+  // 登録済みの道順データは削除せず、再度ONにすれば表示を戻せる。
+  if(routeNav)routeNav.classList.toggle('hidden',!routeSettingOn);
   if(areaAvgBtn)areaAvgBtn.classList.toggle('hidden',!areaAvgOn);
   if($('showAreaAvg'))$('showAreaAvg').checked=areaAvgOn;
   if($('areaAvgSettingStatus'))$('areaAvgSettingStatus').textContent=areaAvgOn?'現在：ON（エリア平均入力を使用）':'現在：OFF（エリア平均入力を使用しない）';
