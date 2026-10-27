@@ -2158,7 +2158,7 @@ function saveSettings(){
   localStorage.setItem('taxiClosingDay',$('closingDay').value);
   localStorage.setItem('taxiShowTime',$('showTime').checked?'1':'0');
   localStorage.setItem('taxiShowBreakTime',$('showBreakTime').checked?'1':'0');
-  localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
+  if($('showSalesData')) localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
   const wasAreaAvgEnabled=localStorage.getItem('taxiShowAreaAvg')!=='0';
