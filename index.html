@@ -2680,7 +2680,7 @@ async function showMonthlyDetail(year,index){
   $('monthlyDetailTitle').textContent='📋 '+periodMonthLabel(p)+'の営業データ';
   const dailyRows=work.slice().sort((a,b)=>{const da=parseDutyDate(a.date),db=parseDutyDate(b.date);if(da&&db)return da.getTime()-db.getTime();return String(a.date||'').localeCompare(String(b.date||''));}).map(x=>{
     const d=parseDutyDate(x.date);
-    const dayLabel=d?`${d.getMonth()+1}/${d.getDate()}`:String(x.date||'—');
+    const dayLabel=d?`${d.getMonth()+1}/${d.getDate()}（${['日','月','火','水','木','金','土'][d.getDay()]}）`:String(x.date||'—');
     let mins=null;
     if(x.out&&x.in){
       const [oh,om]=String(x.out).split(':').map(Number); const [ih,im]=String(x.in).split(':').map(Number);
