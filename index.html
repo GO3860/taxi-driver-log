@@ -510,6 +510,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <div class="card">
+<div class="label">🗺️ 道ログ設定</div>
+<div class="help-text">道ログ機能を使うかどうかを切り替えます。OFFにしても登録済みの道順データは削除されません。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">道ログ機能を使う <input id="showRoute" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+</div>
+
+<div class="card">
 <div class="label">📚 エリア平均入力</div>
 <div class="help-text">会社から発表されるエリア平均売上を、後から入力する機能です。必要な場合だけONにしてください。</div>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">エリア平均入力を使う <input id="showAreaAvg" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
