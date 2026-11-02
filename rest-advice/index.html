@@ -242,6 +242,14 @@ function restCompareMonthStats(months,key){
  const overall=vals.length?vals.reduce((s,m)=>s+m[key],0)/vals.length:0;
  return months.map(m=>({...m,diff:overall&&m[key]!=null?(m[key]/overall-1)*100:null})).filter(m=>m[key]!=null);
 }
+function restPaydayAnalysis(logs){
+ const usable=restLogsSinceReset(logs).filter(log=>restLogKind(log)==='work'&&restHasSales(log)&&!restHasHalfOrEarly(log));
+ const near=[],other=[];
+ usable.forEach(log=>{const d=restDateOnly(log.date);if(!d)return;const anchor=restPaydayDate(d.getFullYear(),d.getMonth()),delta=restDiffDays(d,anchor);(delta>=-3&&delta<=3?near:other).push(Number(log.sales))});
+ const avg=a=>a.length?a.reduce((s,n)=>s+n,0)/a.length:null,nearAvg=avg(near),otherAvg=avg(other);
+ return {nearCount:near.length,otherCount:other.length,nearAvg,otherAvg,diff:nearAvg!==null&&otherAvg>0?(nearAvg/otherAvg-1)*100:null};
+}
+function restHolidayPayAdvice(){return localStorage.getItem('taxiHolidayAllowance')!=='0'}
 function restBuildAdvice(logs){
  const months=restMonthlyStats(logs),salesMonths=restCompareMonthStats(months,'salesAvg'),areaMonths=restCompareMonthStats(months,'areaAvg');
  const usableSales=salesMonths.filter(m=>m.sales.length>=3),usableRest=months.filter(m=>m.restCount>0);
@@ -280,9 +288,14 @@ async function renderRestAdvice(){
  }else{
   advice='売上と休み方の傾向は、まだ十分には判断できません。勤務日には売上を、休みの日には日区分を記録していくと、あなた自身の傾向が見えてきます。';
  }
+ const payday=restPaydayAnalysis(logs),paydayHtml=payday.nearCount>=3&&payday.otherCount>=3
+  ?'<div class="restLearnBox"><strong>💰 給料日前後の売上傾向</strong><div class="restSmall">設定した給料日（毎月'+(Number(localStorage.getItem('taxiPaydayBase')||25))+'日）の前後3日と、それ以外の勤務日を比較しています。</div><div class="restPattern"><strong>給料日前後</strong><span>'+restMoney(payday.nearAvg)+'（'+payday.nearCount+'勤務日）</span></div><div class="restPattern"><strong>それ以外</strong><span>'+restMoney(payday.otherAvg)+'（'+payday.otherCount+'勤務日）</span></div><div class="restSmall">'+(payday.diff===null?'まだ差を比較できません。':payday.diff>5?'給料日前後の売上は、それ以外の日より約'+Math.round(payday.diff)+'%高めです。':payday.diff< -5?'給料日前後の売上は、それ以外の日より約'+Math.abs(Math.round(payday.diff))+'%低めです。':'給料日前後とそれ以外の日で、大きな差は見られません。')+' これは記録上の差であり、給料日が売上の原因とは限りません。</div></div>'
+  :'<div class="restLearnBox"><strong>💰 給料日前後の売上傾向</strong><div class="restSmall">比較に必要な勤務記録がまだ十分ではありません。給料日前後とそれ以外の日について、それぞれ3勤務日以上の記録がたまると比較します。</div></div>';
+ const holidayPay=restHolidayPayAdvice();
+ const holidayHtml='<div class="restLearnBox"><strong>🎌 祝日手当の設定</strong><div class="restSmall">現在の設定：祝日手当 '+(holidayPay?'あり':'なし')+'。'+(holidayPay?'休暇を検討する際は、祝日勤務による手当への影響も考慮し、祝日そのものではなく同じ月度の別の日を候補にします。':'祝日手当がない設定です。祝日も含め、勤務予定や体調に合わせて休暇を検討できます。')+'</div><div class="restSmall">祝日ごとの収入額までは記録から算出していません。</div></div>';
  const areaAvailable=a.areaMonths.length>=3;
  const areaHtml=areaAvailable?'<div class="restLearnBox"><strong>📊 エリア平均との比較（任意）</strong><div class="restSmall">自分の売上がエリア平均と同程度以下の月：'+(a.nearArea.length?restMonthNames(a.nearArea.slice(0,4)):'現時点では特定できません')+'</div><div class="restSmall">エリア平均が入力された記録だけを使った補助分析です。入力がなくても、上の個人売上分析は利用できます。</div></div>':'<div class="restLearnBox"><strong>📊 エリア平均との比較</strong><div class="restSmall">エリア平均の記録が少ないため、比較は行っていません。個人の売上だけで分析しています。</div></div>';
- box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌿 あなたの休み方アドバイス</div><div style="margin:10px 0"><span class="'+confidence.cls+'" style="display:inline-block">'+confidence.label+'</span><div class="restSmall">'+confidence.text+' 対象：'+a.years+'年分の記録</div></div><div style="line-height:1.75">'+escapeHtml(advice)+'</div><div class="restSmall">※ これは過去の記録からの参考提案です。売上の変動や休みの理由を断定するものではありません。</div></div><div class="restSection"><div class="restSectionTitle">📉 売上の月別傾向</div>'+ownHtml+'</div><div class="restSection"><div class="restSectionTitle">🏠 休み方の月別傾向</div>'+restHtml+'</div><div class="restSection">'+areaHtml+'</div><div class="restDetailNote">分析は既存の乗務記録を利用します。売上は勤務記録1日あたりの平均で月ごとに比較し、休みは「休（非・公）」と「休（有・欠）」の記録を数えています。半休・早退は休みの日として数えません。月ごとの記録が少ない場合や、複数年のデータがない場合は結論を控えます。</div>';
+ box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌿 あなたの休み方アドバイス</div><div style="margin:10px 0"><span class="'+confidence.cls+'" style="display:inline-block">'+confidence.label+'</span><div class="restSmall">'+confidence.text+' 対象：'+a.years+'年分の記録</div></div><div style="line-height:1.75">'+escapeHtml(advice)+'</div><div class="restSmall">※ これは過去の記録からの参考提案です。売上の変動や休みの理由を断定するものではありません。</div></div><div class="restSection"><div class="restSectionTitle">📉 売上の月別傾向</div>'+ownHtml+'</div><div class="restSection"><div class="restSectionTitle">🏠 休み方の月別傾向</div>'+restHtml+'</div><div class="restSection">'+paydayHtml+'</div><div class="restSection">'+holidayHtml+'</div><div class="restSection">'+areaHtml+'</div><div class="restDetailNote">分析は既存の乗務記録を利用します。売上は勤務記録1日あたりの平均で月ごとに比較し、休みは「休（非・公）」と「休（有・欠）」の記録を数えています。半休・早退は休みの日として数えません。月ごとの記録が少ない場合や、複数年のデータがない場合は結論を控えます。</div>';
 }
 function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
 async function renderLearningDetails(){
