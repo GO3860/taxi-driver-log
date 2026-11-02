@@ -220,6 +220,19 @@ function restMonthlyStats(logs){
   byYear:Object.fromEntries(Object.entries(m.byYear).map(([year,y])=>[year,{salesAvg:y.sales.length?y.sales.reduce((s,x)=>s+x.value,0)/y.sales.length:null,areaAvg:y.area.length?y.area.reduce((s,x)=>s+x.value,0)/y.area.length:null,restCount:y.restDays.size,workCount:y.workDays.size,salesCount:y.sales.length}]))
  }));
 }
+function restLearningStage(logs){
+ const valid=restLogsSinceReset(logs).map(x=>restDateOnly(x.date)).filter(Boolean).sort((a,b)=>a-b);
+ if(!valid.length)return {days:0,emoji:'🌱',name:'データ不足',text:'記録を始めましょう。まずは半年分のデータを目指します。',percent:0,next:180};
+ const first=new Date(valid[0]);first.setHours(0,0,0,0);
+ const today=new Date();today.setHours(0,0,0,0);
+ const days=Math.max(1,Math.floor((today-first)/86400000)+1);
+ if(days<180)return {days,emoji:'🌱',name:'データ不足',text:'まだ傾向を判断するには早い段階です。180日を目安に記録を続けましょう。',percent:Math.min(100,days/180*100),next:180-days};
+ if(days<731)return {days,emoji:'🌿',name:'初歩分析可',text:'半年以上の記録がたまり、初歩的な傾向を確認できます。1年・2年と記録を重ねると比較の精度が上がります。',percent:Math.min(100,(days-180)/(731-180)*100),next:731-days};
+ return {days,emoji:'🌲',name:'分析可能',text:'2年以上の記録があります。前年との比較や、複数年にわたる季節的な傾向を確認できます。',percent:100,next:0};
+}
+function restLearningGaugeHtml(stage){
+ return '<div class="restLearnBox"><strong>🌱 休み方分析の成長ゲージ</strong><div style="display:flex;align-items:center;gap:10px;margin:10px 0"><span style="font-size:30px">'+stage.emoji+'</span><div style="flex:1"><div style="font-weight:800">'+stage.name+'</div><div class="restSmall">記録期間：'+stage.days+'日</div></div></div><div style="height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="height:100%;width:'+stage.percent+'%;background:#4f9b68;border-radius:99px;transition:width .3s"></div></div><div class="restSmall" style="margin-top:8px">'+stage.text+'</div><div class="restSmall">🌱 0〜179日：データ不足　→　🌿 180〜730日：初歩分析可　→　🌲 731日〜：分析可能</div></div>';
+}
 function restAvailableYears(months){
  const ys=new Set();months.forEach(m=>Object.keys(m.byYear||{}).forEach(y=>ys.add(Number(y))));
  return [...ys].filter(Number.isFinite).sort((a,b)=>a-b);
@@ -273,7 +286,7 @@ async function renderRestAdvice(){
 function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
 async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
- const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months);
+ const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months),stage=restLearningStage(logs);
  let stageTitle='1年目：月度ごとの傾向を把握';
  let stageText='まずは月度ごとの売上平均と休みの日数を集計し、自分の傾向を見つけます。';
  if(years.length===2){stageTitle='2年目：前年と今年を比較';stageText='同じ月度の前年・今年の売上平均と休みの日数を比較します。'}
@@ -290,7 +303,7 @@ async function renderLearningDetails(){
   }
   return '<div class="restFactorRow"><div style="flex:1;min-width:0"><strong>'+m.month+'月度</strong>'+details+trend+'</div></div>';
  }).join('');
- const stages='<div class="restLearnBox"><strong>📈 分析ステージ</strong><div style="margin-top:8px;font-weight:800">'+stageTitle+'</div><div class="restSmall">'+stageText+'</div><div class="restSmall">利用できる営業年度：'+(years.length?years.join('年・')+'年':'まだ十分な記録がありません')+' ／ 比較には各年度の記録が必要です。</div></div>';
+ const stages=restLearningGaugeHtml(stage)+'<div class="restLearnBox"><strong>📈 年度別分析</strong><div style="margin-top:8px;font-weight:800">'+stageTitle+'</div><div class="restSmall">'+stageText+'</div><div class="restSmall">利用できる営業年度：'+(years.length?years.join('年・')+'年':'まだ十分な記録がありません')+' ／ 比較には各年度の記録が必要です。</div></div>';
  box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div>'+stages+'<div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用します。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月度別・年度比較</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。データが少ない場合、季節的な傾向は断定しません。</div></div>';
 }
 function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
