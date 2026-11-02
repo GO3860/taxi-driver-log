@@ -200,21 +200,29 @@ function restPeriodYear(d){
  return d.getFullYear()+(d.getDate()>closing&&d.getMonth()===11?1:0);
 }
 function restMonthlyStats(logs){
- const since=restLogsSinceReset(logs),months=Array.from({length:12},(_,i)=>({month:i+1,sales:[],area:[],restDays:new Set(),workDays:new Set(),years:new Set()}));
+ const since=restLogsSinceReset(logs),months=Array.from({length:12},(_,i)=>({month:i+1,sales:[],area:[],restDays:new Set(),workDays:new Set(),years:new Set(),byYear:{}}));
  since.forEach(log=>{
   const d=restDateOnly(log.date);if(!d)return;
   const m=months[restPeriodMonth(d)-1],key=restDateKey(d),kind=restLogKind(log),year=restPeriodYear(d);
-  if(kind==='rest'){m.restDays.add(key);m.years.add(year);return}
+  if(!m.byYear[year])m.byYear[year]={sales:[],area:[],restDays:new Set(),workDays:new Set()};
+  const y=m.byYear[year];
+  if(kind==='rest'){m.restDays.add(key);y.restDays.add(key);m.years.add(year);return}
   if(kind==='work'){
-   m.workDays.add(key);m.years.add(year);
-   if(restHasSales(log)&&!restHasHalfOrEarly(log))m.sales.push({value:Number(log.sales),year,key});
-   const a=Number(log.avg);if(Number.isFinite(a)&&a>0)m.area.push({value:a,year,key});
+   m.workDays.add(key);y.workDays.add(key);m.years.add(year);
+   if(restHasSales(log)&&!restHasHalfOrEarly(log)){const item={value:Number(log.sales),year,key};m.sales.push(item);y.sales.push(item)}
+   const a=Number(log.avg);if(Number.isFinite(a)&&a>0){const item={value:a,year,key};m.area.push(item);y.area.push(item)}
   }
  });
  return months.map(m=>({...m,restCount:m.restDays.size,workCount:m.workDays.size,
   salesAvg:m.sales.length?m.sales.reduce((s,x)=>s+x.value,0)/m.sales.length:null,
   areaAvg:m.area.length?m.area.reduce((s,x)=>s+x.value,0)/m.area.length:null,
-  salesYears:new Set(m.sales.map(x=>x.year)).size,restYears:m.years.size}));
+  salesYears:new Set(m.sales.map(x=>x.year)).size,restYears:m.years.size,
+  byYear:Object.fromEntries(Object.entries(m.byYear).map(([year,y])=>[year,{salesAvg:y.sales.length?y.sales.reduce((s,x)=>s+x.value,0)/y.sales.length:null,areaAvg:y.area.length?y.area.reduce((s,x)=>s+x.value,0)/y.area.length:null,restCount:y.restDays.size,workCount:y.workDays.size,salesCount:y.sales.length}]))
+ }));
+}
+function restAvailableYears(months){
+ const ys=new Set();months.forEach(m=>Object.keys(m.byYear||{}).forEach(y=>ys.add(Number(y))));
+ return [...ys].filter(Number.isFinite).sort((a,b)=>a-b);
 }
 function restCompareMonthStats(months,key){
  const vals=months.filter(m=>m[key]!==null&&m[key]!==undefined&&m[key]>0);
@@ -265,9 +273,25 @@ async function renderRestAdvice(){
 function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
 async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
- const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
- const monthRows=a.months.map(m=>'<div class="restFactorRow"><div><strong>'+m.month+'月</strong><div class="restFactorCount">勤務 '+m.workCount+'日 ／ 休み '+m.restCount+'日</div></div><span>'+(m.salesAvg?('個人 '+restMoney(m.salesAvg)): '売上データなし')+(m.areaAvg?('<br>エリア '+restMoney(m.areaAvg)):'')+'</span></div>').join('');
- box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div><div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用し、入力を必須にしません。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月別の記録</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。休みの多さだけで疲労や体調不良を断定しないようにしています。</div></div>';
+ const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months);
+ let stageTitle='1年目：月度ごとの傾向を把握';
+ let stageText='まずは月度ごとの売上平均と休みの日数を集計し、自分の傾向を見つけます。';
+ if(years.length===2){stageTitle='2年目：前年と今年を比較';stageText='同じ月度の前年・今年の売上平均と休みの日数を比較します。'}
+ if(years.length>=3){stageTitle='3年目以降：季節的な傾向を確認';stageText='直近3年の月度ごとの推移を比較し、毎年繰り返す傾向かを確認します。'}
+ const monthRows=a.months.map(m=>{
+  const records=years.slice(-3).map(y=>({year:y,data:m.byYear?.[y]})).filter(x=>x.data);
+  const details=records.length?records.map(x=>'<div style="display:flex;justify-content:space-between;gap:8px;margin-top:5px;font-size:12px;color:#555"><span>'+x.year+'年</span><span>'+(x.data.salesAvg!==null?'個人 '+restMoney(x.data.salesAvg):'売上なし')+' ／ 休み '+x.data.restCount+'日</span></div>').join(''):'<div class="restFactorCount">記録なし</div>';
+  let trend='';
+  const sales=records.filter(x=>x.data.salesAvg!==null);
+  if(sales.length>=2){const first=sales[0].data.salesAvg,last=sales[sales.length-1].data.salesAvg;const pct=first?Math.round((last/first-1)*100):0;trend='<div class="restFactorCount" style="margin-top:6px">比較：'+(pct>0?'前年より '+pct+'%上昇':pct<0?'前年より '+Math.abs(pct)+'%低下':'ほぼ同水準')+'</div>'}
+  if(records.length>=3){
+   const available=records.filter(x=>x.data.salesAvg!==null);
+   if(available.length>=3){const down=available.every((x,i)=>i===0||x.data.salesAvg<available[i-1].data.salesAvg);const low=available.every(x=>x.data.salesAvg<a.months.reduce((sum,z)=>sum+(z.byYear?.[x.year]?.salesAvg||0),0)/12);if(down||low)trend+='<div class="restFactorCount" style="color:#2e7d32">複数年の傾向：継続して確認する価値があります</div>'}
+  }
+  return '<div class="restFactorRow"><div style="flex:1;min-width:0"><strong>'+m.month+'月度</strong>'+details+trend+'</div></div>';
+ }).join('');
+ const stages='<div class="restLearnBox"><strong>📈 分析ステージ</strong><div style="margin-top:8px;font-weight:800">'+stageTitle+'</div><div class="restSmall">'+stageText+'</div><div class="restSmall">利用できる営業年度：'+(years.length?years.join('年・')+'年':'まだ十分な記録がありません')+' ／ 比較には各年度の記録が必要です。</div></div>';
+ box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div>'+stages+'<div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用します。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月度別・年度比較</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。データが少ない場合、季節的な傾向は断定しません。</div></div>';
 }
 function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
 function openExplain(){$('restAdviceExplain')?.classList.remove('hidden');$('restAdviceExplainOpen')?.classList.add('hidden')}
