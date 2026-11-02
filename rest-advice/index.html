@@ -261,7 +261,8 @@ function restDataConfidence(years,monthCount){
 }
 async function renderRestAdvice(){
  const box=$('restAdviceContent');if(!box)return;
- const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
+ const logs=await getLogs(),stage=restLearningStage(logs),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
+ if(stage.days<180){box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌱 休み方分析の準備中</div>'+restLearningGaugeHtml(stage)+'<div style="line-height:1.75;margin-top:12px">本格的な休み方アドバイスは、記録期間が180日以上になってから表示します。それまでは、乗務記録をためる期間です。記録はそのまま保存され、180日を超えると初歩的な分析が始まります。</div><div class="restSmall">※ 180日未満では、季節ごとの売上や休み方を判断するにはデータが足りないため、傾向の結論は表示しません。</div></div>';return;}
  const ownHtml=a.lowSales.length
   ?'<div class="restLearnBox"><strong>📉 売上が落ち込みやすい月</strong><div style="margin-top:7px">'+a.lowSales.slice(0,4).map(m=>'<div class="restPattern"><strong>'+m.month+'月</strong><span>日平均 '+restMoney(m.salesAvg)+'（全体月平均より '+Math.abs(Math.round(m.diff))+'%低め）</span></div>').join('')+'</div><div class="restSmall">この時期は、計画的に休暇を取る候補として検討できます。</div></div>'
   :'<div class="restLearnBox">📉 今の記録では、売上が落ち込みやすい月を十分な確度で特定できていません。記録が増えると分析しやすくなります。</div>';
@@ -287,6 +288,7 @@ function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!
 async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
  const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months),stage=restLearningStage(logs);
+ if(stage.days<180){box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div>'+restLearningGaugeHtml(stage)+'<div class="restDetailNote">記録期間が180日以上になるまでは、月度別の傾向や年度比較を表示しません。記録は保存され、180日を超えると初歩的な分析が始まります。</div></div>';return;}
  let stageTitle='1年目：月度ごとの傾向を把握';
  let stageText='まずは月度ごとの売上平均と休みの日数を集計し、自分の傾向を見つけます。';
  if(years.length===2){stageTitle='2年目：前年と今年を比較';stageText='同じ月度の前年・今年の売上平均と休みの日数を比較します。'}
