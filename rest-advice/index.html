@@ -66,7 +66,7 @@ main{padding:14px}
 <div class="label">📖 休み方分析のしくみ</div>
 <div id="restAdviceExplain" class="restAdviceExplain hidden">
 <div class="restAdviceExplainTitle">あなた自身の売上と休み方の月別傾向を分析します</div>
-<div class="restAdviceExplainText">過去の乗務記録から、月ごとの売上と休みの日数を集計し、売上が落ち込みやすい月や休みを取ることが多い月を探します。<br><strong>エリア平均を入力していなくても、個人の売上だけで分析できます。</strong> エリア平均の記録がある場合は、補助的な比較にも利用します。<br><span>※ 傾向は参考情報です。休みが多い理由や体調を断定せず、記録が少ない場合は結論を控えます。</span></div>
+<div class="restAdviceExplainText">過去の乗務記録から、設定した締日を基準に売上と休みの日数を集計します。たとえば15日締めなら、9月16日〜10月15日を「10月度」として、売上が落ち込みやすい月度や休みを取ることが多い月度を探します。<br><strong>エリア平均を入力していなくても、個人の売上だけで分析できます。</strong> エリア平均の記録がある場合は、補助的な比較にも利用します。<br><span>※ 傾向は参考情報です。休みが多い理由や体調を断定せず、記録が少ない場合は結論を控えます。</span></div>
 <button type="button" class="restAdviceExplainClose" onclick="closeExplain()">説明を閉じる</button>
 </div>
 <button type="button" id="restAdviceExplainOpen" class="restAdviceExplainOpen" onclick="openExplain()">📖 休み方分析の説明を見る</button>
@@ -185,15 +185,28 @@ function restLogKind(log){
  return Number(log?.sales)>0?'work':'unknown';
 }
 function restHasSales(log){const n=Number(log?.sales);return Number.isFinite(n)&&n>0}
+function restClosingDay(){
+ const n=Number(localStorage.getItem('taxiClosingDay')||15);
+ return Number.isFinite(n)&&n>=1&&n<=31?Math.floor(n):15;
+}
+function restPeriodMonth(d){
+ // 締日より後の日付は、翌月度に含める（例：15日締めなら9/16〜10/15は10月度）
+ const closing=restClosingDay();
+ const end=new Date(d.getFullYear(),d.getMonth()+(d.getDate()>closing?1:0),1);
+ return end.getMonth()+1;
+}
+function restPeriodYear(d){
+ const closing=restClosingDay();
+ return d.getFullYear()+(d.getDate()>closing&&d.getMonth()===11?1:0);
+}
 function restMonthlyStats(logs){
  const since=restLogsSinceReset(logs),months=Array.from({length:12},(_,i)=>({month:i+1,sales:[],area:[],restDays:new Set(),workDays:new Set(),years:new Set()}));
- const restKeys=new Set(),workKeys=new Set();
  since.forEach(log=>{
   const d=restDateOnly(log.date);if(!d)return;
-  const m=months[d.getMonth()],key=restDateKey(d),kind=restLogKind(log),year=d.getFullYear();
-  if(kind==='rest'){m.restDays.add(key);restKeys.add(key);m.years.add(year);return}
+  const m=months[restPeriodMonth(d)-1],key=restDateKey(d),kind=restLogKind(log),year=restPeriodYear(d);
+  if(kind==='rest'){m.restDays.add(key);m.years.add(year);return}
   if(kind==='work'){
-   m.workDays.add(key);workKeys.add(key);m.years.add(year);
+   m.workDays.add(key);m.years.add(year);
    if(restHasSales(log)&&!restHasHalfOrEarly(log))m.sales.push({value:Number(log.sales),year,key});
    const a=Number(log.avg);if(Number.isFinite(a)&&a>0)m.area.push({value:a,year,key});
   }
@@ -254,7 +267,7 @@ async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
  const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
  const monthRows=a.months.map(m=>'<div class="restFactorRow"><div><strong>'+m.month+'月</strong><div class="restFactorCount">勤務 '+m.workCount+'日 ／ 休み '+m.restCount+'日</div></div><span>'+(m.salesAvg?('個人 '+restMoney(m.salesAvg)): '売上データなし')+(m.areaAvg?('<br>エリア '+restMoney(m.areaAvg)):'')+'</span></div>').join('');
- box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div><div class="restDetailNote">個人売上は月ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用し、入力を必須にしません。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月別の記録</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。休みの多さだけで疲労や体調不良を断定しないようにしています。</div></div>';
+ box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div><div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用し、入力を必須にしません。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月別の記録</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。休みの多さだけで疲労や体調不良を断定しないようにしています。</div></div>';
 }
 function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
 function openExplain(){$('restAdviceExplain')?.classList.remove('hidden');$('restAdviceExplainOpen')?.classList.add('hidden')}
