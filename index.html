@@ -556,8 +556,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <div class="card" id="appDisclaimer">
-  <div class="label">📌 ご利用にあたっての注意事項</div>
-  <div class="disclaimer-text" style="font-size:13px;color:#666;line-height:1.8;margin-top:10px">
+  <button type="button" class="disclaimerToggle" onclick="toggleDisclaimer()" aria-expanded="false" aria-controls="appDisclaimerText" style="width:100%;border:0;background:transparent;padding:0;text-align:left;font:inherit;font-weight:700;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+    <span>📌 ご利用にあたっての注意事項</span>
+    <span id="appDisclaimerArrow" aria-hidden="true" style="color:#64748b">⌄</span>
+  </button>
+  <div id="appDisclaimerText" class="disclaimer-text" hidden style="font-size:13px;color:#666;line-height:1.8;margin-top:12px">
     タクログは、乗務記録の管理、売上データの分析、休暇取得の参考情報を提供するためのアプリです。<br><br>
     本アプリが提供する分析結果やアドバイスは参考情報であり、売上や収入の増加、休日取得による効果を保証するものではありません。実際の営業成績や休日取得に関する判断は、ご自身の勤務状況や会社の規定などを踏まえて行ってください。<br><br>
     本アプリの利用に関連して生じた売上・収入の変動や休日取得の結果について、アプリ提供者は、法令上認められる範囲で責任を負いかねます。
@@ -2221,6 +2224,17 @@ function applySettings(){
   const helpOn=localStorage.getItem('taxiShowHelpText')!=='0';
   document.querySelectorAll('.help-text').forEach(el=>el.classList.toggle('hidden-help',!helpOn));
 }
+function toggleDisclaimer(){
+  const text=$('appDisclaimerText');
+  const button=document.querySelector('#appDisclaimer .disclaimerToggle');
+  const arrow=$('appDisclaimerArrow');
+  if(!text||!button)return;
+  const opening=text.hidden;
+  text.hidden=!opening;
+  button.setAttribute('aria-expanded',String(opening));
+  if(arrow)arrow.textContent=opening?'⌃':'⌄';
+}
+
 function showSettings(){
   const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='none';
   // 一般道ログ・高速ログなど、すべてのメイン画面を閉じてから設定画面を開く。
