@@ -173,28 +173,88 @@ function restPatternStats(logs){
 }
 function restCalendarType(key){const arr=normalizePlansForDate(getWorkPlans()[key]);return arr.length?arr[arr.length-1]?.type:''}
 function restCandidateScore(d,patterns){const hits=patterns.filter(p=>restDateFactors(d).includes(p.factor));if(!hits.length)return null;return{factors:hits.map(p=>p.factor),avg:hits.reduce((s,p)=>s+p.avg,0)/hits.length,hits}}
-async function renderRestAdvice(){
- const box=$('restAdviceContent');if(!box)return;const stats=restPatternStats(await getLogs());const learningDays=stats.usable.length;
- let growthIcon='🌱',growthName='基礎学習中',nextTarget=30;
- if(learningDays>=180){growthIcon='🏆';growthName='長期パターン分析';nextTarget=null}else if(learningDays>=90){growthIcon='🌲';growthName='かなり詳しく分析';nextTarget=180}else if(learningDays>=60){growthIcon='🌿';growthName='傾向が安定';nextTarget=90}else if(learningDays>=30){growthIcon='🌱';growthName='基礎学習完了';nextTarget=60}
- const growthMessage=nextTarget===null?'180日分の学習データがたまり、長期パターン分析の段階です。':'次の成長段階まであと<strong>'+Math.max(0,nextTarget-learningDays)+'日</strong>分です。';
- const patternHtml=stats.patterns.length?stats.patterns.slice().sort((a,b)=>a.diff-b.diff).slice(0,6).map(p=>'<div class="restPattern"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'（全体平均より '+Math.abs(Math.round(p.diff))+'%低め）</span></div>').join(''):'<div class="restLearnBox">🔎 今のデータでは、十分な件数があり、全体平均より10%以上低い条件はまだ見つかっていません。</div>';
- const candidates=[],today=new Date();today.setHours(0,0,0,0),allowance=localStorage.getItem('taxiHolidayAllowance')!=='0';
- for(let i=1;i<=45;i++){const d=new Date(today);d.setDate(today.getDate()+i);const key=restDateKey(d),type=restCalendarType(key);if(type!=='work')continue;if(allowance&&restIsHoliday(d))continue;const score=restCandidateScore(d,stats.patterns);if(score)candidates.push({d,key,score})}
- const candHtml=candidates.length?candidates.slice(0,8).map((x,i)=>'<div class="restCandidate restCandidateTap" onclick="toggleCandidate('+i+')" role="button" tabindex="0"><div><strong>'+((x.d.getMonth()+1)+'/'+x.d.getDate())+'（'+['日','月','火','水','木','金','土'][x.d.getDay()]+'）</strong><div class="restWhy">📊 '+x.score.hits.map(h=>escapeHtml(h.factor)).join(' ＋ ')+'</div></div><div class="restCandidateMark">休暇候補として検討<br><span>タップで理由</span></div></div><div id="candidateDetail'+i+'" class="restCandidateDetail hidden">'+x.score.hits.map(h=>'<div class="restReasonRow"><strong>'+escapeHtml(h.factor)+'</strong><span>過去'+h.count+'回・平均 ¥'+Math.round(h.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(h.diff))+'%低め</span></div>').join('')+'</div>').join(''):'<div class="restLearnBox">📅 今後45日間の「勤務」予定の中には、現在学習できている低傾向と重なる日がありません。カレンダーに勤務予定を登録すると候補を探せます。</div>';
- box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🧠 '+escapeHtml(restAnalysisLabel())+'から学習中</div><div style="display:flex;align-items:center;gap:12px;margin:12px 0;padding:12px;border-radius:16px;background:#f7f9fb"><div style="font-size:42px;line-height:1">'+growthIcon+'</div><div><div style="font-weight:900;font-size:18px">成長段階：'+growthName+'</div><div style="margin-top:3px">学習データ <strong>'+stats.usable.length+'日</strong></div><div class="restSmall">'+growthMessage+'</div></div></div><div>分析対象：'+restAnalysisLabel()+' <strong>'+stats.usable.length+'日</strong> ／ 全体平均 <strong>¥'+Math.round(stats.overall).toLocaleString()+'</strong></div><div class="restSmall">🌱 30日：基礎学習完了　→　🌿 60日：傾向が安定　→　🌲 90日：かなり詳しく分析　→　🏆 180日：長期パターン分析</div><div class="restSmall">※ 3件未満の条件は「傾向」として扱いません。現在は全体平均より10%以上低い条件を学習候補にしています。</div></div><div class="restSection"><div class="restSectionTitle">🔎 学習した低傾向</div>'+patternHtml+'</div><div class="restSection"><div class="restSectionTitle">🌿 休暇候補</div><div class="restSmall">売上を上げる指示ではありません。過去の自分のデータから、低くなりやすい条件と重なる「勤務予定日」を候補として表示しています。</div>'+candHtml+'</div>';
+
+// 新しい休み方分析：個人の売上を基本に、入力済みのエリア平均があれば補助的に比較する
+function restMonthLabel(month){return month+'月'}
+function restLogKind(log){
+ const t=String(log?.dayType||'');
+ if(t==='rest_nonpublic'||t==='rest_leaveabsence')return 'rest';
+ if(t==='parttime')return 'parttime';
+ if(t==='work')return 'work';
+ // 古い記録で勤務区分がない場合は、売上がある記録を勤務として扱う
+ return Number(log?.sales)>0?'work':'unknown';
 }
-function toggleCandidate(index){$('candidateDetail'+index)?.classList.toggle('hidden')}
+function restHasSales(log){const n=Number(log?.sales);return Number.isFinite(n)&&n>0}
+function restMonthlyStats(logs){
+ const since=restLogsSinceReset(logs),months=Array.from({length:12},(_,i)=>({month:i+1,sales:[],area:[],restDays:new Set(),workDays:new Set(),years:new Set()}));
+ const restKeys=new Set(),workKeys=new Set();
+ since.forEach(log=>{
+  const d=restDateOnly(log.date);if(!d)return;
+  const m=months[d.getMonth()],key=restDateKey(d),kind=restLogKind(log),year=d.getFullYear();
+  if(kind==='rest'){m.restDays.add(key);restKeys.add(key);m.years.add(year);return}
+  if(kind==='work'){
+   m.workDays.add(key);workKeys.add(key);m.years.add(year);
+   if(restHasSales(log))m.sales.push({value:Number(log.sales),year,key});
+   const a=Number(log.avg);if(Number.isFinite(a)&&a>0)m.area.push({value:a,year,key});
+  }
+ });
+ return months.map(m=>({...m,restCount:m.restDays.size,workCount:m.workDays.size,
+  salesAvg:m.sales.length?m.sales.reduce((s,x)=>s+x.value,0)/m.sales.length:null,
+  areaAvg:m.area.length?m.area.reduce((s,x)=>s+x.value,0)/m.area.length:null,
+  salesYears:new Set(m.sales.map(x=>x.year)).size,restYears:m.years.size}));
+}
+function restCompareMonthStats(months,key){
+ const vals=months.filter(m=>m[key]!==null&&m[key]!==undefined&&m[key]>0);
+ const overall=vals.length?vals.reduce((s,m)=>s+m[key],0)/vals.length:0;
+ return months.map(m=>({...m,diff:overall&&m[key]!=null?(m[key]/overall-1)*100:null})).filter(m=>m[key]!=null);
+}
+function restBuildAdvice(logs){
+ const months=restMonthlyStats(logs),salesMonths=restCompareMonthStats(months,'salesAvg'),areaMonths=restCompareMonthStats(months,'areaAvg');
+ const usableSales=salesMonths.filter(m=>m.sales.length>=3),usableRest=months.filter(m=>m.restCount>0);
+ const years=new Set(restLogsSinceReset(logs).map(x=>{const d=restDateOnly(x.date);return d?d.getFullYear():null}).filter(Boolean)).size;
+ const lowSales=usableSales.filter(m=>m.diff<=-10).sort((a,b)=>a.diff-b.diff);
+ const nearArea=usableSales.filter(m=>m.areaAvg>0&&m.salesAvg<=m.areaAvg*1.03).sort((a,b)=>a.salesAvg/a.areaAvg-b.salesAvg/b.areaAvg);
+ const frequentRest=usableRest.slice().sort((a,b)=>b.restCount-a.restCount).filter(m=>m.restCount>=2);
+ return {months,salesMonths,areaMonths,usableSales,usableRest,years,lowSales,nearArea,frequentRest};
+}
+function restMoney(n){return '¥'+Math.round(n).toLocaleString()}
+function restMonthNames(arr){return arr.map(m=>m.month+'月').join('・')}
+function restDataConfidence(years,monthCount){
+ if(years>=3&&monthCount>=6)return {label:'長期傾向',cls:'restStatusGood',text:'複数年の記録から傾向を確認できます。'}
+ if(years>=2&&monthCount>=4)return {label:'傾向が見え始めています',cls:'restStatusMid',text:'2年分以上の記録があります。今後も記録を重ねて確認しましょう。'}
+ if(years>=1&&monthCount>=3)return {label:'暫定的な傾向',cls:'restStatusMid',text:'まだ年ごとの変動を十分に比べられません。現時点の参考情報です。'}
+ return {label:'データ蓄積中',cls:'restStatusWeak',text:'月ごとの比較に使える記録がまだ少なめです。'}
+}
+async function renderRestAdvice(){
+ const box=$('restAdviceContent');if(!box)return;
+ const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
+ const ownHtml=a.lowSales.length
+  ?'<div class="restLearnBox"><strong>📉 売上が落ち込みやすい月</strong><div style="margin-top:7px">'+a.lowSales.slice(0,4).map(m=>'<div class="restPattern"><strong>'+m.month+'月</strong><span>日平均 '+restMoney(m.salesAvg)+'（全体月平均より '+Math.abs(Math.round(m.diff))+'%低め）</span></div>').join('')+'</div><div class="restSmall">この時期は、計画的に休暇を取る候補として検討できます。</div></div>'
+  :'<div class="restLearnBox">📉 今の記録では、売上が落ち込みやすい月を十分な確度で特定できていません。記録が増えると分析しやすくなります。</div>';
+ const restHtml=a.frequentRest.length
+  ?'<div class="restLearnBox"><strong>🏠 休みを取ることが多い月</strong>'+a.frequentRest.slice(0,4).map(m=>'<div class="restPattern"><strong>'+m.month+'月</strong><span>記録上 '+m.restCount+'日休み</span></div>').join('')+'<div class="restSmall">休みが多い理由までは記録から判断できません。疲れや体調、予定なども振り返る材料にしましょう。</div></div>'
+  :'<div class="restLearnBox">🏠 休み方の傾向を調べるには、「休（非・公）」や「休（有・欠）」の記録がもう少し必要です。</div>';
+ let advice='';
+ if(a.lowSales.length&&a.frequentRest.length){
+  const low=a.lowSales.slice(0,2),rest=a.frequentRest.slice(0,2);
+  advice='過去の記録では、'+restMonthNames(low)+'に売上が落ち込みやすく、'+restMonthNames(rest)+'に休みを取ることが多い傾向があります。売上が落ち込みやすい月は計画的な休暇の候補にし、休みが多い月は疲れや体調も振り返り、必要に応じて早めに切り上げるなど無理のない働き方を検討してみましょう。';
+ }else if(a.lowSales.length){
+  advice='過去の記録では、'+restMonthNames(a.lowSales.slice(0,3))+'に売上が落ち込みやすい傾向があります。この時期は計画的に休暇を取る候補として検討してみましょう。';
+ }else if(a.frequentRest.length){
+  advice=restMonthNames(a.frequentRest.slice(0,3))+'は、記録上休みを取ることが多い月です。休みが多い理由は断定せず、疲れや体調、予定を振り返り、必要に応じて早めに切り上げることも検討しましょう。';
+ }else{
+  advice='売上と休み方の傾向は、まだ十分には判断できません。勤務日には売上を、休みの日には日区分を記録していくと、あなた自身の傾向が見えてきます。';
+ }
+ const areaAvailable=a.areaMonths.length>=3;
+ const areaHtml=areaAvailable?'<div class="restLearnBox"><strong>📊 エリア平均との比較（任意）</strong><div class="restSmall">自分の売上がエリア平均と同程度以下の月：'+(a.nearArea.length?restMonthNames(a.nearArea.slice(0,4)):'現時点では特定できません')+'</div><div class="restSmall">エリア平均が入力された記録だけを使った補助分析です。入力がなくても、上の個人売上分析は利用できます。</div></div>':'<div class="restLearnBox"><strong>📊 エリア平均との比較</strong><div class="restSmall">エリア平均の記録が少ないため、比較は行っていません。個人の売上だけで分析しています。</div></div>';
+ box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌿 あなたの休み方アドバイス</div><div style="margin:10px 0"><span class="'+confidence.cls+'" style="display:inline-block">'+confidence.label+'</span><div class="restSmall">'+confidence.text+' 対象：'+a.years+'年分の記録</div></div><div style="line-height:1.75">'+escapeHtml(advice)+'</div><div class="restSmall">※ これは過去の記録からの参考提案です。売上の変動や休みの理由を断定するものではありません。</div></div><div class="restSection"><div class="restSectionTitle">📉 売上の月別傾向</div>'+ownHtml+'</div><div class="restSection"><div class="restSectionTitle">🏠 休み方の月別傾向</div>'+restHtml+'</div><div class="restSection">'+areaHtml+'</div><div class="restDetailNote">分析は既存の乗務記録を利用します。売上は勤務記録1日あたりの平均で月ごとに比較し、休みは「休（非・公）」と「休（有・欠）」の記録を数えています。半休・早退は休みの日として数えません。月ごとの記録が少ない場合や、複数年のデータがない場合は結論を控えます。</div>';
+}
 function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
 async function renderLearningDetails(){
- const box=$('restLearningDetails');if(!box)return;const logs=restLogsSinceReset(await getLogs()),usable=logs.filter(x=>restAnalysisValue(x)>0&&!restHasHalfOrEarly(x)),overall=usable.length?usable.reduce((s,x)=>s+restAnalysisValue(x),0)/usable.length:0,catalog=restFactorCatalog();
- const rows=catalog.map(f=>{const count=restFactorOccurrenceCount(f,usable);let status='⚪ データ不足',cls='restStatusWeak';if(count>=5){status='🟢 分析可能';cls='restStatusGood'}else if(count>=3){status='🟡 学習中';cls='restStatusMid'}const unit=f.occurrence?'回':'日分';return'<div class="restFactorRow"><div><strong>'+escapeHtml(f.label)+'</strong><div class="restFactorCount">'+count+unit+'</div></div><span class="'+cls+'">'+status+'</span></div>'}).join('');
- const stats=restPatternStats(logs),trendHtml=stats.patterns.length?stats.patterns.slice().sort((a,b)=>a.diff-b.diff).map(p=>'<div class="restTrendRow"><strong>'+escapeHtml(p.factor)+'</strong><span>'+p.count+'回・平均 ¥'+Math.round(p.avg).toLocaleString()+'<br>全体平均より '+Math.abs(Math.round(p.diff))+'%低め</span></div>').join(''):'<div class="restLearnBox">まだ十分なデータから発見できた傾向はありません。</div>';
- const factorReadyCount=catalog.filter(f=>restFactorOccurrenceCount(f,usable)>=5).length;
- const progress=Math.min(100,Math.round(usable.length/180*100));let nextStage=30,nextStageIcon='🌱',nextStageName='基礎学習完了';
- if(usable.length>=180)nextStage=null;else if(usable.length>=90){nextStage=180;nextStageIcon='🏆';nextStageName='長期パターン分析'}else if(usable.length>=60){nextStage=90;nextStageIcon='🌲';nextStageName='かなり詳しく分析'}else if(usable.length>=30){nextStage=60;nextStageIcon='🌿';nextStageName='傾向が安定'}
- const remain=nextStage===null?0:Math.max(0,nextStage-usable.length),progressMessage=nextStage===null?'🎉 180日分の学習データがたまり、長期パターン分析の段階です。':'次の成長段階 '+nextStageIcon+' '+nextStageName+' まであと<strong>'+remain+'日</strong>分です。';
- box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 タクログの学習状況</div><div class="restLearningStats"><div class="restLearningStat"><div class="restLearningStatLabel">📊 '+escapeHtml(restAnalysisLabel())+'データ</div><div class="restProgress" style="height:12px;border-radius:999px;background:#edf0ed;overflow:hidden;margin-top:8px"><div style="height:100%;border-radius:999px;background:#78b88a;width:'+progress+'%"></div></div><div style="margin-top:6px;font-size:14px;text-align:right;color:#555"><strong style="font-size:20px;color:#222">'+usable.length+'日</strong> / 180日</div><div style="margin-top:7px;font-size:12px;color:#666;line-height:1.5">'+progressMessage+'</div></div><div class="restDetailMeta">全体平均 ¥'+Math.round(overall).toLocaleString()+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div class="restLearningStatBox" style="padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff"><strong style="display:block;font-size:22px">'+factorReadyCount+'種類</strong><span style="font-size:11px;color:#666;font-weight:700">分析できるファクター</span></div><div class="restLearningStatBox" style="padding:12px 8px;text-align:center;border:1px solid #e8ece9;border-radius:14px;background:#fff"><strong style="display:block;font-size:22px">'+stats.patterns.length+'件</strong><span style="font-size:11px;color:#666;font-weight:700">発見した傾向</span></div></div></div><div class="restDetailSection"><div class="restDetailSectionTitle">📚 分析できるファクター</div>'+rows+'</div><div class="restDetailSection"><div class="restDetailSectionTitle">🔎 発見した傾向</div>'+trendHtml+'</div><div class="restDetailNote">🟡 3〜4日：学習中　／　🟢 5日以上：分析可能<br>⚪ 件数が少ない条件は、傾向として扱いません。</div></div>';
+ const box=$('restLearningDetails');if(!box)return;
+ const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
+ const monthRows=a.months.map(m=>'<div class="restFactorRow"><div><strong>'+m.month+'月</strong><div class="restFactorCount">勤務 '+m.workCount+'日 ／ 休み '+m.restCount+'日</div></div><span>'+(m.salesAvg?('個人 '+restMoney(m.salesAvg)): '売上データなし')+(m.areaAvg?('<br>エリア '+restMoney(m.areaAvg)):'')+'</span></div>').join('');
+ box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div><div class="restDetailNote">個人売上は月ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用し、入力を必須にしません。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月別の記録</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。休みの多さだけで疲労や体調不良を断定しないようにしています。</div></div>';
 }
 function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
 function openExplain(){$('restAdviceExplain')?.classList.remove('hidden');$('restAdviceExplainOpen')?.classList.add('hidden')}
