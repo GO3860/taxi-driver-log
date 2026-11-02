@@ -65,8 +65,8 @@ main{padding:14px}
 <div class="card">
 <div class="label">📖 休み方分析のしくみ</div>
 <div id="restAdviceExplain" class="restAdviceExplain hidden">
-<div class="restAdviceExplainTitle">今後45日間の「勤務予定」を分析します</div>
-<div class="restAdviceExplainText">カレンダーに登録した「勤務」予定を対象に、<strong>今後45日間</strong>を分析します。<br>過去の売上データから、売上が低くなりやすかった条件と重なる勤務予定日を、<strong>「休暇候補として検討」</strong>として表示します。<br><span>※ 休むことを決める機能ではありません。過去の自分のデータをもとに、休暇を考える際の参考として表示しています。</span></div>
+<div class="restAdviceExplainTitle">あなた自身の売上と休み方の月別傾向を分析します</div>
+<div class="restAdviceExplainText">過去の乗務記録から、月ごとの売上と休みの日数を集計し、売上が落ち込みやすい月や休みを取ることが多い月を探します。<br><strong>エリア平均を入力していなくても、個人の売上だけで分析できます。</strong> エリア平均の記録がある場合は、補助的な比較にも利用します。<br><span>※ 傾向は参考情報です。休みが多い理由や体調を断定せず、記録が少ない場合は結論を控えます。</span></div>
 <button type="button" class="restAdviceExplainClose" onclick="closeExplain()">説明を閉じる</button>
 </div>
 <button type="button" id="restAdviceExplainOpen" class="restAdviceExplainOpen" onclick="openExplain()">📖 休み方分析の説明を見る</button>
@@ -194,7 +194,7 @@ function restMonthlyStats(logs){
   if(kind==='rest'){m.restDays.add(key);restKeys.add(key);m.years.add(year);return}
   if(kind==='work'){
    m.workDays.add(key);workKeys.add(key);m.years.add(year);
-   if(restHasSales(log))m.sales.push({value:Number(log.sales),year,key});
+   if(restHasSales(log)&&!restHasHalfOrEarly(log))m.sales.push({value:Number(log.sales),year,key});
    const a=Number(log.avg);if(Number.isFinite(a)&&a>0)m.area.push({value:a,year,key});
   }
  });
