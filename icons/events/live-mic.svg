@@ -1,9 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-<rect width="128" height="128" rx="17" fill="#168FEA"/>
+<rect x="1" y="1" width="126" height="126" rx="18" fill="#168FEA"/>
 <g fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M64 19v37"/>
-<path d="M49 34v13a15 15 0 0 0 30 0V34a15 15 0 0 0-30 0Z"/>
-<path d="M43 44c-5 5-5 14 0 19M35 38c-10 10-10 22 0 32M85 44c5 5 5 14 0 19M93 38c10 10 10 22 0 32"/>
-<path d="M29 66a35 35 0 0 0 70 0M64 101v12M49 113h30"/>
+  <!-- central broadcast microphone -->
+  <path d="M49 23 Q49 17 56 17 H72 Q79 17 79 25 V66 Q79 84 64 84 Q49 84 49 66 Z"/>
+  <path d="M57 32 H71 M57 43 H71 M49 54 H79"/>
+  <!-- sound waves on both sides -->
+  <path d="M39 30 Q29 40 39 50 M32 23 Q17 40 32 57 M89 30 Q99 40 89 50 M96 23 Q111 40 96 57"/>
+  <!-- lower broadcast arc, stem and base -->
+  <path d="M35 62 Q35 94 64 94 Q93 94 93 62"/>
+  <path d="M64 94 V111 M52 111 H76"/>
 </g>
 </svg>
