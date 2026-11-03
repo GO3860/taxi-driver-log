@@ -154,6 +154,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .calDay.hasPlans .baseCube{transform:translateY(1px);box-shadow:0 5px 0 #c8d5df,0 8px 11px rgba(55,80,105,.12),inset 0 1px 0 rgba(255,255,255,.95)}
 .calDay.selected .baseCube{outline:3px solid #4aa1ff;outline-offset:-2px}
 @media(max-width:560px){.calDay{height:70px!important;min-height:70px!important}.baseCube .baseDate{font-size:15px;padding:3px 7px}.planCube{height:46px;min-height:46px;width:90%}.planCube .cubeDate{font-size:15px}.planCube .cubeLabel{font-size:11px}}
+
+.taxi-icon{width:1.2em;height:1.2em;object-fit:contain;vertical-align:-.22em;display:inline-block}.taxi-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 </style>
 
 <style id="overlap-stack-v107">
@@ -372,7 +374,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div id="commonFields">
 <div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
 <button class="chip" onclick="weather(this)" aria-label="晴れ" title="晴れ">☀️</button><button class="chip" onclick="weather(this)" aria-label="曇り" title="曇り">☁️</button>
-<button class="chip" onclick="weather(this)" aria-label="雨" title="雨">☔</button><button class="chip" onclick="weather(this)" aria-label="雪" title="雪">❄️</button>
+<button class="chip" onclick="weather(this)" aria-label="雨" title="雨">☔</button><button class="chip" onclick="weather(this)" aria-label="雪" title="雪"><img class="taxi-icon" src="icons/snow.png" alt=""><span class="taxi-sr-only">❄️</span></button>
 
 </div></div>
 
@@ -380,7 +382,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <button class="chip" onclick="pick(this)">なし</button><button class="chip" onclick="pick(this)">⚾ 野球</button>
 <button class="chip" onclick="pick(this)">⚽ サッカー</button><button class="chip" onclick="pick(this)">🎆 花火</button>
 <button class="chip" onclick="pick(this)">🏮 まつり</button><button class="chip" onclick="pick(this)">🎤 ライブ</button>
-<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">🌧️ 大雨</button><button class="chip" onclick="pick(this)">❄️ 大雪</button><button class="chip" onclick="pick(this)">🚨 事故</button><button class="chip" onclick="pick(this)">🕐 半休</button><button class="chip" onclick="pick(this)">🏃 早退</button><button class="chip" onclick="pick(this)">その他</button>
+<button class="chip" onclick="pick(this)">🚃 運転見合せ</button><button class="chip" onclick="pick(this)">🌀 台風直撃</button><button class="chip" onclick="pick(this)">🌧️ 大雨</button><button class="chip" onclick="pick(this)"><img class="taxi-icon" src="icons/snow.png" alt=""><span class="taxi-sr-only">❄️</span> 大雪</button><button class="chip" onclick="pick(this)">🚨 事故</button><button class="chip" onclick="pick(this)"><img class="taxi-icon" src="icons/clock.png" alt=""><span class="taxi-sr-only">🕐</span> 半休</button><button class="chip" onclick="pick(this)"><img class="taxi-icon" src="icons/run.png" alt=""><span class="taxi-sr-only">🏃</span> 早退</button><button class="chip" onclick="pick(this)">その他</button>
 </div></div>
 </div>
 
@@ -390,7 +392,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 
 <div id="workFields">
-<div id="timeCard" class="card optional-widget hidden"><div class="label">🕐 出入庫・拘束時間</div><div class="grid">
+<div id="timeCard" class="card optional-widget hidden"><div class="label"><img class="taxi-icon" src="icons/clock.png" alt=""> 出入庫・拘束時間</div><div class="grid">
 <div><div class="small">出庫</div><input id="out" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">入庫</div><input id="in" type="time" oninput="duration()" onchange="duration()"></div>
 <div><div class="small">拘束時間</div><div id="hours" class="hoursbox">—<div id="hoursWarningOverlay" class="hoursWarningOverlay hidden"><div id="hoursWarningText"></div></div></div></div></div></div>
@@ -502,7 +504,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="card">
 <div class="label">👀 今日の画面に表示する項目</div>
 <div class="help-text">必要なものだけチェックすると、今日の画面にガジェットとして表示されます。</div>
-<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">🕐 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px"><img class="taxi-icon" src="icons/clock.png" alt=""> 出庫・入庫・拘束時間 <input id="showTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee;font-size:15px">☕ 休憩時間 <input id="showBreakTime" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
 
 
@@ -523,7 +525,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <div class="card" id="restAnalysisSettingsCard">
-<div class="label">🌿 休み方分析の設定</div>
+<div class="label"><img class="taxi-icon" src="icons/leaf.png" alt=""> 休み方分析の設定</div>
 <div class="help-text">売上を上げるためではなく、自分の営業データから「休む候補になりやすい日」を学習するための設定です。</div>
 <div style="margin-top:12px;font-weight:800;font-size:15px">💰 給料日基準</div>
 <select id="paydayBase" onchange="saveRestSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:7px"></select>
@@ -909,7 +911,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <span class="floatingCalendarIcon">📚</span><span>エリア平均入力</span>
   </button>
   <button type="button" class="floatingRestAdviceBtn" onclick="showRestAdvice()" aria-label="休み方アドバイスを開く">
-    <span class="floatingCalendarIcon">🌿</span><span>休み方アドバイス</span>
+    <span class="floatingCalendarIcon"><img class="taxi-icon" src="icons/leaf.png" alt=""></span><span>休み方アドバイス</span>
   </button>
 </div>
 <nav><button class="navbtn" onclick="goToToday()">🏠 今日</button><button class="navbtn" onclick="showLogs()">📚 ログ</button><button class="navbtn" onclick="showData()">📊 データ</button><button class="navbtn routeNav" onclick="showRouteChoice()"><span class="navIcon">🛣️</span><span class="navLabel">道ログ</span></button><button class="navbtn" onclick="showSettings()">⚙️ 設定</button></nav>
@@ -1133,6 +1135,7 @@ function initRoutes(routes){
   }
 }
 
+function taxiIconLabel(value){return String(value).replaceAll('🕐','<img class="taxi-icon" src="icons/clock.png" alt="">').replaceAll('🏃','<img class="taxi-icon" src="icons/run.png" alt="">').replaceAll('❄️','<img class="taxi-icon" src="icons/snow.png" alt="">').replaceAll('🌿','<img class="taxi-icon" src="icons/leaf.png" alt="">').replaceAll('🌱','<img class="taxi-icon" src="icons/sprout.png" alt="">').replaceAll('🌲','<img class="taxi-icon" src="icons/pine.png" alt="">').replaceAll('🧠','<img class="taxi-icon" src="icons/brain.png" alt="">')}
 function pick(e){
   const buttons=[...e.parentElement.children];
   if(e.textContent.trim()==='なし'){
@@ -2613,12 +2616,12 @@ function renderBarGraph(stats){
     <div style="height:190px;display:flex;align-items:flex-end;gap:4px;border-bottom:1px solid #ddd;padding:0 2px">
       ${stats.map(s=>{const h1=s.avg?Math.max(4,Math.round(s.avg/maxGraph*150)):0;const h2=s.areaAvg?Math.max(4,Math.round(s.areaAvg/maxGraph*150)):0;return `<div style="flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px"><div title="${s.name} 自分 ${s.avg?yen(s.avg):'—'}" style="width:22%;max-width:24px;height:${h1}px;background:#4d8bd8;border-radius:5px 5px 0 0"></div><div title="${s.name} エリア平均 ${s.areaAvg?yen(s.areaAvg):'—'}" style="width:22%;max-width:24px;height:${h2}px;background:#aab2bd;border-radius:5px 5px 0 0"></div></div>`}).join('')}
     </div>
-    <div style="display:flex;gap:4px;margin-top:6px">${stats.map(s=>`<div style="flex:1;text-align:center;font-size:12px;font-weight:700">${s.name}</div>`).join('')}</div>
+    <div style="display:flex;gap:4px;margin-top:6px">${stats.map(s=>`<div style="flex:1;text-align:center;font-size:12px;font-weight:700">${taxiIconLabel(s.name)}</div>`).join('')}</div>
   </div>`;
 }
 function renderAnalysisRows(stats){
   return `<div style="margin-top:18px">${stats.map(s=>`<div style="padding:14px 0 18px;border-bottom:1px solid #eee">
-    <div style="font-weight:800;font-size:20px;margin-bottom:16px">${s.name}</div>
+    <div style="font-weight:800;font-size:20px;margin-bottom:16px">${taxiIconLabel(s.name)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:28px;row-gap:22px">
       <div style="text-align:left">
         <div style="font-size:16px;color:#555;margin-bottom:5px">・自分の平均</div>
@@ -2791,7 +2794,7 @@ async function showEventBreakdown(year,index){
       if(e!=='なし' && Object.prototype.hasOwnProperty.call(counts,key)) counts[key]++;
     });
   });
-  const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${n}</span><strong>${counts[n]}回</strong></div>`).join('');
+  const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${taxiIconLabel(n)}</span><strong>${counts[n]}回</strong></div>`).join('');
   $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';  $('eventBreakdownModal').classList.remove('hidden');
 }
 function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden')}
