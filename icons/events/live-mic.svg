@@ -1,13 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-<rect x="1" y="1" width="126" height="126" rx="18" fill="#168FEA"/>
-<g fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- central broadcast microphone -->
-  <path d="M49 23 Q49 17 56 17 H72 Q79 17 79 25 V66 Q79 84 64 84 Q49 84 49 66 Z"/>
-  <path d="M57 32 H71 M57 43 H71 M49 54 H79"/>
-  <!-- sound waves on both sides -->
-  <path d="M39 30 Q29 40 39 50 M32 23 Q17 40 32 57 M89 30 Q99 40 89 50 M96 23 Q111 40 96 57"/>
-  <!-- lower broadcast arc, stem and base -->
-  <path d="M35 62 Q35 94 64 94 Q93 94 93 62"/>
-  <path d="M64 94 V111 M52 111 H76"/>
-</g>
+  <rect x="1" y="1" width="126" height="126" rx="18" fill="#2697E8"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- マイク本体 -->
+    <path d="M49 25 Q49 18 57 18 H71 Q79 18 79 26 V65 Q79 83 64 83 Q49 83 49 65 Z"/>
+    <path d="M57 31 H71 M57 42 H71 M49 53 H79"/>
+    <!-- 左右3本ずつの音波 -->
+    <path d="M39 35 Q31 43 39 51"/>
+    <path d="M32 27 Q18 43 32 59"/>
+    <path d="M25 20 Q7 43 25 66"/>
+    <path d="M89 35 Q97 43 89 51"/>
+    <path d="M96 27 Q110 43 96 59"/>
+    <path d="M103 20 Q121 43 103 66"/>
+    <!-- マイクスタンドのU字部分・支柱・台座 -->
+    <path d="M36 62 Q36 96 64 96 Q92 96 92 62"/>
+    <path d="M64 96 V111 M52 111 H76"/>
+  </g>
 </svg>
