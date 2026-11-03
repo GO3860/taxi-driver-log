@@ -1,18 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#087fbd"/><stop offset="0.55" stop-color="#064477"/><stop offset="1" stop-color="#032b55"/></linearGradient></defs><rect x="1.5" y="1.5" width="125" height="125" rx="18" fill="url(#bg)" stroke="#32c9f4" stroke-width="2"/>
+  <rect x="1.5" y="1.5" width="125" height="125" rx="18" fill="#2196F3"/>
   <g fill="none" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
-    <!-- マイク本体 -->
-    <path d="M49 25 Q49 18 57 18 H71 Q79 18 79 26 V65 Q79 83 64 83 Q49 83 49 65 Z"/>
+    <path d="M49 25 Q49 18 57 18 H71 Q79 18 79 25 V64 Q79 82 64 82 Q49 82 49 64 Z"/>
     <path d="M57 31 H71 M57 42 H71 M49 53 H79"/>
-    <!-- 左右3本ずつの音波 -->
-    <path d="M39 35 Q31 43 39 51"/>
-    <path d="M32 27 Q18 43 32 59"/>
-    <path d="M25 20 Q7 43 25 66"/>
-    <path d="M89 35 Q97 43 89 51"/>
-    <path d="M96 27 Q110 43 96 59"/>
-    <path d="M103 20 Q121 43 103 66"/>
-    <!-- マイクスタンドのU字部分・支柱・台座 -->
-    <path d="M36 62 Q36 96 64 96 Q92 96 92 62"/>
+    <path d="M40 34 Q32 43 40 52"/>
+    <path d="M32 27 Q18 43 32 60"/>
+    <path d="M24 20 Q6 43 24 67"/>
+    <path d="M88 34 Q96 43 88 52"/>
+    <path d="M96 27 Q110 43 96 60"/>
+    <path d="M104 20 Q122 43 104 67"/>
+    <path d="M30 61 Q30 96 64 96 Q98 96 98 61"/>
     <path d="M64 96 V111 M52 111 H76"/>
   </g>
 </svg>
