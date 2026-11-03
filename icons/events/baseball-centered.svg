@@ -16,11 +16,11 @@
   </filter>
 </defs>
 <rect x="2.5" y="2.5" width="123" height="123" rx="25" fill="url(#bg)" stroke="url(#edge)" stroke-width="3" filter="url(#glow)"/>
-<g fill="none" stroke="#fff" stroke-width="5.1" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="64" cy="62" r="37.5"/>
-  <path d="M39 30 C55 43 58 80 39 94"/>
-  <path d="M89 30 C73 43 70 80 89 94"/>
-  <path d="M39 39 l9 5 M45 52 l10 2 M46 69 l10 -1 M39 84 l9 -5"/>
-  <path d="M89 39 l-9 5 M83 52 l-10 2 M82 69 l-10 -1 M89 84 l-9 -5"/>
+<g fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="64" cy="64" r="42.5"/>
+  <path d="M43 25 C25 43 25 85 43 103"/>
+  <path d="M85 25 C103 43 103 85 85 103"/>
+  <path d="M29 39 l12 6 M26 54 l14 2 M26 74 l14 -2 M29 89 l12 -6"/>
+  <path d="M99 39 l-12 6 M102 54 l-14 2 M102 74 l-14 -2 M99 89 l-12 -6"/>
 </g>
 </svg>
