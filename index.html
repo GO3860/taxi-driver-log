@@ -1437,7 +1437,7 @@ async function renderSalesGoal(){
   }
   box.innerHTML=`<div class="salesGoalHead"><div class="salesGoalTitle">🚩 今月の売上目標</div><button type="button" class="salesGoalChange" onclick="showSettings()">設定で変更</button></div>
     <div class="salesGoalNumbers"><div><div class="salesGoalSmall">${month}の累計売上</div><div class="salesGoalAmount">¥${sales.toLocaleString()}</div></div><div class="salesGoalTarget"><div class="salesGoalSmall">目標金額</div><div class="salesGoalAmount">¥${goal.toLocaleString()}</div></div></div>
-    <div class="salesRoad"><div class="salesRoadDone" style="width:${width}%"></div><img class="salesTaxi" src="icons/sales-taxi.svg" alt="タクシー" style="left:calc(${width}% - 34px)"><div class="salesFlag">🏁</div></div>
+    <div class="salesRoad"><div class="salesRoadDone" style="width:${width}%"></div><img class="salesTaxi" src="icons/sales-taxi.svg" alt="タクシー" style="left:calc(${width}% - 34px)"></div>
     <div class="salesGoalBottom"><strong>${pct}%</strong><span>${sales>=goal?'目標達成！':'あと ¥'+remain.toLocaleString()}</span></div>
     <div class="salesGoalMessage">${message}</div>`;
   // 売上目標カードは動的に作り直されるため、説明文ON/OFFを再適用する。
