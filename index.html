@@ -622,10 +622,10 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <div class="card" id="restAnalysisSettingsCard">
 <div class="label"><img class="taxi-icon" src="icons/leaf.png" alt=""> 休み方分析の設定</div>
 <div class="help-text">売上を上げるためではなく、自分の営業データから「休む候補になりやすい日」を学習するための設定です。</div>
-<div style="margin-top:12px;font-weight:800;font-size:15px">💰 給料日基準</div>
+<div style="margin-top:12px;font-weight:800;font-size:15px">給料日基準</div>
 <select id="paydayBase" onchange="saveRestSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:7px"></select>
 <div class="small">ご自身の給料日ではなく、給料日前後の影響を分析するための基準日です。初期値は25日です。</div>
-<div style="margin-top:14px;font-weight:800;font-size:15px">💴 祝日手当</div>
+<div style="margin-top:14px;font-weight:800;font-size:15px">祝日手当</div>
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
