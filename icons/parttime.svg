@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073c70"/><stop offset=".52" stop-color="#00234b"/><stop offset="1" stop-color="#004d91"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9ffaff"/><stop offset=".45" stop-color="#00baff"/><stop offset="1" stop-color="#58eaff"/></linearGradient>
+ <filter id="glow" x="-35%" y="-35%" width="170%" height="170%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="7" y="7" width="242" height="242" rx="39" fill="url(#bg)" stroke="url(#edge)" stroke-width="5" filter="url(#glow)"/>
+<g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+ <!-- rear coin stack -->
+ <path d="M82 82 C82 65 151 65 151 82 C151 99 82 99 82 82Z"/>
+ <path d="M82 82 V105 C82 122 151 122 151 105 V82"/>
+ <path d="M82 105 C82 122 151 122 151 105"/>
+ <!-- front-left coin stack -->
+ <path d="M39 127 C39 109 108 109 108 127 C108 145 39 145 39 127Z"/>
+ <path d="M39 127 V163 C39 181 108 181 108 163 V127"/>
+ <path d="M39 145 C39 163 108 163 108 145"/>
+ <path d="M39 163 C39 181 108 181 108 163"/>
+ <!-- yen coin -->
+ <circle cx="171" cy="153" r="47"/>
+ <path d="M151 129 L171 151 L191 129 M171 151 V184 M148 158 H194 M151 170 H191"/>
+ <!-- sparkle rays -->
+ <path d="M176 39 L181 22 M198 62 L212 47 M216 88 L235 83"/>
+</g>
+</svg>
