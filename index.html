@@ -2948,7 +2948,28 @@ function getDayTypeIconLabel(dayType){
  const item=types[dayType]||types.work;
  return `<img class="daytype-icon" src="${item.src}" alt=""> ${item.label}`;
 }
-async function showLogs(){returnRouteCardHome();hideAllMainViews();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${getDayTypeIconLabel(x.dayType)}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${(Array.isArray(x.event)?x.event.join(' '):(x.event||''))} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
+function escapeEventText(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function renderEventDisplay(eventValue){
+  const values=Array.isArray(eventValue)?eventValue:(eventValue?[eventValue]:[]);
+  const buttons=[...document.querySelectorAll('#events .chip')];
+  return values.map(raw=>{
+    const rawText=String(raw||'').trim();
+    if(!rawText)return '';
+    const match=buttons.find(button=>{
+      const label=(button.getAttribute('aria-label')||button.innerText||button.textContent||'').trim();
+      return label&&(rawText===label||rawText.endsWith(label));
+    });
+    if(!match)return escapeEventText(rawText);
+    const label=(match.getAttribute('aria-label')||match.innerText||match.textContent||'').trim();
+    const icon=match.querySelector('img.event-icon');
+    return icon
+      ? '<span class="log-event-item"><img class="event-icon" src="'+icon.getAttribute('src')+'" alt=""> '+escapeEventText(label)+'</span>'
+      : escapeEventText(label);
+  }).filter(Boolean).join(' ');
+}
+async function showLogs(){returnRouteCardHome();hideAllMainViews();const restBtn=$('floatingRestAdviceBtn');if(restBtn)restBtn.style.display='';$('logs').classList.remove('hidden');$('logListView').classList.remove('hidden');$('logDetailView').classList.add('hidden');let a=await getLogs();a.sort((x,y)=>{const dx=parseDutyDate(x.date),dy=parseDutyDate(y.date);const tx=dx?dx.getTime():-Infinity,ty=dy?dy.getTime():-Infinity;return ty-tx||y.id-x.id;});$('logList').innerHTML=a.length?a.map(x=>`<div class="logitem"><div class="logtop"><span>${x.date}</span><span>${getDayTypeIconLabel(x.dayType)}</span></div><div class="tag">${isRestDay(x.dayType)?'エリア平均 ¥'+(Number(x.avg||0).toLocaleString()):x.dayType==='parttime'?'売上 ¥'+Number(x.sales||0).toLocaleString()+'　持ち帰り ¥'+Number(x.parttimeTakeHome||0).toLocaleString():'売上 ¥'+Number(x.sales||0).toLocaleString()}</div><div class="tag">${(Array.isArray(x.weather)?x.weather.join('/'):'' )} ${renderEventDisplay(x.event)} ${x.km?x.km+'km':''}</div><div class="tag">${x.eventNote||''}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="detailBtn" onclick="showLogDetail(${x.id})">詳細を見る</button><button class="btn" onclick="deleteLog(${x.id})">削除</button></div></div>`).join(''):'まだログはありません。';}
 function calcBreakTotalMinutes(log){
  const pairs=[[log.break1Start,log.break1End],[log.break2Start,log.break2End],[log.break3Start,log.break3End]];
  let total=0;
@@ -3017,7 +3038,7 @@ function formatBreakTotal(log){
 async function showLogDetail(id){
  const all=await getLogs();const x=all.find(v=>v.id===id);if(!x)return; currentLogDetailId=id;
  await updateTotal();
- const weather=Array.isArray(x.weather)?x.weather.join('/'):(x.weather||'');const ev=Array.isArray(x.event)?x.event.join(' '):(x.event||'');
+ const weather=Array.isArray(x.weather)?x.weather.join('/'):(x.weather||'');const ev=renderEventDisplay(x.event);
 
  const rest=isRestDay(x.dayType), parttime=x.dayType==='parttime';
  $('logListView').classList.add('hidden');$('logDetailView').classList.remove('hidden');
