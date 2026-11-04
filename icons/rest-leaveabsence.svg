@@ -2,20 +2,21 @@
 <defs>
  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073c70"/><stop offset=".52" stop-color="#00234b"/><stop offset="1" stop-color="#004d91"/></linearGradient>
  <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9ffaff"/><stop offset=".45" stop-color="#00baff"/><stop offset="1" stop-color="#58eaff"/></linearGradient>
- <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <rect x="7" y="7" width="242" height="242" rx="39" fill="url(#bg)" stroke="url(#edge)" stroke-width="5" filter="url(#glow)"/>
-<g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
- <path d="M128 119 C103 99 91 71 111 43 C119 32 127 27 128 27 C129 27 137 32 145 43 C165 71 153 99 128 119Z"/>
- <path d="M128 119 C119 88 133 63 165 61 C180 60 190 66 191 67 C191 68 192 78 186 92 C173 122 148 132 128 119Z"/>
- <path d="M128 119 C155 106 181 117 190 147 C194 161 190 172 189 173 C188 174 178 178 163 175 C132 170 119 145 128 119Z"/>
- <path d="M128 119 C145 145 137 173 110 188 C97 195 85 193 84 192 C83 191 80 181 83 166 C89 135 109 117 128 119Z"/>
- <path d="M128 119 C97 130 73 115 69 84 C67 69 73 59 74 58 C75 57 85 55 100 60 C130 69 141 94 128 119Z"/>
+<g transform="translate(128 128)" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+ <path d="M-17 -20 C-39 -43 -43 -72 -22 -94 C-13 -103 -4 -108 0 -108 C4 -108 13 -103 22 -94 C43 -72 39 -43 17 -20 C8 -10 -8 -10 -17 -20Z"/>
+ <path transform="rotate(72)" d="M-17 -20 C-39 -43 -43 -72 -22 -94 C-13 -103 -4 -108 0 -108 C4 -108 13 -103 22 -94 C43 -72 39 -43 17 -20 C8 -10 -8 -10 -17 -20Z"/>
+ <path transform="rotate(144)" d="M-17 -20 C-39 -43 -43 -72 -22 -94 C-13 -103 -4 -108 0 -108 C4 -108 13 -103 22 -94 C43 -72 39 -43 17 -20 C8 -10 -8 -10 -17 -20Z"/>
+ <path transform="rotate(216)" d="M-17 -20 C-39 -43 -43 -72 -22 -94 C-13 -103 -4 -108 0 -108 C4 -108 13 -103 22 -94 C43 -72 39 -43 17 -20 C8 -10 -8 -10 -17 -20Z"/>
+ <path transform="rotate(288)" d="M-17 -20 C-39 -43 -43 -72 -22 -94 C-13 -103 -4 -108 0 -108 C4 -108 13 -103 22 -94 C43 -72 39 -43 17 -20 C8 -10 -8 -10 -17 -20Z"/>
 </g>
-<g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" filter="url(#glow)">
- <path d="M128 125 L128 82 M128 125 L96 101 M128 125 L160 101 M128 125 L105 153 M128 125 L151 153"/>
+<g fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" filter="url(#glow)">
+ <path d="M128 128 L128 82 M128 128 L172 114 M128 128 L155 168 M128 128 L101 168 M128 128 L84 114"/>
 </g>
 <g fill="#fff" filter="url(#glow)">
- <circle cx="128" cy="125" r="8"/><circle cx="128" cy="78" r="7"/><circle cx="92" cy="98" r="7"/><circle cx="164" cy="98" r="7"/><circle cx="101" cy="158" r="7"/><circle cx="155" cy="158" r="7"/>
+ <circle cx="128" cy="128" r="8"/>
+ <circle cx="128" cy="78" r="6.5"/><circle cx="176" cy="112" r="6.5"/><circle cx="158" cy="173" r="6.5"/><circle cx="98" cy="173" r="6.5"/><circle cx="80" cy="112" r="6.5"/>
 </g>
 </svg>
