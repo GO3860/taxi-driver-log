@@ -899,25 +899,21 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <main id="routeChoice" class="hidden">
   <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card">
-    <div class="label">🛣️ 道ログ</div>
+    <div class="label">道ログ</div>
     <div class="help-text">記録したい道の種類を選んでください。</div>
     <div class="routeChoiceGrid">
       <button type="button" class="routeChoiceButton highwayChoice" onclick="showHighwayLog()">
-        <span class="routeChoiceIcon">🛣️</span>
         <span class="routeChoiceTitle">高速</span>
       </button>
       <button type="button" class="routeChoiceButton generalChoice" onclick="showRouteDatabase()">
-        <span class="routeChoiceIcon">🗺️</span>
         <span class="routeChoiceTitle">一般</span>
       </button>
     </div>
     <div class="routeChoiceGrid" style="margin-top:14px">
       <button type="button" class="routeChoiceButton highwayChoice" onclick="showRegisteredHighwayRoutes()">
-        <span class="routeChoiceIcon">📚</span>
         <span class="routeChoiceTitle">登録済み高速ログ</span>
       </button>
       <button type="button" class="routeChoiceButton generalChoice" onclick="showRegisteredGeneralRoutes()">
-        <span class="routeChoiceIcon">📚</span>
         <span class="routeChoiceTitle">登録済み一般ログ</span>
       </button>
     </div>
