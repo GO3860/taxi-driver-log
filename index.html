@@ -354,6 +354,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 }
 </style>
 <style>.calendarPlanEditable{position:relative;cursor:pointer;padding-bottom:27px}.calendarPlanEditable:active{transform:translateY(2px);filter:brightness(.97)}.calendarEditHint{position:absolute;left:12px;bottom:5px;color:#287bc0;font-size:11px;font-weight:700}</style>
+
+<style id="duty-date-icon-v1">
+/* 乗務日カードの見出しアイコンをネオン調カレンダーに統一 */
+.duty-date-label{display:flex;align-items:center;gap:7px}
+.duty-date-icon{display:inline-block;width:30px;height:30px;object-fit:contain;vertical-align:middle;flex:0 0 30px}
+</style>
+
 </head>
 <body><div class="app">
 <header><h1>🚕 乗務ログ</h1><div class="sub">iPhoneで保存して、明日も続きから使う</div></header>
@@ -367,7 +374,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <main id="today">
-<div class="card"><div class="duty-date-block"><div class="duty-date-label">📅業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button">📅 乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
+<div class="card"><div class="duty-date-block"><div class="duty-date-label"><img class="duty-date-icon" src="icons/duty-calendar.svg" alt="">業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button">📅 乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
 
 <div class="card"><div class="label">今日は？</div><div class="chips" id="dayType"><button class="chip on" data-type="work" onclick="setDayType(this,'work')">🚕 勤務</button><button class="chip" data-type="rest_nonpublic" onclick="setDayType(this,'rest_nonpublic')">🏠 休（非・公）</button><button class="chip" data-type="rest_leaveabsence" onclick="setDayType(this,'rest_leaveabsence')">🌸 休（有・欠）</button><button class="chip" data-type="parttime" onclick="setDayType(this,'parttime')">💰 アルバイト</button></div><div class="help-text">非番・公休は「休（非・公）」、有休・欠勤は「休（有・欠）」で記録します。</div></div>
 
