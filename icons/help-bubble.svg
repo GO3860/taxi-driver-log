@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07518e"/><stop offset=".52" stop-color="#06366d"/><stop offset="1" stop-color="#052957"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#75faff"/><stop offset=".5" stop-color="#00cfff"/><stop offset="1" stop-color="#64f7ff"/></linearGradient>
+ <linearGradient id="white" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".55" stop-color="#eafaff"/><stop offset="1" stop-color="#b8f4ff"/></linearGradient>
+ <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="9" y="9" width="238" height="238" rx="53" fill="url(#bg)" stroke="url(#edge)" stroke-width="5" filter="url(#glow)"/>
+<path d="M128 49 C82 49 47 78 47 116 C47 141 61 162 84 174 L69 207 L111 187 C117 188 123 189 128 189 C174 189 209 160 209 119 C209 79 174 49 128 49 Z" fill="none" stroke="url(#white)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)"/>
+<g fill="url(#white)" filter="url(#soft)">
+ <circle cx="91" cy="119" r="9"/>
+ <circle cx="128" cy="119" r="9"/>
+ <circle cx="165" cy="119" r="9"/>
+</g>
+</svg>
