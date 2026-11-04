@@ -899,7 +899,22 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <main id="routeChoice" class="hidden">
   <button class="routeDbBack" onclick="showToday()">← 今日の入力に戻る</button>
   <div class="card">
-    <div class="label">道ログ</div>
+    <div class="label routeChoiceHeading">
+      <svg class="routeChoiceHeadingIcon" viewBox="0 0 64 64" role="img" aria-label="道路アイコン" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="roadIconBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#063d70"/><stop offset="1" stop-color="#001a3d"/></linearGradient>
+          <filter id="roadIconGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect x="3" y="3" width="58" height="58" rx="13" fill="url(#roadIconBg)" stroke="#18dfff" stroke-width="2.5" filter="url(#roadIconGlow)"/>
+        <g fill="none" stroke="#f5fdff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#roadIconGlow)">
+          <path d="M17 18h30M13 24h38M20 24 10 49M44 24l10 25"/>
+          <path d="M26 24 23 49M38 24l3 25"/>
+          <path d="M30 29h4M29 38h6M28 47h8"/>
+          <path d="M24 18v-6h16v6"/>
+        </g>
+      </svg>
+      <span>道ログ</span>
+    </div>
     <div class="help-text">記録したい道の種類を選んでください。</div>
     <div class="routeChoiceGrid">
       <button type="button" class="routeChoiceButton highwayChoice" onclick="showHighwayLog()">
@@ -4430,6 +4445,11 @@ setInterval(updateConstraintWarning,30000);
   });
 })();
 </script>
+
+<style id="route-choice-heading-icon-v1">
+.routeChoiceHeading{display:flex;align-items:center;gap:10px}
+.routeChoiceHeadingIcon{width:34px;height:34px;flex:0 0 34px;display:block}
+</style>
 
 <style id="route-choice-menu-v1">
 .routeChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
