@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07518c"/><stop offset=".52" stop-color="#06366d"/><stop offset="1" stop-color="#03275a"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#65eaff"/><stop offset=".5" stop-color="#00baf5"/><stop offset="1" stop-color="#48dfff"/></linearGradient>
+ <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="3" y="3" width="122" height="122" rx="23" fill="url(#bg)" stroke="url(#edge)" stroke-width="2.2" filter="url(#glow)"/>
+<g fill="none" stroke="#fff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
+ <!-- impact burst -->
+ <path d="M64 24 L59 36 L49 29 L53 42 L40 41 L51 51 M64 24 L69 36 L79 29 L75 42 L88 41 L77 51"/>
+ <path d="M59 48 L63 54 M69 48 L65 54"/>
+ <!-- left car -->
+ <path d="M17 72 L21 62 Q23 58 28 58 H46 Q50 58 53 63 L58 72 L58 86 Q58 89 55 89 H19 Q16 89 16 86 V76 Q16 73 17 72Z"/>
+ <path d="M24 60 L28 51 Q29 48 33 48 H43 Q47 48 49 52 L53 62"/>
+ <path d="M20 74 H54"/>
+ <!-- right car -->
+ <path d="M70 72 L75 63 Q78 58 82 58 H101 Q105 58 108 63 L112 72 L112 86 Q112 89 109 89 H73 Q70 89 70 86 V76 Q70 73 70 72Z"/>
+ <path d="M76 62 L81 52 Q83 48 87 48 H98 Q102 48 104 52 L108 62"/>
+ <path d="M74 74 H109"/>
+ <circle cx="29" cy="89" r="6.5" fill="#07356a"/><circle cx="48" cy="89" r="6.5" fill="#07356a"/>
+ <circle cx="83" cy="89" r="6.5" fill="#07356a"/><circle cx="102" cy="89" r="6.5" fill="#07356a"/>
+</g>
+</svg>
