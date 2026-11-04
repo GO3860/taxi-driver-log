@@ -2931,7 +2931,7 @@ function updateBreakRequirement(){
   status.textContent='✅ 休憩時間の目標達成！ 合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 設定 '+formatMinutesAsHoursMinutes(targetMinutes);
   status.style.color='#16803c';
  }else{
-  status.textContent='☕ 休憩時間：合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 設定 '+formatMinutesAsHoursMinutes(targetMinutes)+'（あと '+formatMinutesAsHoursMinutes(targetMinutes-totalMinutes)+'）';
+  status.textContent='休憩時間：合計 '+formatMinutesAsHoursMinutes(totalMinutes)+' ／ 設定 '+formatMinutesAsHoursMinutes(targetMinutes)+'（あと '+formatMinutesAsHoursMinutes(targetMinutes-totalMinutes)+'）';
   status.style.color='#b45309';
  }
 }
