@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="時計">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07558e"/><stop offset=".5" stop-color="#002e5c"/><stop offset="1" stop-color="#00172f"/></linearGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7ffff"/><stop offset=".28" stop-color="#00dfff"/><stop offset=".7" stop-color="#008eff"/><stop offset="1" stop-color="#caffff"/></linearGradient>
+ <filter id="blueGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="13" result="b"/><feColorMatrix in="b" type="matrix" values="0 0 0 0 0 0 0 0 0 .65 0 0 0 0 1 0 0 0 1 0" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="whiteGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="38" y="38" width="436" height="436" rx="92" fill="url(#bg)" stroke="url(#rim)" stroke-width="10" filter="url(#blueGlow)"/>
+<circle cx="256" cy="256" r="151" fill="none" stroke="#eaffff" stroke-width="16" filter="url(#whiteGlow)"/>
+<g stroke="#eaffff" stroke-width="15" stroke-linecap="round" filter="url(#whiteGlow)">
+ <path d="M256 126v24 M321 144l-12 21 M368 191l-21 12 M386 256h-24 M368 321l-21-12 M321 368l-12-21 M256 386v-24 M191 368l12-21 M144 321l21-12 M126 256h24 M144 191l21 12 M191 144l12 21"/>
+ <path d="M256 256V161 M256 256l76-43" stroke-width="20"/>
+</g>
+<circle cx="256" cy="256" r="13" fill="#fff" filter="url(#whiteGlow)"/>
+</svg>
