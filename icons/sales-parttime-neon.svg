@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="売上・アルバイト">
+<defs>
+ <radialGradient id="bg" cx="48%" cy="43%" r="78%"><stop offset="0" stop-color="#07558e"/><stop offset=".58" stop-color="#002b5c"/><stop offset="1" stop-color="#00142f"/></radialGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e8ffff"/><stop offset=".32" stop-color="#00dfff"/><stop offset=".7" stop-color="#008cff"/><stop offset="1" stop-color="#d7ffff"/></linearGradient>
+ <filter id="glow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="11" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="whiteGlow" x="-35%" y="-35%" width="170%" height="170%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="38" y="38" width="436" height="436" rx="94" fill="url(#bg)" stroke="url(#rim)" stroke-width="10" filter="url(#glow)"/>
+<g fill="none" stroke="#f2ffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" filter="url(#whiteGlow)">
+ <ellipse cx="262" cy="177" rx="78" ry="34"/>
+ <path d="M184 177v42c0 19 35 34 78 34s78-15 78-34v-42"/>
+ <path d="M184 199c0 19 35 34 78 34s78-15 78-34"/>
+ <ellipse cx="175" cy="270" rx="78" ry="34"/>
+ <path d="M97 270v105c0 19 35 34 78 34s78-15 78-34v-105"/>
+ <path d="M97 306c0 19 35 34 78 34s78-15 78-34M97 340c0 19 35 34 78 34s78-15 78-34"/>
+ <circle cx="354" cy="305" r="96"/>
+ <path d="M313 266l41 53 41-53M354 319v58M312 329h84M312 356h84"/>
+</g>
+</svg>
