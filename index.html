@@ -4577,8 +4577,8 @@ nav .navbtn > span > img,
 </style>
 
 
-<style id="rest-advice-icon-unified-v1">
-/* 休み方アドバイスのアイコンを他の機能アイコンと同じ30px・控えめな青い縁取りに統一 */
+<style id="rest-advice-icon-unified-v2">
+/* 休み方アドバイス：他の機能アイコンと同じ30pxを維持し、シアンブルーの発光を少し強める */
 .floatingRestAdviceBtn .restAdviceIcon{
   width:30px!important;
   height:30px!important;
@@ -4586,7 +4586,10 @@ nav .navbtn > span > img,
   max-width:30px!important;
   flex:0 0 30px!important;
   object-fit:contain!important;
-  filter:drop-shadow(0 1px 3px rgba(0,155,255,.28));
+  filter:
+    drop-shadow(0 0 2px rgba(0,220,255,.95))
+    drop-shadow(0 0 5px rgba(0,155,255,.72))
+    drop-shadow(0 0 8px rgba(0,115,255,.42));
 }
 </style>
 </body></html>
