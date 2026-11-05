@@ -454,7 +454,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 <main id="today">
 <div class="card"><div class="duty-date-block"><div class="duty-date-label"><img class="duty-date-icon" src="icons/duty-calendar-neon.svg?v=20261105" alt="">業務日</div><strong id="date" class="duty-date-large" style="font-size:2em !important;line-height:1.2;display:block;"></strong></div><div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="dateChangeWrap"><button class="btn" type="button"><img class="duty-date-icon" src="icons/duty-calendar-neon.svg?v=20261105" alt="">乗務日を変更</button><input id="datePicker" class="datePickerOverlay" type="date" onchange="changeDutyDate(this.value)"></div></div><div class="help-text">記録を忘れた日は、ここから過去の日付を選べます。</div></div>
 
-<div class="card"><div class="label">今日は？</div><div class="chips" id="dayType"><button class="chip on daytype-work" data-type="work" onclick="setDayType(this,'work')"><img class="daytype-icon" src="icons/work.svg" alt=""> 勤務</button><button class="chip" data-type="rest_nonpublic" onclick="setDayType(this,'rest_nonpublic')"><img class="daytype-icon" src="icons/today-home.svg" alt=""> 休（非・公）</button><button class="chip daytype-rest-leaveabsence" data-type="rest_leaveabsence" onclick="setDayType(this,'rest_leaveabsence')"><img class="daytype-icon" src="icons/rest-leaveabsence.svg" alt=""> 休（有・欠）</button><button class="chip daytype-parttime" data-type="parttime" onclick="setDayType(this,'parttime')"><img class="daytype-icon" src="icons/parttime.svg" alt=""> アルバイト</button></div><div class="help-text">非番・公休は「休（非・公）」、有休・欠勤は「休（有・欠）」で記録します。</div></div>
+<div class="card"><div class="label">今日は？</div><div class="chips" id="dayType"><button class="chip on daytype-work" data-type="work" onclick="setDayType(this,'work')"><img class="daytype-icon" src="icons/work.svg" alt=""> 勤務</button><button class="chip" data-type="rest_nonpublic" onclick="setDayType(this,'rest_nonpublic')"><img class="daytype-icon" src="icons/today-home.svg" alt=""> 休（非・公）</button><button class="chip daytype-rest-leaveabsence" data-type="rest_leaveabsence" onclick="setDayType(this,'rest_leaveabsence')"><img class="daytype-icon" src="icons/rest-leaveabsence.svg" alt=""> 休（有・欠）</button><button class="chip daytype-parttime" data-type="parttime" onclick="setDayType(this,'parttime')"><img class="daytype-icon" src="icons/sales-parttime-neon.svg?v=20261105" alt=""> アルバイト</button></div><div class="help-text">非番・公休は「休（非・公）」、有休・欠勤は「休（有・欠）」で記録します。</div></div>
 
 <div id="commonFields">
 <div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
@@ -481,7 +481,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div></div>
 </div>
 
-<div class="card"><div class="label"><img src="icons/salary_icon.svg" alt="" style="width:1.35em;height:1.35em;object-fit:contain;vertical-align:-.3em;margin-right:4px"> 売上</div><div class="grid">
+<div class="card"><div class="label"><img src="icons/sales-parttime-neon.svg?v=20261105" alt="" style="width:1.35em;height:1.35em;object-fit:contain;vertical-align:-.3em;margin-right:4px"> 売上</div><div class="grid">
 <div><div id="salesLabel" class="small">売上</div><input id="sales" type="number" inputmode="numeric"></div><div id="takeHomeField" class="hidden"><div class="small">当日持ち帰り</div><input id="parttimeTakeHomeInput" type="number" inputmode="numeric" placeholder="当日持ち帰り"></div><div id="averageField"><div class="small">同じエリアの平均</div><input id="avg" type="number" inputmode="numeric"></div></div>
 <div id="diff" style="font-weight:800;margin-top:10px">エリア平均との差　—</div></div>
 
@@ -2960,7 +2960,7 @@ function getDayTypeIconLabel(dayType){
   rest_nonpublic:{src:'icons/today-home.svg',label:'休（非・公）'},
   rest:{src:'icons/today-home.svg',label:'休（非・公）'},
   rest_leaveabsence:{src:'icons/rest-leaveabsence.svg',label:'休（有・欠）'},
-  parttime:{src:'icons/parttime.svg',label:'アルバイト'}
+  parttime:{src:'icons/sales-parttime-neon.svg?v=20261105',label:'アルバイト'}
  };
  const item=types[dayType]||types.work;
  return `<img class="daytype-icon" src="${item.src}" alt=""> ${item.label}`;
