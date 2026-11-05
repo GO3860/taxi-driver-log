@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#07346f"/>
+    <stop offset=".52" stop-color="#06265a"/>
+    <stop offset="1" stop-color="#031b48"/>
+  </linearGradient>
+  <filter id="edgeGlow" x="-25%" y="-25%" width="150%" height="150%">
+    <feGaussianBlur stdDeviation="12" result="blur"/>
+    <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 0 0 0 0.72  0 0 0 0 1  0 0 0 .82 0" result="cyan"/>
+    <feMerge><feMergeNode in="cyan"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="brainGlow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="9" result="blur"/>
+    <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 0 0 0 0.68  0 0 0 0 1  0 0 0 .68 0" result="cyan"/>
+    <feMerge><feMergeNode in="cyan"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<rect x="18" y="18" width="988" height="988" rx="190" fill="url(#bg)" stroke="#00cfff" stroke-width="9" filter="url(#edgeGlow)"/>
+<g fill="none" stroke="#f7fdff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" filter="url(#brainGlow)">
+  <path d="M500 190 C455 135 380 142 344 196 C278 190 226 238 224 304 C160 333 145 405 178 462 C137 518 151 592 202 626 C179 695 218 770 291 786 C309 854 379 889 444 860 C462 906 489 924 512 924"/>
+  <path d="M524 190 C569 135 644 142 680 196 C746 190 798 238 800 304 C864 333 879 405 846 462 C887 518 873 592 822 626 C845 695 806 770 733 786 C715 854 645 889 580 860 C562 906 535 924 512 924"/>
+  <path d="M512 194 L512 922"/>
+  <path d="M397 284 C373 318 344 316 318 330 C300 340 289 354 282 370"/>
+  <path d="M627 284 C651 318 680 316 706 330 C724 340 735 354 742 370"/>
+  <path d="M410 454 C378 427 340 424 309 448 C286 466 264 480 238 480"/>
+  <path d="M614 454 C646 427 684 424 715 448 C738 466 760 480 786 480"/>
+  <path d="M394 635 C366 615 339 608 313 618 C293 626 278 644 257 649"/>
+  <path d="M630 635 C658 615 685 608 711 618 C731 626 746 644 767 649"/>
+</g>
+</svg>
