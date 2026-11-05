@@ -458,7 +458,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 <div id="commonFields">
 <div class="card"><div class="label">🌤️ 天気（2つまで）</div><div class="chips" id="weather">
-<button class="chip" onclick="weather(this)" aria-label="晴れ" title="晴れ">☀️</button><button class="chip" onclick="weather(this)" aria-label="曇り" title="曇り">☁️</button>
+<button class="chip" onclick="weather(this)" aria-label="晴れ" title="晴れ"><img class="weatherSunIcon" src="icons/weather-sun.svg?v=20261106" alt=""><span style="display:none">☀️</span></button><button class="chip" onclick="weather(this)" aria-label="曇り" title="曇り">☁️</button>
 <button class="chip" onclick="weather(this)" aria-label="雨" title="雨">☔</button><button class="chip" onclick="weather(this)" aria-label="雪" title="雪">❄️</button>
 
 </div></div>
@@ -4589,6 +4589,26 @@ nav .navbtn > span > img,
   filter:none;
 }
 </style>
+
+<style id="weather-sun-custom-icon-v1">
+#weather .weatherSunIcon{
+  display:block;
+  width:46px;
+  height:46px;
+  min-width:46px;
+  max-width:46px;
+  object-fit:cover;
+  border-radius:8px;
+  flex:0 0 46px;
+}
+#weather .chip:has(.weatherSunIcon){
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:7px 9px;
+}
+</style>
+
 </body></html>
 
 
