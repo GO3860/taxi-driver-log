@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="休憩">
+<defs>
+ <radialGradient id="bg" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#07558e"/><stop offset=".55" stop-color="#002d5d"/><stop offset="1" stop-color="#00152e"/></radialGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e4ffff"/><stop offset=".35" stop-color="#00dfff"/><stop offset=".72" stop-color="#008cff"/><stop offset="1" stop-color="#d7ffff"/></linearGradient>
+ <filter id="glow" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="whiteGlow" x="-35%" y="-35%" width="170%" height="170%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="38" y="38" width="436" height="436" rx="94" fill="url(#bg)" stroke="url(#rim)" stroke-width="10" filter="url(#glow)"/>
+<g fill="none" stroke="#efffff" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" filter="url(#whiteGlow)">
+ <path d="M159 229h194v99c0 47-35 81-82 81h-30c-47 0-82-34-82-81z"/>
+ <path d="M352 250h21c35 0 52 23 52 51s-19 52-54 52h-25"/>
+ <path d="M159 229c0-34 43-54 97-54s97 20 97 54-43 48-97 48-97-14-97-48z"/>
+ <path d="M196 419h119"/>
+ <path d="M222 155c-18-28-7-53 10-76M278 155c-18-34-7-64 13-91"/>
+ <path d="M365 143l9-29M401 171l22-22"/>
+</g>
+<path d="M112 365c-32 12-49 29-49 48 0 39 86 70 193 70s193-31 193-70c0-19-17-36-49-48" fill="none" stroke="#efffff" stroke-width="16" stroke-linecap="round" filter="url(#whiteGlow)"/>
+</svg>
