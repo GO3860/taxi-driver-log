@@ -922,18 +922,22 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="help-text">記録したい道の種類を選んでください。</div>
     <div class="routeChoiceGrid">
       <button type="button" class="routeChoiceButton highwayChoice" onclick="showHighwayLog()">
+        <svg class="routeChoiceIcon" viewBox="0 0 64 64" aria-hidden="true"><path d="M5 52 25 12h14l20 40M16 52l13-31h6l13 31M25 52l7-18 7 18M4 52h56M25 12h14" /></svg>
         <span class="routeChoiceTitle">高速</span>
       </button>
       <button type="button" class="routeChoiceButton generalChoice" onclick="showRouteDatabase()">
+        <svg class="routeChoiceIcon" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 27 18 15h28l6 12v23H12zM18 15l4-7h20l4 7M20 27h24M18 38h8m12 0h8M24 50v6m16-6v6" /><circle cx="20" cy="39" r="4"/><circle cx="44" cy="39" r="4"/></svg>
         <span class="routeChoiceTitle">一般</span>
       </button>
     </div>
-    <div class="routeChoiceGrid" style="margin-top:14px">
+    <div class="routeChoiceGrid routeChoiceGridSaved">
       <button type="button" class="routeChoiceButton highwayChoice" onclick="showRegisteredHighwayRoutes()">
-        <span class="routeChoiceTitle">登録済み高速ログ</span>
+        <svg class="routeChoiceIcon" viewBox="0 0 64 64" aria-hidden="true"><path d="m32 7 25 13-25 13L7 20 32 7zM7 32l25 13 25-13M7 44l25 13 25-13" /></svg>
+        <span class="routeChoiceTitle">登録済み<br>高速ログ</span>
       </button>
       <button type="button" class="routeChoiceButton generalChoice" onclick="showRegisteredGeneralRoutes()">
-        <span class="routeChoiceTitle">登録済み一般ログ</span>
+        <svg class="routeChoiceIcon" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 15c9-5 17-5 24 1v39c-7-6-15-6-24-1zM56 15c-9-5-17-5-24 1v39c7-6 15-6 24-1z" /><path d="M43 10c-5 0-9 4-9 9 0 7 9 17 9 17s9-10 9-17c0-5-4-9-9-9z" /><circle cx="43" cy="19" r="3"/></svg>
+        <span class="routeChoiceTitle">登録済み<br>一般ログ</span>
       </button>
     </div>
   </div>
@@ -4459,16 +4463,36 @@ setInterval(updateConstraintWarning,30000);
 .routeChoiceHeadingIcon{width:34px;height:34px;flex:0 0 34px;display:block}
 </style>
 
-<style id="route-choice-menu-v1">
+<style id="route-choice-menu-v2-neon">
 .routeChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.routeChoiceButton{min-width:0;min-height:150px;border:1px solid #dbe3e9;border-radius:18px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.routeChoiceButton:active{transform:translateY(2px)}
-.routeChoiceButton.highwayChoice{background:linear-gradient(145deg,#e4f8f5,#c9eee8);color:#086c65;border-color:#a9ddd5}
-.routeChoiceButton.generalChoice{background:linear-gradient(145deg,#edf4ff,#dce8fb);color:#24599a;border-color:#c8d9f3}
-.routeChoiceIcon{font-size:34px;line-height:1.1}
-.routeChoiceTitle{font-size:21px;font-weight:900}
+.routeChoiceGridSaved{margin-top:14px}
+.routeChoiceButton{
+  min-width:0;min-height:150px;border:1.5px solid #13dcff;border-radius:20px;
+  padding:18px 10px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  color:#fff;background:radial-gradient(ellipse at 50% 0%,#073e69 0%,#032344 48%,#01152c 100%);
+  box-shadow:0 0 5px rgba(0,225,255,.95),0 0 13px rgba(0,190,255,.75),
+    inset 0 0 12px rgba(0,190,255,.2);
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.routeChoiceButton:active{transform:translateY(2px);box-shadow:0 0 4px #00dfff,0 0 8px rgba(0,190,255,.6),inset 0 0 18px rgba(0,190,255,.3)}
+.routeChoiceButton.highwayChoice,.routeChoiceButton.generalChoice{color:#fff;border-color:#13dcff}
+.routeChoiceIcon{
+  display:block;width:54px;height:54px;fill:none;stroke:#fff;stroke-width:3.2;
+  stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #00cfff) drop-shadow(0 0 9px #008cff);
+}
+.routeChoiceTitle{
+  display:block;color:#fff;font-size:21px;font-weight:900;line-height:1.35;
+  text-align:center;text-shadow:0 0 3px #fff,0 0 8px rgba(0,190,255,.8);
+  overflow-wrap:anywhere;
+}
 .routeChoiceDesc{font-size:12px;font-weight:700;text-align:center}
-@media(max-width:360px){.routeChoiceGrid{gap:8px}.routeChoiceButton{padding:14px 6px;min-height:138px}.routeChoiceTitle{font-size:19px}.routeChoiceDesc{font-size:11px}}
+@media(max-width:360px){
+  .routeChoiceGrid{gap:8px}.routeChoiceButton{padding:14px 6px;min-height:138px;gap:9px}
+  .routeChoiceIcon{width:46px;height:46px}.routeChoiceTitle{font-size:18px}
+  .routeChoiceDesc{font-size:11px}
+}
 </style>
 
 <style id="highway-log-v1">
