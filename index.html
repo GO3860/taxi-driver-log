@@ -1005,7 +1005,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div id="hwRouteList"></div>
   </div>
 </main>
-<main id="logs" class="hidden"><div id="logListView"><div class="card"><div class="label">📚 保存した乗務ログ</div><div class="help-text">保存した1日分の内容を「詳細を見る」から確認できます。</div><div id="logList"></div></div>
+<main id="logs" class="hidden"><div id="logListView"><div class="card"><div class="label"><img src="icons/log-layers.svg?v=20261108" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px"> 保存した乗務ログ</div><div class="help-text">保存した1日分の内容を「詳細を見る」から確認できます。</div><div id="logList"></div></div>
 <button class="btn full" onclick="showToday()">← 今日の入力に戻る</button></div>
 <div id="logDetailView" class="hidden"><div class="card"><div class="label">📋 乗務ログの詳細</div><div id="logDetail"></div></div><div class="detail-actions"><button class="detailEdit" onclick="editLog(currentLogDetailId)">✏️ このログを修正</button><button class="btn full" onclick="showLogs()">← ログ一覧に戻る</button></div></div></main>
 <div id="eventBreakdownModal" class="eventModal hidden" onclick="if(event.target===this)closeEventBreakdown()">
