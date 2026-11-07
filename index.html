@@ -879,6 +879,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 
 <main id="generalRoutePage" class="hidden">
+  <button type="button" class="routeDbBack" onclick="showRouteChoice()">← 道ログに戻る</button>
   <div class="card">
     <div class="label">🗺️ 一般道ログ</div>
     <div class="help-text">覚えておきたい道順を記録します。今日の売上や勤務時間の入力とは分けて保存できます。</div>
@@ -890,6 +891,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div></div></div>
   <button type="button" class="save routeSaveButton" onclick="saveGeneralRouteOnly()">💾 道ログを保存</button>
   <div class="status" id="generalRouteStatus">この端末に保存します</div>
+  <button type="button" class="routeDbBack" onclick="showRouteChoice()">← 道ログに戻る</button>
   <div class="card" id="generalRouteSavedCard">
     <div class="label">📚 登録済み一般道ログ</div>
     <div class="help-text">保存した一般道の道順を一覧で確認できます。項目をタップすると、その日の乗務ログを開きます。</div>
@@ -897,7 +899,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <div class="routeDbHint">目的地や道順の言葉で検索できます。</div>
     <div id="generalRouteSavedList"></div>
   </div>
-  <button type="button" class="btn full" onclick="showRouteChoice()">← 高速・一般の選択に戻る</button>
+  <button type="button" class="btn full" onclick="showRouteChoice()">← 道ログに戻る</button>
 </main>
 
 <main id="routeChoice" class="hidden">
