@@ -3335,7 +3335,11 @@ function showRouteChoice(){resetSaveButton();const restBtn=$('floatingRestAdvice
 function showRegisteredHighwayRoutes(){
   showHighwayLog();
   const card=document.getElementById('hwRouteList')?.closest('.card');
-  if(card)setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  const backButton=card?.previousElementSibling?.classList.contains('routeDbBack')
+    ? card.previousElementSibling
+    : null;
+  const target=backButton||card;
+  if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 function showRegisteredGeneralRoutes(){
   showRouteDatabase();
