@@ -1,1 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#073775"/><stop offset="1" stop-color="#031d4d"/></linearGradient></defs><rect width="500" height="500" fill="url(#b)"/><g fill="none" stroke="#f8fbff" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"><path d="M250 55v390M82 153l336 194M82 347l336-194"/><path d="m250 55-32 38m32-38 32 38m-32 352-32-38m32 38 32-38M82 153l48 2m-48-2 18 45m320-45-48 2m48-2-18 45M82 347l48-2m-48 2 18-45m320 45-48-2m48 2-18-45"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#073c80"/><stop offset=".52" stop-color="#06316c"/><stop offset="1" stop-color="#021d4a"/></linearGradient>
+<linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaffff"/><stop offset=".22" stop-color="#00dfff"/><stop offset=".55" stop-color="#00aaff"/><stop offset=".82" stop-color="#00eaff"/><stop offset="1" stop-color="#dfffff"/></linearGradient>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="symbolGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="500" height="500" rx="72" fill="url(#bg)"/>
+<rect x="9" y="9" width="482" height="482" rx="66" fill="none" stroke="url(#edge)" stroke-width="10" filter="url(#glow)"/>
+<g fill="none" stroke="#fff" stroke-width="23" stroke-linecap="round" stroke-linejoin="round" filter="url(#symbolGlow)">
+<path d="M250 105V395 M125 177L375 323 M125 323L375 177"/>
+<path d="M250 105l-48 48 M250 105l48 48 M250 395l-48-48 M250 395l48-48"/>
+<path d="M125 177l4 68 M125 177l68 4 M375 323l-4-68 M375 323l-68-4"/>
+<path d="M125 323l68-4 M125 323l4-68 M375 177l-68 4 M375 177l-4 68"/>
+</g></svg>
