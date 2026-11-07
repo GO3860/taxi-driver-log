@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00152f"/><stop offset=".52" stop-color="#003c78"/><stop offset="1" stop-color="#00152b"/></linearGradient>
+ <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7" result="b"/><feColorMatrix in="b" type="matrix" values="0 0 0 0 0 0 0 0 0 0.82 0 0 0 0 1 0 0 0 1 0" result="c"/><feMerge><feMergeNode in="c"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="10" y="10" width="236" height="236" rx="48" fill="url(#bg)" stroke="#00dfff" stroke-width="5" filter="url(#glow)"/>
+<g fill="none" stroke="#f5fdff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+ <path d="M77 71h102a17 17 0 0 1 17 17v82a17 17 0 0 1-17 17H77a17 17 0 0 1-17-17V88a17 17 0 0 1 17-17z"/>
+ <path d="M92 59v22M128 59v22M164 59v22"/>
+ <path d="M85 111h72M85 137h55M85 163h39"/>
+ <path d="M149 157l38-49a10 10 0 0 1 14-2l13 10a10 10 0 0 1 2 14l-39 49-27 11z"/>
+ <path d="M149 157l28 22M201 106l-13 16"/>
+</g>
+</svg>
