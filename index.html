@@ -3339,7 +3339,11 @@ function showRegisteredHighwayRoutes(){
 function showRegisteredGeneralRoutes(){
   showRouteDatabase();
   const card=document.getElementById('generalRouteSavedCard');
-  if(card)setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  const backButton=card?.previousElementSibling?.classList.contains('routeDbBack')
+    ? card.previousElementSibling
+    : null;
+  const target=backButton||card;
+  if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 function showRouteDatabase(){
   resetSaveButton();
