@@ -997,6 +997,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
     <label class="hwRecommendCheck"><input id="hwFormalRecommended" type="checkbox"> このルートを推奨ルートにする</label>
     <div class="hwButtonRow"><button type="button" class="save hwSaveButton hwFormalSaveButton" onclick="saveHighwayRoute()">✅ 正式登録</button><button type="button" class="btn" onclick="cancelHighwayFormal()">キャンセル</button></div>
   </div>
+  <button type="button" class="routeDbBack" onclick="showRouteChoice()">← 道ログに戻る</button>
   <div class="card">
     <div class="label">🔎 登録済み高速ルート</div>
     <input id="hwRouteSearch" type="search" placeholder="目的地・乗車駅・IC名で検索" oninput="renderHighwayRoutes()">
