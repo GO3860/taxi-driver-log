@@ -443,6 +443,91 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 /* イベント見出しのカレンダーだけ36px。共通30px指定より優先 */
 #today .label .event-heading-icon{width:36px!important;height:36px!important;min-width:36px!important;max-width:36px!important;flex:0 0 36px!important;object-fit:contain!important;vertical-align:middle!important;margin-right:4px!important}
 </style>
+
+<style id="calendar-white-neon-refresh-20261108">
+/* Calendar visual refresh: white base + cyan neon accents. Layout, data and behavior remain unchanged. */
+.calendarModal{
+  background:rgba(255,255,255,.88)!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
+}
+.calendarSheet{
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 58%,#f5fbff 100%)!important;
+  border:1px solid rgba(158,225,248,.72)!important;
+  box-shadow:0 12px 38px rgba(31,139,190,.14),0 0 0 1px rgba(255,255,255,.95) inset!important;
+}
+.calendarHead button{
+  border:2px solid #55dfff!important;
+  background:linear-gradient(180deg,#ffffff 0%,#f4fcff 100%)!important;
+  color:#07395e!important;
+  box-shadow:0 0 0 2px rgba(53,218,255,.10),0 0 12px rgba(31,207,255,.34),0 4px 9px rgba(36,115,150,.12)!important;
+}
+.calendarTitle{
+  color:#fff!important;
+  background:linear-gradient(105deg,#07365d 0%,#07517e 58%,#062e56 100%)!important;
+  border:2px solid #20dfff!important;
+  border-radius:10px!important;
+  padding:7px 5px!important;
+  box-shadow:0 0 8px rgba(0,220,255,.72),0 0 18px rgba(0,195,255,.30),inset 0 1px 0 rgba(255,255,255,.24)!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.35)!important;
+}
+.calendarLegendBox{
+  box-shadow:0 0 9px rgba(36,194,235,.20),0 4px 8px rgba(35,90,120,.13),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+.calendarWeek div{color:#102c45!important}
+.calendarWeek div:first-child{color:#e04452!important}
+.calendarWeek div:last-child{color:#176bd0!important}
+.baseCube,.plainCube{
+  background:linear-gradient(155deg,#ffffff 0%,#ffffff 52%,#f0faff 100%)!important;
+  border:1px solid #bdeafa!important;
+  box-shadow:0 5px 0 #d7f0f8,0 8px 13px rgba(44,145,180,.13),inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+.baseCube .baseDate{
+  background:rgba(255,255,255,.96)!important;
+  box-shadow:0 2px 6px rgba(35,112,145,.10)!important;
+}
+.calDay.selected .baseCube .baseDate{
+  outline:3px solid #24cfff!important;
+  outline-offset:1px!important;
+  box-shadow:0 0 12px rgba(22,201,255,.38)!important;
+}
+.calStackBlock,.planCube{
+  box-shadow:0 5px 9px rgba(20,112,150,.22),0 0 8px rgba(42,209,255,.18),inset 0 1px 0 rgba(255,255,255,.96),inset 0 -2px 0 rgba(40,90,110,.10)!important;
+}
+.calendarDetail{
+  background:linear-gradient(180deg,#ffffff 0%,#fbfeff 100%)!important;
+  border:1px solid #bdeafa!important;
+  box-shadow:0 5px 16px rgba(37,145,185,.10),inset 0 1px 0 #fff!important;
+}
+.calendarDetailHead{color:#102f49!important}
+.calendarForm{
+  border-top:1px solid #d7f0f8!important;
+}
+.calendarDayLogBtn{
+  border:2px solid #20dfff!important;
+  background:linear-gradient(105deg,#07365d 0%,#07517e 58%,#062e56 100%)!important;
+  color:#fff!important;
+  box-shadow:0 0 9px rgba(0,211,255,.44),0 4px 10px rgba(20,95,130,.16)!important;
+}
+.calendarDayLogBtn:active{background:#06466f!important}
+.calendarSwapBlocksBtn,.calendarAddBtn{
+  border-color:#69dfff!important;
+  background:linear-gradient(180deg,#ffffff 0%,#f1fbff 100%)!important;
+  color:#0875b5!important;
+  box-shadow:0 0 10px rgba(37,203,245,.16)!important;
+}
+.calendarBottomNav{
+  background:rgba(255,255,255,.96)!important;
+  border-top:1px solid #c9eff9!important;
+  box-shadow:0 -3px 12px rgba(35,150,190,.06)!important;
+}
+.calendarBottomNav span{color:#0878bd!important;text-shadow:0 0 7px rgba(0,190,255,.20)!important}
+.calendarSheet button:focus-visible{
+  outline:3px solid #27cfff!important;
+  outline-offset:2px!important;
+}
+</style>
+
 </head>
 <body><div class="app">
 <header><h1><img class="taxi-icon" src="icons/header-taxi.svg" alt=""> TAKULOG</h1><div class="sub">Track Every Shift. Drive Smarter.</div></header>
