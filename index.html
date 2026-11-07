@@ -2690,7 +2690,7 @@ async function renderFiscalComparison(){
   const rowsA=fiscalComparisonRows(logs,yearA),rowsB=fiscalComparisonRows(logs,yearB),areaOn=isAreaAvgEnabled();
   box.innerHTML=`<div class="fiscalCompareCard">
     <div class="fiscalCompareHead">
-      <div><div class="fiscalCompareTitle">📊 年度別グラフ比較</div><div class="small">2つの年度を選んで、12か月の売上を比較できます。</div></div>
+      <div><div class="fiscalCompareTitle"><img src="icons/data-bars.svg" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:6px">年度別グラフ比較</div><div class="small">2つの年度を選んで、12か月の売上を比較できます。</div></div>
       <div class="fiscalCompareSelectors">
         <label>年度①<select onchange="changeFiscalCompareYear('A',this.value)" aria-label="比較する年度1">${fiscalComparisonOptions(years,yearA)}</select></label>
         <span class="fiscalCompareVs">VS</span>
