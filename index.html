@@ -3014,7 +3014,7 @@ function enableDailySalesTouchScroll(){
 
 function eventBreakdownIconLabel(value){
   const text=String(value);
-  const label=text.replace(/^[^\\s]+\\s*/,'')||text;
+  const label=text.replace(/^\\S+\\s*/u,'').trim()||text;
   const iconNames=['野球','サッカー','花火','まつり','ライブ','運転見合せ','台風直撃','大雨','大雪','事故'];
   const matched=iconNames.find(name=>label.includes(name));
   let src='';
@@ -3027,7 +3027,7 @@ function eventBreakdownIconLabel(value){
     else if(label.includes('半休'))src='icons/clock.png';
     else if(label.includes('早退'))src='icons/run.png';
   }
-  return src?'<img class="eventBreakdownIcon" src="'+src+'" alt=""> '+label:taxiIconLabel(text);
+  return src?'<img class="eventBreakdownIcon" src="'+src+'" alt=""> '+label:label;
 }
 
 async function showEventBreakdown(year,index){
