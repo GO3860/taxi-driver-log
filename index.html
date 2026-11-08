@@ -3014,7 +3014,7 @@ function enableDailySalesTouchScroll(){
 
 function eventBreakdownIconLabel(value){
   const text=String(value);
-  const label=text.replace(/^\\S+\\s*/u,'').trim()||text;
+  const label=text.replace(/^\S+\s*/u,'').trim()||text;
   const iconNames=['野球','サッカー','花火','まつり','ライブ','運転見合せ','台風直撃','大雨','大雪','事故'];
   const matched=iconNames.find(name=>label.includes(name));
   let src='';
