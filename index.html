@@ -672,7 +672,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 </main>
 
-<main id="settings" class="hidden">
+<main id="settings" class="hidden"><div class="card" id="taxiDataBackupCard" style="border:2px solid #d7e6f5">
+<div class="label">🛟 データ引っ越し・バックアップ</div>
+<div class="help-text">ChatGPT内のタクログからSafariへ営業記録を移すための機能です。まず元の画面でバックアップを書き出し、Safariで読み込んでください。</div>
+<button type="button" class="btn full" onclick="exportTaxiBackup()">この端末のデータを書き出す</button>
+<div style="margin-top:14px;font-weight:800">バックアップを読み込む</div>
+<input id="taxiBackupFile" type="file" accept=".json,application/json" style="display:block;width:100%;margin-top:8px">
+<button type="button" class="btn full" style="margin-top:8px" onclick="importTaxiBackup()">バックアップを読み込む</button>
+<div id="taxiBackupStatus" class="small" style="margin-top:8px;line-height:1.6">読み込み時は既存データを消さず、記録を追加・更新します。</div>
+</div>
 <div class="card"><div class="label"><img src="icons/settings-gear.svg" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:-7px;margin-right:4px"> 設定</div><div class="help-text">自分の会社や乗務スタイルに合わせて設定できます。</div></div>
 
 <div id="settingsOverview">
@@ -4876,6 +4884,16 @@ window.answerRoadQuiz=function(i){const s=read(),p=s.pending;if(!p||!p.options?.
 document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.updateRoadQuizUI?.(),900));
 })();
 </script>
-</body></html>
+<script id="taxi-data-backup-v1">
+(function(){
+const DB='TaxiDriverLogDB',STORE='logs';
+function openBackupDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function readAll(db){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,'readonly'),r=t.objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)})}
+function writeAll(db,logs){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,'readwrite'),store=t.objectStore(STORE);logs.forEach(x=>store.put(x));t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error('保存に失敗しました'))})}
+function status(v){const e=document.getElementById('taxiBackupStatus');if(e)e.textContent=v}
+window.exportTaxiBackup=async function(){try{status('バックアップを作成しています…');const db=await openBackupDB();const logs=await readAll(db);db.close();const local={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(/^taxi/i.test(k)||k==='taxiRoadQuizStateV1'))local[k]=localStorage.getItem(k)}const payload={format:'taxi-driver-log-backup',version:1,createdAt:new Date().toISOString(),logs,localStorage:local};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='taxilog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);status('書き出し完了：営業記録 '+logs.length+' 件、設定 '+Object.keys(local).length+' 件。保存したJSONファイルをSafari側で読み込んでください。')}catch(e){console.error(e);status('書き出しに失敗しました：'+(e.message||e))}};
+window.importTaxiBackup=async function(){const input=document.getElementById('taxiBackupFile'),file=input?.files?.[0];if(!file){status('先にバックアップJSONファイルを選択してください。');return}if(!confirm('バックアップ内の営業記録と設定を、このタクログに取り込みます。既存の営業記録は削除せず、同じIDの記録はバックアップ内容で更新します。よろしいですか？'))return;try{status('バックアップを確認しています…');const raw=await file.text(),data=JSON.parse(raw);if(data.format!=='taxi-driver-log-backup'||data.version!==1||!Array.isArray(data.logs)||!data.localStorage||typeof data.localStorage!=='object')throw new Error('タクログのバックアップ形式ではありません');if(data.logs.some(x=>!x||typeof x!=='object'||x.id===undefined))throw new Error('営業記録の形式が正しくありません');const db=await openBackupDB();await writeAll(db,data.logs);db.close();let count=0;Object.entries(data.localStorage).forEach(([k,v])=>{if(/^taxi/i.test(k)&&typeof v==='string'){localStorage.setItem(k,v);count++}});status('取り込み完了：営業記録 '+data.logs.length+' 件、設定 '+count+' 件。画面を再読み込みして内容を確認してください。');alert('データの取り込みが完了しました。タクログを再読み込みしてください。')}catch(e){console.error(e);status('取り込みに失敗しました：'+(e.message||e))}};
+})();
+</script></body></html>
 
 
