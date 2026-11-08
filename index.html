@@ -553,7 +553,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 
 <style id="calendar-modal-hide-bottom-nav-v1">
 /* カレンダーの登録・編集画面では下部ナビゲーションを隠す */
-body:has(#workCalendarModal:not(.hidden)) nav {
+body:has(#workCalendarModal:not(.hidden)) nav,
+body.calendarModalOpen nav {
   display: none !important;
 }
 </style>
@@ -3683,11 +3684,12 @@ function normalizePlansForDate(p){
 }
 function openWorkCalendar(){
   workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
+  document.body.classList.add('calendarModalOpen');
   const modal=$('workCalendarModal');if(modal){modal.classList.remove('hidden');const sheet=modal.querySelector('.calendarSheet');if(sheet)sheet.scrollTop=0;}
   renderWorkCalendar();
   toggleWorkPlanFields();
 }
-function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden')}
+function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden');document.body.classList.remove('calendarModalOpen')}
 function changeWorkCalendarMonth(delta){workCalendarCursor.setMonth(workCalendarCursor.getMonth()+delta);renderWorkCalendar()}
 function toggleWorkPlanPicker(){
   const menu=$('workPlanPickerMenu'),button=$('workPlanPickerButton');
