@@ -78,7 +78,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .workPlanPickerIcon.work{background:linear-gradient(145deg,#bff7ff 0%,#8be5f5 48%,#48c6e8 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 8px rgba(37,165,200,.2),inset 0 1px 2px rgba(255,255,255,.85)}
 .workPlanPickerIcon.paid{background:linear-gradient(145deg,#ffad99 0%,#ff806e 56%,#f45d4d 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 8px rgba(235,91,73,.22),inset 0 1px 2px rgba(255,255,255,.55)}
 .workPlanPickerIcon.plan{background:linear-gradient(145deg,#fff27a 0%,#ffe34d 58%,#f6c900 100%);border:1px solid rgba(255,255,255,.95);box-shadow:0 4px 8px rgba(225,183,0,.22),inset 0 1px 2px rgba(255,255,255,.75)}
-.workPlanPickerIcon.event{background:linear-gradient(145deg,#fff0e8,#ffd1b8)}
+.workPlanPickerIcon.event{background:linear-gradient(145deg,#a9f5bd 0%,#70df91 56%,#43c875 100%);border:1px solid rgba(255,255,255,.95);box-shadow:0 4px 8px rgba(55,185,105,.22),inset 0 1px 2px rgba(255,255,255,.75)}
 .workPlanPickerIcon.parttime{background:linear-gradient(145deg,#fff0d9,#ffd49c)}
 .workPlanPickerIcon.other{background:linear-gradient(145deg,#f3eaff,#ddc9ff)}
 .workPlanPickerIcon.absent{background:linear-gradient(145deg,#f2e5dc,#d9bba8)}
@@ -933,7 +933,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('work')"><span class="workPlanPickerIcon work"></span><span>勤務</span></button>
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('paid')"><span class="workPlanPickerIcon paid" aria-hidden="true"></span><span>有休</span></button>
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('plan')"><span class="workPlanPickerIcon plan" aria-hidden="true"></span><span>予定</span></button>
-            <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('event')"><span class="workPlanPickerIcon event">🎪</span><span>イベント</span></button>
+            <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('event')"><span class="workPlanPickerIcon event" aria-hidden="true"></span><span>イベント</span></button>
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('parttime')"><span class="workPlanPickerIcon parttime">🟧</span><span>バイト</span></button>
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('other')"><span class="workPlanPickerIcon other">🟪</span><span>その他</span></button>
             <button type="button" class="workPlanPickerOption" role="option" onclick="setWorkPlanType('absent')"><span class="workPlanPickerIcon absent">🟫</span><span>欠勤</span></button>
@@ -3654,7 +3654,7 @@ function syncWorkPlanPicker(){
   if(!select||!icon||!label)return;
   const names={work:'勤務',paid:'有休',plan:'予定',event:'イベント',parttime:'バイト',other:'その他',absent:'欠勤'};
   icon.className='workPlanPickerIcon '+(select.value||'work');
-  icon.textContent=select.value==='work'?'':({paid:'',plan:'',event:'🎪',parttime:'🟧',other:'🟪',absent:'🟫'}[select.value]||'');
+  icon.textContent=select.value==='work'?'':({paid:'',plan:'',event:'',parttime:'🟧',other:'🟪',absent:'🟫'}[select.value]||'');
   label.textContent=names[select.value]||'勤務';
 }
 function toggleWorkPlanFields(){
@@ -3804,7 +3804,7 @@ function renderCalendarDetail(){
     html+=`<button class="calendarAddBtn calendarAddWide" type="button" onclick="prepareAddPlan()">＋ この日に予定を追加</button>`;
   }
   if(eventItems.length){
-    html+=`<div class="calendarDetailSectionTitle">🎪 イベント</div><div class="calendarPlanList eventList">${eventItems.map((p,i)=>{
+    html+=`<div class="calendarDetailSectionTitle"><span class="workPlanPickerIcon event" aria-hidden="true"></span>イベント</div><div class="calendarPlanList eventList">${eventItems.map((p,i)=>{
       const time=p.time?`<span class="calendarPlanTime">${escapeHtml(p.time)}</span>`:'<span class="calendarPlanTime muted">時間なし</span>';
       const icon=p.eventIcon?`<span class="eventIconLarge">${escapeHtml(p.eventIcon)}</span>`:'';
       const memo=escapeHtml(p.memo||'イベント');
