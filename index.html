@@ -722,6 +722,13 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 </div>
 
 <div class="card">
+<div class="label"><img src="icons/brain.png" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:-7px;margin-right:4px"> 道ログクイズ設定</div>
+<div class="help-text">過去に登録した一般道・高速ログから、目的地を当てるクイズを出題する機能です。OFFにしても道ログやクイズの記録は削除されません。</div>
+<label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">道ログクイズを使う <input id="roadQuizEnabled" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
+<div class="small" id="roadQuizSettingStatus" style="margin-top:4px"></div>
+</div>
+
+<div class="card">
 <div class="label"><img src="icons/log-layers.svg?v=20261107" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:middle;margin-right:6px">エリア平均入力</div>
 <div class="help-text">会社から発表されるエリア平均売上を、後から入力する機能です。必要な場合だけONにしてください。</div>
 <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;font-size:15px">エリア平均入力を使う <input id="showAreaAvg" type="checkbox" onchange="saveSettings()" style="width:22px;height:22px"></label>
@@ -2372,6 +2379,7 @@ function initSettings(){
   const showBreakTime=localStorage.getItem('taxiShowBreakTime')==='1';
   const showSalesData=localStorage.getItem('taxiShowSalesData')!=='0';
   const showRoute=localStorage.getItem('taxiShowRoute')==='1';
+  const roadQuizEnabled=localStorage.getItem('taxiRoadQuizEnabled')!=='0';
   const showAreaAvg=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const showHelpText=localStorage.getItem('taxiShowHelpText')!=='0';
   const salesGoal=localStorage.getItem('taxiSalesGoal')||'800000';
@@ -2381,6 +2389,8 @@ function initSettings(){
   if($('showBreakTime'))$('showBreakTime').checked=showBreakTime;
   if($('showSalesData'))$('showSalesData').checked=showSalesData;
   if($('showRoute'))$('showRoute').checked=showRoute;
+  if($('roadQuizEnabled'))$('roadQuizEnabled').checked=roadQuizEnabled;
+  if($('roadQuizSettingStatus'))$('roadQuizSettingStatus').textContent=roadQuizEnabled?'現在：ON（道ログクイズを有効にする設定）':'現在：OFF（道ログクイズを停止する設定）';
   if($('showAreaAvg'))$('showAreaAvg').checked=showAreaAvg;
   if($('showHelpText'))$('showHelpText').checked=showHelpText;
   const payday=$('paydayBase');
@@ -2410,6 +2420,11 @@ function saveSettings(){
   localStorage.setItem('taxiShowBreakTime',$('showBreakTime').checked?'1':'0');
   if($('showSalesData')) localStorage.setItem('taxiShowSalesData',$('showSalesData').checked?'1':'0');
   localStorage.setItem('taxiShowRoute',$('showRoute').checked?'1':'0');
+  if($('roadQuizEnabled')){
+    const quizEnabled=$('roadQuizEnabled').checked;
+    localStorage.setItem('taxiRoadQuizEnabled',quizEnabled?'1':'0');
+    if($('roadQuizSettingStatus'))$('roadQuizSettingStatus').textContent=quizEnabled?'現在：ON（道ログクイズを有効にする設定）':'現在：OFF（道ログクイズを停止する設定）';
+  }
   localStorage.setItem('taxiShowHelpText',$('showHelpText').checked?'1':'0');
   const wasAreaAvgEnabled=localStorage.getItem('taxiShowAreaAvg')!=='0';
   const areaAvgEnabled=$('showAreaAvg')?.checked===true;
