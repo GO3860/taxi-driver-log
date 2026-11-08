@@ -3682,14 +3682,19 @@ function normalizePlansForDate(p){
   if(!p)return [];
   return (Array.isArray(p)?p:[p]).filter(x=>x && x.type && x.type!=='rest');
 }
+function setCalendarBottomNavHidden(hidden){
+  const nav=document.querySelector('.app > nav')||document.querySelector('nav');
+  if(nav)nav.style.setProperty('display',hidden?'none':'','important');
+  document.body.classList.toggle('calendarModalOpen',hidden);
+}
 function openWorkCalendar(){
   workCalendarCursor=new Date();workCalendarCursor.setDate(1);workCalendarSelectedKey='';
-  document.body.classList.add('calendarModalOpen');
+  setCalendarBottomNavHidden(true);
   const modal=$('workCalendarModal');if(modal){modal.classList.remove('hidden');const sheet=modal.querySelector('.calendarSheet');if(sheet)sheet.scrollTop=0;}
   renderWorkCalendar();
   toggleWorkPlanFields();
 }
-function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden');document.body.classList.remove('calendarModalOpen')}
+function closeWorkCalendar(){const modal=$('workCalendarModal');if(modal)modal.classList.add('hidden');setCalendarBottomNavHidden(false)}
 function changeWorkCalendarMonth(delta){workCalendarCursor.setMonth(workCalendarCursor.getMonth()+delta);renderWorkCalendar()}
 function toggleWorkPlanPicker(){
   const menu=$('workPlanPickerMenu'),button=$('workPlanPickerButton');
