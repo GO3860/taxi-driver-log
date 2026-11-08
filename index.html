@@ -544,7 +544,7 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 }
 </style>
 
-</head>
+\n<style id="weekday-compare-calendar-icon-v1">\n.weekdayCompareCalendarIcon{display:inline-block;width:36px;height:38px;object-fit:contain;vertical-align:middle;margin-right:5px}\n</style>\n</head>
 <body><div class="app">
 <header><h1><img class="taxi-icon" src="icons/header-taxi.svg" alt=""> TAKULOG</h1><div class="sub">Track Every Shift. Drive Smarter.</div></header>
 
@@ -2973,7 +2973,7 @@ async function showMonthlyDetail(year,index){
       <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
       <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
     </div>
-    <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})">📅 ${periodMonthLabel(p)}の曜日別比較</button>
+    <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})"><img class="weekdayCompareCalendarIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt=""> ${periodMonthLabel(p)}の曜日別比較</button>
   </div>`;
 }
 
@@ -3054,7 +3054,7 @@ async function showMonthWeekday(year,index){
   $('dataSummaryView').classList.add('hidden');
   $('dataDetailView').classList.add('hidden');
   $('dataAnalysisView').classList.remove('hidden');
-  $('analysisTitle').textContent='📅 '+periodMonthLabel(getFiscalPeriods(currentMonthYear)[currentMonthIndex])+'の曜日別比較';
+  $('analysisTitle').innerHTML='<img class="weekdayCompareCalendarIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt=""> '+periodMonthLabel(getFiscalPeriods(currentMonthYear)[currentMonthIndex])+'の曜日別比較';
   const periods=getFiscalPeriods(currentMonthYear), p=periods[currentMonthIndex];
   const logs=await getLogs();
   const work=logs.filter(x=>(x.dayType||'work')==='work'&&inDataPeriod(x.date,p));
