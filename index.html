@@ -1323,6 +1323,7 @@ async function changeDutyDate(value){
   $('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';
   if(window.db){
     const restored=await loadSavedLogForDutyDate(value);
+    restoreTakulogDraft(value);
     // ログ復元処理が終わってからも色を再適用する
     updateDutyDateColor(value);
     if(!restored)renderConstraintWarning();
@@ -1353,6 +1354,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initDB().then(async()=>{
     const currentDate=localStorage.getItem('taxiDutyDate')||todayYMD();
     const restored=await loadSavedLogForDutyDate(currentDate);
+    restoreTakulogDraft(currentDate);
     // 保存済みログの復元で画面が更新された後、業務日色を最終適用する
     updateDutyDateColor(currentDate);
     await updateTotal();
@@ -1857,6 +1859,7 @@ async function saveLog(){
  }
  await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
  if(!isRestDay(dayType)) { localStorage.setItem('taxiRouteDutyDate',selectedDateKey); localStorage.removeItem('taxiDutyDate'); }
+ localStorage.removeItem('taxiDraft_'+selectedDateKey);
  $('status').textContent='✅ 保存しました';
  setTakulogSavedState();
  await renderConstraintWarning();
@@ -5068,6 +5071,87 @@ function setTakulogSavedState(){
     if(e.target.closest('#saveButton'))return;
     if(e.target.closest('#dayType button, #weather button, #events button, .chip'))setTakulogUnsavedState();
   },true);
+})();
+</script>
+
+<script id="takulog-autodraft-v1">
+(function(){
+  let draftTimer=null;
+  function draftKey(){
+    return 'taxiDraft_'+(localStorage.getItem('taxiDutyDate')||'');
+  }
+  function captureDraft(){
+    const root=document.getElementById('today');
+    if(!root)return null;
+    const fields=[];
+    root.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{
+      if(el.type==='file')return;
+      fields.push({id:el.id,value:el.value,checked:('checked' in el)?el.checked:undefined});
+    });
+    const selected=[];
+    root.querySelectorAll('.on').forEach(el=>{
+      const parent=el.parentElement;
+      if(!parent)return;
+      selected.push({parentId:parent.id||'',index:[...parent.children].indexOf(el),id:el.id||''});
+    });
+    return {version:1,updatedAt:Date.now(),fields,selected};
+  }
+  function saveDraftNow(){
+    try{
+      const data=captureDraft();
+      if(!data)return;
+      localStorage.setItem(draftKey(),JSON.stringify(data));
+    }catch(error){
+      console.warn('下書きの一時保存に失敗しました',error);
+    }
+  }
+  function queueDraftSave(){
+    clearTimeout(draftTimer);
+    draftTimer=setTimeout(saveDraftNow,500);
+  }
+  window.restoreTakulogDraft=function(date){
+    try{
+      const raw=localStorage.getItem('taxiDraft_'+date);
+      if(!raw)return false;
+      const data=JSON.parse(raw);
+      if(!data || data.version!==1 || !Array.isArray(data.fields))return false;
+      const root=document.getElementById('today');
+      if(!root)return false;
+      data.fields.forEach(item=>{
+        const el=document.getElementById(item.id);
+        if(!el || !root.contains(el) || el.type==='file')return;
+        if(typeof item.value==='string')el.value=item.value;
+        if(typeof item.checked==='boolean')el.checked=item.checked;
+      });
+      (data.selected||[]).forEach(item=>{
+        const parent=item.parentId?document.getElementById(item.parentId):null;
+        if(!parent || !root.contains(parent))return;
+        const el=parent.children[item.index];
+        if(el && el.id===item.id)el.classList.add('on');
+      });
+      if(typeof updateLoadedRateCalc==='function')updateLoadedRateCalc();
+      if(typeof duration==='function')duration();
+      if(typeof setTakulogUnsavedState==='function')setTakulogUnsavedState();
+      const status=document.getElementById('status');
+      if(status)status.textContent='📝 入力途中の下書きを復元しました。確認して保存してください。';
+      return true;
+    }catch(error){
+      console.warn('下書きの復元に失敗しました',error);
+      return false;
+    }
+  };
+  document.addEventListener('input',e=>{
+    if(e.target && e.target.closest && e.target.closest('#today') && !e.target.closest('#saveButton'))queueDraftSave();
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target && e.target.closest && e.target.closest('#today') && !e.target.closest('#saveButton'))queueDraftSave();
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target && e.target.closest && e.target.closest('#today') &&
+       e.target.closest('#dayType button, #weather button, #events button, .chip'))queueDraftSave();
+  },true);
+  window.addEventListener('pagehide',saveDraftNow);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)saveDraftNow()});
 })();
 </script>
 </body></html>
