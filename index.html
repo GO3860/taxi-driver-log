@@ -5123,7 +5123,12 @@ function setTakulogSavedState(){
         if(typeof item.value==='string')el.value=item.value;
         if(typeof item.checked==='boolean')el.checked=item.checked;
       });
-      (data.selected||[]).forEach(item=>{
+      const selectedItems=data.selected||[];
+      [...new Set(selectedItems.map(item=>item.parentId).filter(Boolean))].forEach(parentId=>{
+        const parent=document.getElementById(parentId);
+        if(parent && root.contains(parent))parent.querySelectorAll('.on').forEach(el=>el.classList.remove('on'));
+      });
+      selectedItems.forEach(item=>{
         const parent=item.parentId?document.getElementById(item.parentId):null;
         if(!parent || !root.contains(parent))return;
         const el=parent.children[item.index];
