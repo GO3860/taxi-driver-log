@@ -800,9 +800,11 @@ body.calendarModalOpen nav {
 <div class="label"><img class="taxi-icon" src="icons/leaf.png" alt=""> 休み方分析の設定</div>
 <div class="help-text">売上を上げるためではなく、自分の営業データから「休む候補になりやすい日」を学習するための設定です。</div>
 <div style="margin-top:12px;font-weight:800;font-size:15px">給料日基準</div>
+<div class="help-text">給料日前後に売上や勤務の傾向が変わるかを分析するための日付です。</div>
 <select id="paydayBase" onchange="saveRestSettings()" style="display:block;width:100%;padding:13px 10px;border:2px solid #ddd;border-radius:12px;font-size:17px;background:#fafafa;margin-top:7px"></select>
 <div class="small">ご自身の給料日ではなく、給料日前後の影響を分析するための基準日です。初期値は25日です。</div>
 <div style="margin-top:14px;font-weight:800;font-size:15px">祝日手当</div>
+<div class="help-text">祝日に勤務した際、会社から手当が支給されるかを選択してください。</div>
 <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceYes" type="radio" name="holidayAllowance" value="1" onchange="saveRestSettings()" style="width:20px;height:20px">あり</label>
 <label style="display:flex;align-items:center;gap:7px;font-size:15px"><input id="holidayAllowanceNo" type="radio" name="holidayAllowance" value="0" onchange="saveRestSettings()" style="width:20px;height:20px">なし</label>
@@ -887,24 +889,28 @@ body.calendarModalOpen nav {
   </label>
 
   <div class="fareSectionTitle">勤務形態</div>
+  <div class="help-text">普段の勤務スケジュールに合わせて選択してください。休み方分析などの設定に利用します。</div>
   <div class="workStyleChoices" style="display:flex;gap:28px;flex-wrap:wrap;align-items:center;margin:8px 0 16px">
     <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px"><input type="radio" name="workStyle" value="隔日勤務者" onchange="savePersonalData()" style="width:22px;height:22px;margin:0"><span>隔日勤務者</span></label>
     <label style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px"><input type="radio" name="workStyle" value="日勤者" onchange="syncBusySeasonForDayWorker()" style="width:22px;height:22px;margin:0"><span>日勤者</span></label>
   </div>
 
   <div class="fareSectionTitle">初乗運賃</div>
+  <div class="help-text">タクシーに乗車したとき、最初に適用される距離と料金を入力します。</div>
   <div class="fareFields two">
     <label><input id="baseDistance" class="fareNum" type="number" min="0" step="0.001" placeholder="◯◯" oninput="savePersonalData()"><span>kmまで</span></label>
     <label><input id="baseFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
   </div>
 
   <div class="fareSectionTitle">加算運賃</div>
+  <div class="help-text">初乗距離を超えた後、何メートルごとに何円加算されるかを入力します。</div>
   <div class="fareFields two">
     <label><input id="incrementDistance" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>mごとに</span></label>
     <label><input id="incrementFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
   </div>
 
   <div class="fareSectionTitle">時間距離併用運賃</div>
+  <div class="help-text">低速走行や停車中に、時間に応じて加算される運賃を入力します。運賃表の記載に合わせてください。</div>
   <div class="fareFields three">
     <label><input id="timeDistanceMin" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>分</span></label>
     <label><input id="timeDistanceSec" class="fareNum" type="number" min="0" max="59" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>秒間まで</span></label>
@@ -912,6 +918,7 @@ body.calendarModalOpen nav {
   </div>
 
   <div class="fareSectionTitle">貸切時間制度</div>
+  <div class="help-text">時間制運賃を利用する場合の、時間と料金を入力します。該当しない場合は空欄のままで構いません。</div>
   <div class="fareFields two">
     <label><input id="charterMin" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>分まで毎に</span></label>
     <label><input id="charterFare" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円</span></label>
@@ -922,12 +929,14 @@ body.calendarModalOpen nav {
   </div>
 
   <div class="fareSectionTitle">割引料金</div>
+  <div class="help-text">距離制運賃などに適用される割引の条件と割引率を入力します。</div>
   <div class="fareFields two">
     <label><input id="discountThreshold" class="fareNum" type="number" min="0" step="1" placeholder="◯◯" oninput="savePersonalData()"><span>円以上</span></label>
     <label><input id="discountRate" class="fareNum" type="number" min="0" max="100" step="0.1" placeholder="◯" oninput="savePersonalData()"><span>割引</span></label>
   </div>
 
   <div class="fareSectionTitle">迎車料金</div>
+  <div class="help-text">迎車時に実車扱いとなる距離の上限を入力します。会社・地域の運賃設定を確認してください。</div>
   <div class="fareFields one">
     <label><input id="pickupDistance" class="fareNum" type="number" min="0" step="0.001" oninput="savePersonalData()"><span>kmを限度として実車扱い</span></label>
   </div>
@@ -941,6 +950,7 @@ body.calendarModalOpen nav {
   </div>
 
   <div class="fareSectionTitle">繁忙期設定</div>
+  <div class="help-text">売上や勤務時間の傾向を分析するため、繁忙期にあたる月と勤務時間の目安を登録します。</div>
   <div id="busySeasonMonths" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px 12px;margin:10px 0 22px">
     <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="1" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">1月</label>
     <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="2" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">2月</label>
@@ -956,6 +966,7 @@ body.calendarModalOpen nav {
     <label style="display:flex;align-items:center;gap:5px;font-size:16px;white-space:nowrap"><input class="busyMonthCheck" type="checkbox" value="12" onchange="savePersonalData()" style="width:19px;height:19px;accent-color:#3788f5">12月</label>
   </div>
 
+  <div class="help-text">通常月と繁忙期の月間拘束時間、1日の拘束時間・走行距離・休憩時間を入力します。分からない項目は空欄でも構いません。</div>
   <div class="fareFields two" style="margin-top:8px">
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">月間拘束時間</span><input id="monthlyConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="syncBusySeasonForDayWorker()"><span>時間</span></label>
     <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:800;font-size:17px">繁忙期月間拘束時間</span><input id="busySeasonConstrainedHours" class="fareNum" type="number" min="0" step="0.1" oninput="savePersonalData()"><span>時間</span></label>
