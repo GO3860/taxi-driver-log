@@ -3693,8 +3693,19 @@ function normalizePlansForDate(p){
 function setCalendarBottomNavHidden(hidden){
   const nav=document.getElementById('mainBottomNav');
   if(nav){
-    if(hidden){nav.style.setProperty('display','none','important');nav.setAttribute('aria-hidden','true');}
-    else{nav.style.removeProperty('display');nav.removeAttribute('aria-hidden');}
+    if(hidden){
+      nav.setAttribute('hidden','');
+      nav.setAttribute('aria-hidden','true');
+      nav.style.setProperty('display','none','important');
+      nav.style.setProperty('visibility','hidden','important');
+      nav.style.setProperty('pointer-events','none','important');
+    }else{
+      nav.removeAttribute('hidden');
+      nav.removeAttribute('aria-hidden');
+      nav.style.removeProperty('display');
+      nav.style.removeProperty('visibility');
+      nav.style.removeProperty('pointer-events');
+    }
   }
   document.body.classList.toggle('calendarModalOpen',hidden);
 }
