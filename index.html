@@ -682,16 +682,7 @@ body.calendarModalOpen nav {
 </div>
 </main>
 
-<main id="settings" class="hidden"><div class="card" id="taxiDataBackupCard" style="border:2px solid #d7e6f5">
-<div class="label">🛟 データ引っ越し・バックアップ</div>
-<div class="help-text">ChatGPT内のタクログからSafariへ営業記録を移すための機能です。まず元の画面でバックアップを書き出し、Safariで読み込んでください。</div>
-<button type="button" class="btn full" onclick="exportTaxiBackup()">この端末のデータを書き出す</button>
-<div style="margin-top:14px;font-weight:800">バックアップを読み込む</div>
-<input id="taxiBackupFile" type="file" accept=".json,application/json" style="display:block;width:100%;margin-top:8px">
-<button type="button" class="btn full" style="margin-top:8px" onclick="importTaxiBackup()">バックアップを読み込む</button>
-<div id="taxiBackupStatus" class="small" style="margin-top:8px;line-height:1.6">読み込み時は既存データを消さず、記録を追加・更新します。</div>
-</div>
-<div class="card"><div class="label"><img src="icons/settings-gear.svg" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:-7px;margin-right:4px"> 設定</div><div class="help-text">自分の会社や乗務スタイルに合わせて設定できます。</div></div>
+<main id="settings" class="hidden"><div class="card"><div class="label"><img src="icons/settings-gear.svg" alt="" style="width:28px;height:28px;object-fit:contain;vertical-align:-7px;margin-right:4px"> 設定</div><div class="help-text">自分の会社や乗務スタイルに合わせて設定できます。</div></div>
 
 <div id="settingsOverview">
 
@@ -796,6 +787,16 @@ body.calendarModalOpen nav {
     本アプリが提供する分析結果やアドバイスは参考情報であり、売上や収入の増加、休日取得による効果を保証するものではありません。実際の営業成績や休日取得に関する判断は、ご自身の勤務状況や会社の規定などを踏まえて行ってください。<br><br>
     本アプリの利用に関連して生じた売上・収入の変動や休日取得の結果について、アプリ提供者は、法令上認められる範囲で責任を負いかねます。
   </div>
+</div>
+
+<main id="settings" class="hidden"><div class="card" id="taxiDataBackupCard" style="border:2px solid #d7e6f5">
+<div class="label">🛟 データ引っ越し・バックアップ</div>
+<div class="help-text">ChatGPT内のタクログからSafariへ営業記録を移すための機能です。まず元の画面でバックアップを書き出し、Safariで読み込んでください。</div>
+<button type="button" class="btn full" onclick="exportTaxiBackup()">この端末のデータを書き出す</button>
+<div style="margin-top:14px;font-weight:800">バックアップを読み込む</div>
+<input id="taxiBackupFile" type="file" accept=".json,application/json" style="display:block;width:100%;margin-top:8px">
+<button type="button" class="btn full" style="margin-top:8px" onclick="importTaxiBackup()">バックアップを読み込む</button>
+<div id="taxiBackupStatus" class="small" style="margin-top:8px;line-height:1.6">読み込み時は既存データを消さず、記録を追加・更新します。</div>
 </div>
 
 </div>
