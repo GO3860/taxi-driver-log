@@ -607,7 +607,7 @@ body.calendarModalOpen nav {
 </style>
 </head>
 <body><div class="app">
-<header><h1><img class="taxi-icon" src="icons/header-taxi.svg" alt=""> TAKULOG</h1><div class="sub">Track Every Shift. Drive Smarter.</div></header>
+<header class="takulogHeader"><div><h1><img class="taxi-icon" src="icons/header-taxi.svg" alt=""> TAKULOG</h1><div class="sub">Track Every Shift. Drive Smarter.</div></div><button type="button" id="takulogExitButton" onclick="exitTakulogScreen()">終了する</button></header>
 
 <div id="seasonalTaxiCard" class="seasonalTaxiCard" aria-live="polite" style="display:none!important">
   <div id="seasonalTaxiIcon" class="seasonalTaxiIcon"></div>
@@ -4996,6 +4996,36 @@ body:has(#workCalendarModal:not(.hidden)) #mainBottomNav {
   pointer-events: none !important;
 }
 </style>
+
+<div id="takulogExitScreen" class="takulogExitScreen" hidden>
+  <div class="takulogExitCard">
+    <div class="takulogExitMark">✓</div>
+    <h2>タクログを終了しました</h2>
+    <p>営業記録はそのまま保存されています。</p>
+    <button type="button" onclick="returnToTakulog()">タクログに戻る</button>
+  </div>
+</div>
+<style id="takulog-exit-button-v1">
+.takulogHeader{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#takulogExitButton{flex:0 0 auto;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:#263b50;color:#fff;padding:9px 13px;font-size:13px;font-weight:800}
+.takulogExitScreen{position:fixed;inset:0;z-index:3000;background:#f3f7fb;display:flex;align-items:center;justify-content:center;padding:24px}
+.takulogExitScreen[hidden]{display:none}
+.takulogExitCard{width:100%;max-width:360px;background:#fff;border-radius:22px;padding:28px 20px;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.08)}
+.takulogExitMark{width:58px;height:58px;border-radius:50%;background:#e5f6ed;color:#16834a;font-size:38px;font-weight:900;line-height:58px;margin:0 auto 14px}
+.takulogExitCard h2{font-size:21px;margin:0 0 10px;color:#18334b}
+.takulogExitCard p{font-size:14px;color:#687582;margin:0 0 22px}
+.takulogExitCard button{width:100%;border:0;border-radius:14px;padding:14px;background:#1677d2;color:#fff;font-size:16px;font-weight:800}
+</style>
+<script id="takulog-exit-button-v1-script">
+function exitTakulogScreen(){
+  const app=document.querySelector('.app');
+  const screen=document.getElementById('takulogExitScreen');
+  if(app)app.style.display='none';
+  if(screen)screen.hidden=false;
+  window.scrollTo(0,0);
+}
+function returnToTakulog(){window.location.reload()}
+</script>
 </body></html>
 
 
