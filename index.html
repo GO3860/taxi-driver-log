@@ -1396,7 +1396,7 @@ function addRoute(data){
   item.dataset.index=i;
   item.innerHTML=`<div class="routeItemTitle">道順 ${i+1}</div>
     <div class="small">目的地</div>
-    <input class="routeDestination" type="text" placeholder="目的地を入力" value="${escapeHtml(routeData[i].destination)}">
+    <input class="routeDestination" type="text" placeholder="大阪・梅田周辺" value="${escapeHtml(routeData[i].destination)}">
     <div class="small" style="margin-top:12px">コース</div>
     <textarea class="routeCourse" placeholder="尼崎駅から2号線を東へ進む。野田阪神の交差点を左折、曽根崎通りをまっすぐ進む。以上。">${escapeHtml(routeData[i].course)}</textarea>
     <input class="routePhoto" type="file" accept="image/*" onchange="photo(this)">
