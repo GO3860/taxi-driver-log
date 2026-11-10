@@ -1858,6 +1858,7 @@ async function saveLog(){
  await saveMonthlySnapshot(all);await updateTotal();await renderSalesGoal();renderRouteDatabase();await new Promise(r=>setTimeout(r,0));
  if(!isRestDay(dayType)) { localStorage.setItem('taxiRouteDutyDate',selectedDateKey); localStorage.removeItem('taxiDutyDate'); }
  $('status').textContent='✅ 保存しました';
+ setTakulogSavedState();
  await renderConstraintWarning();
  // 保存後はページ移動せず、現在の「今日」画面をそのまま更新する。
  editingLogId=null;
@@ -5031,6 +5032,43 @@ function exitTakulogScreen(){
   window.scrollTo(0,0);
 }
 function returnToTakulog(){window.location.reload()}
+</script>
+
+<script id="takulog-unsaved-notice-v1">
+let takulogHasUnsavedChanges=false;
+function setTakulogUnsavedState(){
+  takulogHasUnsavedChanges=true;
+  const status=document.getElementById('status');
+  if(status){
+    status.textContent='⚠️ 未保存の変更があります。保存してください。';
+    status.style.color='#b45309';
+    status.style.fontWeight='800';
+  }
+}
+function setTakulogSavedState(){
+  takulogHasUnsavedChanges=false;
+  const status=document.getElementById('status');
+  if(status){
+    status.textContent='✅ 保存しました';
+    status.style.color='';
+    status.style.fontWeight='';
+  }
+}
+(function(){
+  const today=document.getElementById('today');
+  if(!today)return;
+  const markIfTodayInput=e=>{
+    if(!e.target || !today.contains(e.target))return;
+    if(e.target.closest('#saveButton'))return;
+    if(e.target.matches('input,textarea,select'))setTakulogUnsavedState();
+  };
+  today.addEventListener('input',markIfTodayInput,true);
+  today.addEventListener('change',markIfTodayInput,true);
+  today.addEventListener('click',e=>{
+    if(e.target.closest('#saveButton'))return;
+    if(e.target.closest('#dayType button, #weather button, #events button, .chip'))setTakulogUnsavedState();
+  },true);
+})();
 </script>
 </body></html>
 
