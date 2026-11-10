@@ -789,7 +789,7 @@ body.calendarModalOpen nav {
   </div>
 </div>
 
-<main id="settings" class="hidden"><div class="card" id="taxiDataBackupCard" style="border:2px solid #d7e6f5">
+<div class="card" id="taxiDataBackupCard" style="border:2px solid #d7e6f5">
 <div class="label">🛟 データ引っ越し・バックアップ</div>
 <div class="help-text">ChatGPT内のタクログからSafariへ営業記録を移すための機能です。まず元の画面でバックアップを書き出し、Safariで読み込んでください。</div>
 <button type="button" class="btn full" onclick="exportTaxiBackup()">この端末のデータを書き出す</button>
@@ -797,8 +797,6 @@ body.calendarModalOpen nav {
 <input id="taxiBackupFile" type="file" accept=".json,application/json" style="display:block;width:100%;margin-top:8px">
 <button type="button" class="btn full" style="margin-top:8px" onclick="importTaxiBackup()">バックアップを読み込む</button>
 <div id="taxiBackupStatus" class="small" style="margin-top:8px;line-height:1.6">読み込み時は既存データを消さず、記録を追加・更新します。</div>
-</div>
-
 </div>
 
 <div id="holidaySettingsPanel" class="hidden">
