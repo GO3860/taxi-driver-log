@@ -1398,7 +1398,7 @@ function addRoute(data){
     <div class="small">目的地</div>
     <input class="routeDestination" type="text" placeholder="目的地を入力" value="${escapeHtml(routeData[i].destination)}">
     <div class="small" style="margin-top:12px">コース</div>
-    <textarea class="routeCourse" placeholder="覚えておきたいコースを入力">${escapeHtml(routeData[i].course)}</textarea>
+    <textarea class="routeCourse" placeholder="尼崎駅から2号線を東へ進む。野田阪神の交差点を左折、曽根崎通りをまっすぐ進む。以上。">${escapeHtml(routeData[i].course)}</textarea>
     <input class="routePhoto" type="file" accept="image/*" onchange="photo(this)">
     <div class="preview routePreview">${routeData[i].photo?`<img src="${routeData[i].photo}" alt="道順の写真">`:''}</div>
     ${i>0?'<button type="button" class="btn full routeRemove" onclick="removeRoute(this)">この道順を削除</button>':''}`;
