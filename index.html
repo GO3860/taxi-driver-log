@@ -4939,6 +4939,21 @@ function status(v){const e=document.getElementById('taxiBackupStatus');if(e)e.te
 window.exportTaxiBackup=async function(){try{status('バックアップを作成しています…');const db=await openBackupDB();const logs=await readAll(db);db.close();const local={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(/^taxi/i.test(k)||k==='taxiRoadQuizStateV1'))local[k]=localStorage.getItem(k)}const payload={format:'taxi-driver-log-backup',version:1,createdAt:new Date().toISOString(),logs,localStorage:local};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='taxilog-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);status('書き出し完了：営業記録 '+logs.length+' 件、設定 '+Object.keys(local).length+' 件。保存したJSONファイルをSafari側で読み込んでください。')}catch(e){console.error(e);status('書き出しに失敗しました：'+(e.message||e))}};
 window.importTaxiBackup=async function(){const input=document.getElementById('taxiBackupFile'),file=input?.files?.[0];if(!file){status('先にバックアップJSONファイルを選択してください。');return}if(!confirm('バックアップ内の営業記録と設定を、このタクログに取り込みます。既存の営業記録は削除せず、同じIDの記録はバックアップ内容で更新します。よろしいですか？'))return;try{status('バックアップを確認しています…');const raw=await file.text(),data=JSON.parse(raw);if(data.format!=='taxi-driver-log-backup'||data.version!==1||!Array.isArray(data.logs)||!data.localStorage||typeof data.localStorage!=='object')throw new Error('タクログのバックアップ形式ではありません');if(data.logs.some(x=>!x||typeof x!=='object'||x.id===undefined))throw new Error('営業記録の形式が正しくありません');const db=await openBackupDB();await writeAll(db,data.logs);db.close();let count=0;Object.entries(data.localStorage).forEach(([k,v])=>{if(/^taxi/i.test(k)&&typeof v==='string'){localStorage.setItem(k,v);count++}});status('取り込み完了：営業記録 '+data.logs.length+' 件、設定 '+count+' 件。画面を再読み込みして内容を確認してください。');alert('データの取り込みが完了しました。タクログを再読み込みしてください。')}catch(e){console.error(e);status('取り込みに失敗しました：'+(e.message||e))}};
 })();
-</script></body></html>
+</script>
+<style id="calendar-modal-hide-bottom-nav-final-v3">
+/* カレンダー登録・編集パネルが開いている間は、下部ナビ5項目を非表示にする */
+#mainBottomNav[hidden],
+body.calendarModalOpen #mainBottomNav,
+body:has(#workCalendarModal:not(.hidden)) #mainBottomNav {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+</style>
+</body></html>
 
 
