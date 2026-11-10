@@ -567,6 +567,20 @@ body.calendarModalOpen nav {
   display: none !important;
 }
 </style>
+
+<style id="calendar-modal-hide-inner-nav-v1">
+/* カレンダー登録・編集パネル内に残っていた装飾用5項目ナビを非表示 */
+#workCalendarModal:not(.hidden) .calendarSheet .calendarBottomNav {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+</style>
+
 </head>
 <body><div class="app">
 <header><h1><img class="taxi-icon" src="icons/header-taxi.svg" alt=""> TAKULOG</h1><div class="sub">Track Every Shift. Drive Smarter.</div></header>
