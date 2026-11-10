@@ -551,6 +551,15 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
 .weekdayCompareCalendarIcon{display:inline-block;width:30px!important;height:30px!important;min-width:30px!important;max-width:30px!important;object-fit:contain;vertical-align:middle;margin-right:7px;flex:0 0 30px}
 </style>
 
+<style id="calendar-modal-hide-bottom-nav-v2">
+/* カレンダー登録・編集画面では下部5項目ナビを確実に非表示 */
+body.calendarModalOpen #mainBottomNav,
+body:has(#workCalendarModal:not(.hidden)) #mainBottomNav {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+</style>
 <style id="calendar-modal-hide-bottom-nav-v1">
 /* カレンダーの登録・編集画面では下部ナビゲーションを隠す */
 body:has(#workCalendarModal:not(.hidden)) nav,
