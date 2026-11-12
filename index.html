@@ -5045,7 +5045,13 @@ function exitTakulogScreen(){
   if(screen)screen.hidden=false;
   window.scrollTo(0,0);
 }
-function returnToTakulog(){window.location.reload()}
+function returnToTakulog(){
+  const app=document.querySelector('.app');
+  const screen=document.getElementById('takulogExitScreen');
+  if(screen)screen.hidden=true;
+  if(app)app.style.display='';
+  window.scrollTo(0,0);
+}
 </script>
 
 <script id="takulog-unsaved-notice-v1">
