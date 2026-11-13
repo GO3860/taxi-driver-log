@@ -5180,6 +5180,30 @@ function setTakulogSavedState(){
   document.addEventListener('visibilitychange',()=>{if(document.hidden)saveDraftNow()});
 })();
 </script>
+
+<style id="event-rain-accident-label-below-v1">
+/* 大雨・事故のイベント名をアイコンの下に配置 */
+#events .chip[aria-label="大雨"],
+#events .chip[aria-label="事故"]{
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:3px!important;
+  min-width:76px;
+  padding:9px 12px!important;
+}
+#events .chip[aria-label="大雨"] .event-icon,
+#events .chip[aria-label="事故"] .event-icon{
+  display:block!important;
+  margin:0 auto!important;
+}
+#events .chip[aria-label="大雨"] > span:not(.event-legacy-icon),
+#events .chip[aria-label="事故"] > span:not(.event-legacy-icon){
+  display:block!important;
+  line-height:1.2!important;
+  text-align:center!important;
+}
+</style>
 </body></html>
 
 
