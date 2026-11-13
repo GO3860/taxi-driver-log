@@ -2743,7 +2743,7 @@ async function renderPeriodRangeSummary(resetSelectors=false){
   const periodStart=periods[0].period.start, periodEnd=periods[periods.length-1].period.end;
   const periodLogs=logs.filter(x=>{const d=dateOnly(x.date);return d&&d>=periodStart&&d<=periodEnd;});
   const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
-  const areaWork=periodLogs.filter(x=>['work','parttime'].includes(x.dayType||'work')&&Number(x.avg)>0);
+  const areaWork=periodLogs.filter(x=>['work','parttime','rest_leaveabsence'].includes(x.dayType||'work')&&Number(x.avg)>0);
   const areaAll=periodLogs.filter(x=>{
     const type=x.dayType||'work';
     return (type==='work'||type==='parttime'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;
@@ -2822,7 +2822,7 @@ async function renderAnnualData(selectedYear){
   const rows=periods.map((p,i)=>{
     const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
     const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
-    const areaWorkRows=periodLogs.filter(x=>['work','parttime'].includes(x.dayType||'work')&&Number(x.avg)>0);
+    const areaWorkRows=periodLogs.filter(x=>['work','parttime','rest_leaveabsence'].includes(x.dayType||'work')&&Number(x.avg)>0);
     const areaAllRows=periodLogs.filter(x=>{const type=x.dayType||'work';return (type==='work'||type==='parttime'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;});
     const sales=work.reduce((n,x)=>n+(Number(x.sales)||0),0);
     const areaSales=areaWorkRows.reduce((n,x)=>n+(Number(x.avg)||0),0);
@@ -2877,7 +2877,7 @@ function fiscalComparisonRows(logs, year){
     const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
     const work=periodLogs.filter(x=>(x.dayType||'work')==='work');
     // エリア平均売上は勤務日とアルバイト日を集計。自分の売上は勤務日のみ。
-    const areaWork=periodLogs.filter(x=>['work','parttime'].includes(x.dayType||'work')&&Number(x.avg)>0);
+    const areaWork=periodLogs.filter(x=>['work','parttime','rest_leaveabsence'].includes(x.dayType||'work')&&Number(x.avg)>0);
     const areaAll=periodLogs.filter(x=>{
       const type=x.dayType||'work';
       return (type==='work'||type==='parttime'||type==='rest_nonpublic'||type==='rest_leaveabsence')&&Number(x.avg)>0;
