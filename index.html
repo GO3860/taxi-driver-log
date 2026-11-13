@@ -1332,6 +1332,9 @@ async function changeDutyDate(value){
   updateDutyDateColor(value);
   const dp=$('datePicker');if(dp){dp.value=value;dp.max=todayYMD();dp.style.display='block';}
   $('status').textContent='📅 '+formatDutyDate(new Date(value+'T00:00:00'))+' を記録します';
+  // 別の日付へ切り替えたら、前の日付の編集IDを引き継がない。
+  // 選択先に保存済みログがある場合だけ、loadSavedLogForDutyDate内のeditLogで再設定する。
+  editingLogId=null;
   if(window.db){
     const restored=await loadSavedLogForDutyDate(value);
     restoreTakulogDraft(value);
