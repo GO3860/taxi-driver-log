@@ -629,6 +629,23 @@ body.calendarModalOpen nav {
 
 </div></div>
 
+
+<div class="card" id="mindStatusCard">
+  <div class="label">今日のマインド</div>
+  <div class="help-text">今日の気持ちに近いものを1つ選んでください。</div>
+  <div class="mind-status-grid" id="mindStatus" role="group" aria-label="今日のマインド">
+    <button type="button" class="mind-status-option" data-mind="前向き" onclick="selectMind(this)"><img src="icons/mind-positive.svg" alt=""><span>前向き</span></button>
+    <button type="button" class="mind-status-option" data-mind="穏やか" onclick="selectMind(this)"><img src="icons/mind-calm.svg" alt=""><span>穏やか</span></button>
+    <button type="button" class="mind-status-option" data-mind="不安" onclick="selectMind(this)"><img src="icons/mind-anxiety.svg" alt=""><span>不安</span></button>
+    <button type="button" class="mind-status-option" data-mind="イライラする" onclick="selectMind(this)"><img src="icons/mind-irritated.svg" alt=""><span>イライラする</span></button>
+    <button type="button" class="mind-status-option" data-mind="落ち込み" onclick="selectMind(this)"><img src="icons/mind-down.svg" alt=""><span>落ち込み</span></button>
+    <button type="button" class="mind-status-option" data-mind="気になることがある" onclick="selectMind(this)"><img src="icons/mind-concern.svg" alt=""><span>気になることがある</span></button>
+    <button type="button" class="mind-status-option" data-mind="眠たい" onclick="selectMind(this)"><img src="icons/mind-sleepy.svg" alt=""><span>眠たい</span></button>
+    <button type="button" class="mind-status-option" data-mind="休みたい" onclick="selectMind(this)"><img src="icons/mind-rest.svg" alt=""><span>休みたい</span></button>
+  </div>
+  <div class="help-text" id="mindStatusHelp">※ 保存するには1つ選択してください。</div>
+</div>
+
 <div class="card"><div class="label"><img class="event-heading-icon" src="icons/duty-calendar-neon.svg?v=20261105" alt=""> イベント</div><div class="help-text">今日の営業に影響するイベントを選んでください。</div><div class="chips" id="events">
 <button class="chip" onclick="pick(this)">なし</button>
 <button class="chip event-chip" onclick="pick(this)" aria-label="野球"><img class="event-icon" src="data:image/jpeg;base64,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" alt=""><span class="event-legacy-icon">⚾</span> <span>野球</span></button>
@@ -1841,6 +1858,12 @@ async function saveLog(){
    }
  }
  let dayType=getDayType();
+ const selectedMind=document.querySelector('#mindStatus .mind-status-option.on')?.dataset.mind||'';
+ if(!selectedMind){
+   alert('「今日のマインド」を1つ選択してください。');
+   document.getElementById('mindStatusCard')?.scrollIntoView({behavior:'smooth',block:'center'});
+   return;
+ }
  let ev=[...document.querySelectorAll('#events .on')].map(x=>x.textContent.trim());
  const restAverage = (dayType==='work'||dayType==='parttime'||isRestDay(dayType))
    ? String($('avg')?.value ?? '').trim()
@@ -1849,7 +1872,7 @@ async function saveLog(){
   const existingForRoutes=(await getLogs()).find(x=>editingLogId!==null?Number(x.id)===Number(editingLogId):String(x.date||'')===formatDutyDate(selectedDateObj));
   // 道ログ入力欄が空でも、乗務ログ保存で登録済みの道順を消さない。
   const routesToSave=enteredRoutes.length?enteredRoutes:(Array.isArray(existingForRoutes?.routes)?existingForRoutes.routes:[]);
-  let log={date:formatDutyDate(selectedDateObj),dayType,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',runDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRunDistance')?.value||$('km').value):'',rideDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRideDistance')?.value||''):'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:routesToSave,destination:routesToSave[0]?.destination||'',course:routesToSave[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
+  let log={date:formatDutyDate(selectedDateObj),dayType,mind:selectedMind,weather:[...document.querySelectorAll('#weather .on')].map(x=>x.textContent.trim()),event:ev,out:(dayType==='work'||dayType==='parttime')?$('out').value:'',in:(dayType==='work'||dayType==='parttime')?$('in').value:'',hours:(dayType==='work'||dayType==='parttime')?$('hours').textContent:'',km:(dayType==='work'||dayType==='parttime')?$('km').value:'',runDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRunDistance')?.value||$('km').value):'',rideDistance:(dayType==='work'||dayType==='parttime')?($('salesDataRideDistance')?.value||''):'',sales:(dayType==='work'||dayType==='parttime')?$('sales').value:'',loadedRate:(dayType==='work'||dayType==='parttime')?$('loadedRate').value:'',tripCount:(dayType==='work'||dayType==='parttime')?$('tripCount').value:'',break1Start:(dayType==='work'||dayType==='parttime')?$('break1Start').value:'',break1End:(dayType==='work'||dayType==='parttime')?$('break1End').value:'',break2Start:(dayType==='work'||dayType==='parttime')?$('break2Start').value:'',break2End:(dayType==='work'||dayType==='parttime')?$('break2End').value:'',break3Start:(dayType==='work'||dayType==='parttime')?$('break3Start').value:'',break3End:(dayType==='work'||dayType==='parttime')?$('break3End').value:'',avg:restAverage,routes:routesToSave,destination:routesToSave[0]?.destination||'',course:routesToSave[0]?.course||'',eventNote:(dayType==='work'||dayType==='parttime')?$('eventNote').value:'',photo:(dayType==='work'||dayType==='parttime')?photoData:'',parttimeTakeHome:dayType==='parttime'?Number($('parttimeTakeHomeInput').value||0):0,savedAt:new Date().toISOString()};
   let all=await getLogs();
  if(editingLogId!==null){
    log.id=editingLogId;
@@ -2145,6 +2168,8 @@ async function editLog(id){
     if(b){b.classList.add('on');b.dataset.weatherOrder=String(++weatherPickSeq);}
   });
   refreshWeather();
+
+  document.querySelectorAll('#mindStatus .mind-status-option').forEach(b=>b.classList.toggle('on',b.dataset.mind===(x.mind||'')));
 
   (Array.isArray(x.event)?x.event:[]).forEach(v=>{
     const b=[...document.querySelectorAll('#events .chip')].find(b=>b.textContent.trim()===v);
@@ -5203,7 +5228,24 @@ function setTakulogSavedState(){
   line-height:1.2!important;
   text-align:center!important;
 }
+
+/* 今日のマインド：ネオンHUDタイル */
+.mind-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.mind-status-option{appearance:none;border:1px solid #b8d7e8;background:linear-gradient(180deg,#f9fdff,#edf7fc);border-radius:15px;padding:9px 5px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;color:#16344d;font:inherit;font-size:12px;font-weight:800;line-height:1.3;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+.mind-status-option img{width:58px;height:58px;object-fit:contain;display:block}
+.mind-status-option span{min-height:2.5em;display:flex;align-items:center;justify-content:center;text-align:center;overflow-wrap:anywhere}
+.mind-status-option.on{border:2px solid #00bce8;background:linear-gradient(180deg,#e8fbff,#d8f4ff);box-shadow:0 0 0 2px rgba(0,196,239,.12),0 0 15px rgba(0,190,235,.3);transform:translateY(-1px)}
+.mind-status-option:focus-visible{outline:3px solid #168bce;outline-offset:2px}
+@media(max-width:430px){.mind-status-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.mind-status-option{padding:7px 2px;border-radius:12px;font-size:10px}.mind-status-option img{width:48px;height:48px}}
 </style>
+
+<script id="takulog-mind-status-v1">
+function selectMind(button){
+  if(!button)return;
+  document.querySelectorAll('#mindStatus .mind-status-option').forEach(x=>x.classList.toggle('on',x===button));
+  const help=document.getElementById('mindStatusHelp');if(help)help.textContent='選択中：'+button.dataset.mind;
+}
+</script>
 </body></html>
 
 
