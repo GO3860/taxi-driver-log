@@ -250,6 +250,17 @@ function restPaydayAnalysis(logs){
  return {nearCount:near.length,otherCount:other.length,nearAvg,otherAvg,diff:nearAvg!==null&&otherAvg>0?(nearAvg/otherAvg-1)*100:null};
 }
 function restHolidayPayAdvice(){return localStorage.getItem('taxiHolidayAllowance')!=='0'}
+function restMindSummaryHtml(logs){
+ const labels=[
+  ['前向き','mind-positive.svg'],['穏やか','mind-calm.svg'],['不安','mind-anxiety.svg'],['イライラする','mind-irritated.svg'],
+  ['落ち込み','mind-down.svg'],['気になることがある','mind-concern.svg'],['眠たい','mind-sleepy.svg'],['休みたい','mind-rest.svg']
+ ];
+ const recorded=(Array.isArray(logs)?logs:[]).filter(x=>labels.some(v=>v[0]===x.mind));
+ if(!recorded.length)return '<div class="restLearnBox"><strong>🧠 今日のマインド</strong><div class="restSmall">マインドの記録はまだありません。タクログで毎日の状態を選ぶと、ここに記録の傾向が表示されます。</div></div>';
+ const counts=labels.map(([name,file])=>({name,file,count:recorded.filter(x=>x.mind===name).length})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count);
+ const rows=counts.map(x=>'<div style="display:flex;align-items:center;gap:9px;margin:7px 0"><img src="../icons/'+x.file+'" alt="" style="width:34px;height:34px;object-fit:contain;flex:0 0 34px"><span style="flex:1;font-weight:700">'+x.name+'</span><strong style="font-variant-numeric:tabular-nums">'+x.count+'日</strong></div>').join('');
+ return '<div class="restLearnBox"><strong>🧠 今日のマインドの記録</strong><div class="restSmall">記録 '+recorded.length+'日分。選んだマインドの回数です。</div>'+rows+'<div class="restSmall">これは本人が選んだ状態の記録集計です。心身の状態や休む必要性を自動で診断するものではありません。</div></div>';
+}
 function restBuildAdvice(logs){
  const months=restMonthlyStats(logs),salesMonths=restCompareMonthStats(months,'salesAvg'),areaMonths=restCompareMonthStats(months,'areaAvg');
  const usableSales=salesMonths.filter(m=>m.sales.length>=3),usableRest=months.filter(m=>m.restCount>0);
@@ -269,8 +280,8 @@ function restDataConfidence(years,monthCount){
 }
 async function renderRestAdvice(){
  const box=$('restAdviceContent');if(!box)return;
- const logs=await getLogs(),stage=restLearningStage(logs),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
- if(stage.days<180){box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌱 休み方分析の準備中</div><div style="line-height:1.75;margin-top:12px">本格的な休み方アドバイスは、記録期間が180日以上になってから表示します。それまでは、乗務記録をためる期間です。記録はそのまま保存され、180日を超えると初歩的な分析が始まります。</div><div class="restSmall">※ 180日未満では、季節ごとの売上や休み方を判断するにはデータが足りないため、傾向の結論は表示しません。</div></div>';return;}
+ const logs=await getLogs(),mindHtml=restMindSummaryHtml(logs),stage=restLearningStage(logs),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length);
+ if(stage.days<180){box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌱 休み方分析の準備中</div><div style="line-height:1.75;margin-top:12px">本格的な休み方アドバイスは、記録期間が180日以上になってから表示します。それまでは、乗務記録をためる期間です。記録はそのまま保存され、180日を超えると初歩的な分析が始まります。</div>'+mindHtml+'<div class="restSmall">※ 180日未満では、季節ごとの売上や休み方を判断するにはデータが足りないため、傾向の結論は表示しません。</div></div>';return;}
  const ownHtml=a.lowSales.length
   ?'<div class="restLearnBox"><strong>📉 売上が落ち込みやすい月</strong><div style="margin-top:7px">'+a.lowSales.slice(0,4).map(m=>'<div class="restPattern"><strong>'+m.month+'月</strong><span>日平均 '+restMoney(m.salesAvg)+'（全体月平均より '+Math.abs(Math.round(m.diff))+'%低め）</span></div>').join('')+'</div><div class="restSmall">この時期は、計画的に休暇を取る候補として検討できます。</div></div>'
   :'<div class="restLearnBox">📉 今の記録では、売上が落ち込みやすい月を十分な確度で特定できていません。記録が増えると分析しやすくなります。</div>';
@@ -295,12 +306,12 @@ async function renderRestAdvice(){
  const holidayHtml='<div class="restLearnBox"><strong>🎌 祝日手当の設定</strong><div class="restSmall">現在の設定：祝日手当 '+(holidayPay?'あり':'なし')+'。'+(holidayPay?'休暇を検討する際は、祝日勤務による手当への影響も考慮し、祝日そのものではなく同じ月度の別の日を候補にします。':'祝日手当がない設定です。祝日も含め、勤務予定や体調に合わせて休暇を検討できます。')+'</div><div class="restSmall">祝日ごとの収入額までは記録から算出していません。</div></div>';
  const areaAvailable=a.areaMonths.length>=3;
  const areaHtml=areaAvailable?'<div class="restLearnBox"><strong>📊 エリア平均との比較（任意）</strong><div class="restSmall">自分の売上がエリア平均と同程度以下の月：'+(a.nearArea.length?restMonthNames(a.nearArea.slice(0,4)):'現時点では特定できません')+'</div><div class="restSmall">エリア平均が入力された記録だけを使った補助分析です。入力がなくても、上の個人売上分析は利用できます。</div></div>':'<div class="restLearnBox"><strong>📊 エリア平均との比較</strong><div class="restSmall">エリア平均の記録が少ないため、比較は行っていません。個人の売上だけで分析しています。</div></div>';
- box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌿 あなたの休み方アドバイス</div><div style="margin:10px 0"><span class="'+confidence.cls+'" style="display:inline-block">'+confidence.label+'</span><div class="restSmall">'+confidence.text+' 対象：'+a.years+'年分の記録</div></div><div style="line-height:1.75">'+escapeHtml(advice)+'</div><div class="restSmall">※ これは過去の記録からの参考提案です。売上の変動や休みの理由を断定するものではありません。</div></div><div class="restSection"><div class="restSectionTitle">📉 売上の月別傾向</div>'+ownHtml+'</div><div class="restSection"><div class="restSectionTitle">🏠 休み方の月別傾向</div>'+restHtml+'</div><div class="restSection">'+paydayHtml+'</div><div class="restSection">'+holidayHtml+'</div><div class="restSection">'+areaHtml+'</div><div class="restDetailNote">分析は既存の乗務記録を利用します。売上は勤務記録1日あたりの平均で月ごとに比較し、休みは「休（非・公）」と「休（有・欠）」の記録を数えています。半休・早退は休みの日として数えません。月ごとの記録が少ない場合や、複数年のデータがない場合は結論を控えます。</div>';
+ box.innerHTML='<div class="restSummary"><div class="restSummaryTitle">🌿 あなたの休み方アドバイス</div><div style="margin:10px 0"><span class="'+confidence.cls+'" style="display:inline-block">'+confidence.label+'</span><div class="restSmall">'+confidence.text+' 対象：'+a.years+'年分の記録</div></div><div style="line-height:1.75">'+escapeHtml(advice)+'</div><div class="restSmall">※ これは過去の記録からの参考提案です。売上の変動や休みの理由を断定するものではありません。</div></div><div class="restSection"><div class="restSectionTitle">📉 売上の月別傾向</div>'+ownHtml+'</div><div class="restSection"><div class="restSectionTitle">🏠 休み方の月別傾向</div>'+restHtml+'</div><div class="restSection">'+paydayHtml+'</div><div class="restSection">'+holidayHtml+'</div><div class="restSection">'+areaHtml+'</div>'+mindHtml+'<div class="restDetailNote">分析は既存の乗務記録を利用します。売上は勤務記録1日あたりの平均で月ごとに比較し、休みは「休（非・公）」と「休（有・欠）」の記録を数えています。半休・早退は休みの日として数えません。月ごとの記録が少ない場合や、複数年のデータがない場合は結論を控えます。</div>';
 }
 function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');renderLearningDetails()}
 async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
- const logs=await getLogs(),a=restBuildAdvice(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months),stage=restLearningStage(logs);
+ const logs=await getLogs(),a=restBuildAdvice(logs),mindHtml=restMindSummaryHtml(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months),stage=restLearningStage(logs);
  if(stage.days<180){box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div>'+restLearningGaugeHtml(stage)+'<div class="restDetailNote">記録期間が180日以上になるまでは、月度別の傾向や年度比較を表示しません。記録は保存され、180日を超えると初歩的な分析が始まります。</div></div>';return;}
  let stageTitle='1年目：月度ごとの傾向を把握';
  let stageText='まずは月度ごとの売上平均と休みの日数を集計し、自分の傾向を見つけます。';
@@ -319,7 +330,7 @@ async function renderLearningDetails(){
   return '<div class="restFactorRow"><div style="flex:1;min-width:0"><strong>'+m.month+'月度</strong>'+details+trend+'</div></div>';
  }).join('');
  const stages=restLearningGaugeHtml(stage)+'<div class="restLearnBox"><strong>📈 年度別分析</strong><div style="margin-top:8px;font-weight:800">'+stageTitle+'</div><div class="restSmall">'+stageText+'</div><div class="restSmall">利用できる営業年度：'+(years.length?years.join('年・')+'年':'まだ十分な記録がありません')+' ／ 比較には各年度の記録が必要です。</div></div>';
- box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div>'+stages+'<div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用します。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月度別・年度比較</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。データが少ない場合、季節的な傾向は断定しません。</div></div>';
+ box.innerHTML=mindHtml+'<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div><div class="restDetailMeta">'+confidence.label+'・'+a.years+'年分の記録</div>'+stages+'<div class="restDetailNote">個人売上は締日から締日までの営業期間ごとの勤務日平均で比較します。エリア平均は記録がある場合だけ補助的に使用します。</div><div class="restDetailSection"><div class="restDetailSectionTitle">📅 月度別・年度比較</div>'+monthRows+'</div><div class="restDetailNote">休みの日数は、既存ログの「休（非・公）」と「休（有・欠）」を合算しています。半休・早退は休みとして数えません。データが少ない場合、季節的な傾向は断定しません。</div></div>';
 }
 function closeExplain(){$('restAdviceExplain')?.classList.add('hidden');$('restAdviceExplainOpen')?.classList.remove('hidden')}
 function openExplain(){$('restAdviceExplain')?.classList.remove('hidden');$('restAdviceExplainOpen')?.classList.add('hidden')}
