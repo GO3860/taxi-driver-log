@@ -312,7 +312,7 @@ function toggleLearning(){const box=$('restLearningDetails');if(!box)return;if(!
 async function renderLearningDetails(){
  const box=$('restLearningDetails');if(!box)return;
  const logs=await getLogs(),a=restBuildAdvice(logs),mindHtml=restMindSummaryHtml(logs),confidence=restDataConfidence(a.years,a.usableSales.length),years=restAvailableYears(a.months),stage=restLearningStage(logs);
- if(stage.days<180){box.innerHTML='<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div>'+restLearningGaugeHtml(stage)+'<div class="restDetailNote">記録期間が180日以上になるまでは、月度別の傾向や年度比較を表示しません。記録は保存され、180日を超えると初歩的な分析が始まります。</div></div>';return;}
+ if(stage.days<180){box.innerHTML=mindHtml+'<div class="restDetailCard"><div class="restDetailTitle">🧠 分析に使ったデータ</div>'+restLearningGaugeHtml(stage)+'<div class="restDetailNote">記録期間が180日以上になるまでは、月度別の傾向や年度比較を表示しません。記録は保存され、180日を超えると初歩的な分析が始まります。</div></div>';return;}
  let stageTitle='1年目：月度ごとの傾向を把握';
  let stageText='まずは月度ごとの売上平均と休みの日数を集計し、自分の傾向を見つけます。';
  if(years.length===2){stageTitle='2年目：前年と今年を比較';stageText='同じ月度の前年・今年の売上平均と休みの日数を比較します。'}
