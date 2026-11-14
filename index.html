@@ -1737,6 +1737,9 @@ function updateSalesInputForDayType(type){
 function setDayType(el,type){
   document.querySelectorAll('#dayType .chip').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');
+  const mindCard=$('mindStatusCard');
+  if(mindCard)mindCard.classList.toggle('hidden',isRestDay(type));
+  if(isRestDay(type))document.querySelectorAll('#mindStatus .mind-status-option').forEach(b=>b.classList.remove('on'));
   const work=!isRestDay(type);
   const parttime=type==='parttime';
   updateSalesInputForDayType(type);
@@ -1858,8 +1861,8 @@ async function saveLog(){
    }
  }
  let dayType=getDayType();
- const selectedMind=document.querySelector('#mindStatus .mind-status-option.on')?.dataset.mind||'';
- if(!selectedMind){
+ const selectedMind=isRestDay(dayType)?'':(document.querySelector('#mindStatus .mind-status-option.on')?.dataset.mind||'');
+ if(!isRestDay(dayType)&&!selectedMind){
    alert('「今日のマインド」を1つ選択してください。');
    document.getElementById('mindStatusCard')?.scrollIntoView({behavior:'smooth',block:'center'});
    return;
