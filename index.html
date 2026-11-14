@@ -3054,6 +3054,16 @@ async function showMonthlyDetail(year,index){
   const rainyDays=periodLogs.filter(x=>Array.isArray(x.weather)&&x.weather.includes('☔')).length;
   const paidAbsence=periodLogs.filter(x=>(x.dayType||'work')==='rest_paid'||(x.dayType||'work')==='rest_leaveabsence').length;
   const eventCount=periodLogs.reduce((n,x)=>n+(Array.isArray(x.event)?x.event.filter(e=>e!=='なし').length:0),0);
+   const mindItems=[
+     ['前向き','mind-positive.svg'],
+     ['穏やか','mind-calm.svg'],
+     ['不安','mind-anxiety.svg'],
+     ['イライラする','mind-irritated.svg'],
+     ['落ち込み','mind-down.svg'],
+     ['気になることがある','mind-concern.svg'],
+     ['眠たい','mind-sleepy.svg'],
+     ['休みたい','mind-rest.svg']
+   ].map(([label,file])=>({label,file,count:periodLogs.filter(x=>x.mind===label).length}));
   // 毎日のログに保存されている「拘束時間」と「走行距離」を、この月の対象期間で合計
   const durationMinutes=periodLogs.reduce((n,x)=>{
     if(x.out&&x.in){
@@ -3114,6 +3124,7 @@ async function showMonthlyDetail(year,index){
       <div class="dataBox"><div class="dataLabel">有休・欠勤回数</div><div class="dataValue">${paidAbsence}回</div></div>
       <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
       <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
+       <div class="dataBox" style="grid-column:1/-1"><div class="dataLabel">マインドの状態</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 8px;margin-top:8px">${mindItems.map(item=>`<div style="display:flex;align-items:center;gap:6px;min-width:0"><img src="icons/${item.file}" alt="${item.label}" title="${item.label}" style="width:30px;height:30px;object-fit:contain;flex-shrink:0"><strong style="font-size:16px">${item.count}回</strong></div>`).join('')}</div></div>
     </div>
     <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})"><img class="weekdayCompareCalendarIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt=""> ${periodMonthLabel(p)}の曜日別比較</button>
   </div>`;
