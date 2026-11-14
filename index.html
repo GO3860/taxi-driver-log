@@ -1240,7 +1240,7 @@ body.calendarModalOpen nav {
 <div id="logDetailView" class="hidden"><div class="card"><div class="label">📋 乗務ログの詳細</div><div id="logDetail"></div></div><div class="detail-actions"><button class="detailEdit" onclick="editLog(currentLogDetailId)">✏️ このログを修正</button><button class="btn full" onclick="showLogs()">← ログ一覧に戻る</button></div></div></main>
 <div id="eventBreakdownModal" class="eventModal hidden" onclick="if(event.target===this)closeEventBreakdown()">
   <div class="eventSheet">
-    <div class="eventSheetTitle"><img class="eventSheetTitleIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt="">イベントの内訳</div>
+    <div class="eventSheetTitle" id="eventBreakdownTitle"><img class="eventSheetTitleIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt="">イベントの内訳</div>
     <div id="eventBreakdownRows" class="eventRows"></div>
     <button type="button" class="eventClose" onclick="closeEventBreakdown()">閉じる</button>
   </div>
@@ -3124,7 +3124,7 @@ async function showMonthlyDetail(year,index){
       <div class="dataBox"><div class="dataLabel">有休・欠勤回数</div><div class="dataValue">${paidAbsence}回</div></div>
       <div class="dataBox"><div class="dataLabel">雨の日数</div><div class="dataValue">${rainyDays}日</div></div>
       <button type="button" class="dataBox" style="border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showEventBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">イベントの発生回数</div><div class="dataValue">${eventCount}回</div></button>
-       <div class="dataBox" style="grid-column:1/-1"><div class="dataLabel">マインドの状態</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 8px;margin-top:8px">${mindItems.map(item=>`<div style="display:flex;align-items:center;gap:6px;min-width:0"><img src="icons/${item.file}" alt="${item.label}" title="${item.label}" style="width:30px;height:30px;object-fit:contain;flex-shrink:0"><strong style="font-size:16px">${item.count}回</strong></div>`).join('')}</div></div>
+       <button type="button" class="dataBox" style="grid-column:1/-1;border:0;text-align:left;width:100%;font:inherit;cursor:pointer" onclick="showMindBreakdown(${currentMonthYear},${currentMonthIndex})"><div class="dataLabel">マインドの状態</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 8px;margin-top:8px">${mindItems.map(item=>`<div style="display:flex;align-items:center;gap:6px;min-width:0"><img src="icons/${item.file}" alt="${item.label}" title="${item.label}" style="width:30px;height:30px;object-fit:contain;flex-shrink:0"><strong style="font-size:16px">${item.count}回</strong></div>`).join('')}</div></button>
     </div>
     <button type="button" class="analysisBtn btn full" onclick="showMonthWeekday(${currentMonthYear},${currentMonthIndex})"><img class="weekdayCompareCalendarIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt=""> ${periodMonthLabel(p)}の曜日別比較</button>
   </div>`;
@@ -3200,7 +3200,27 @@ async function showEventBreakdown(year,index){
   const rows=names.filter(n=>counts[n]>0).map(n=>`<div class="eventRow"><span>${eventBreakdownIconLabel(n)}</span><strong>${counts[n]}回</strong></div>`).join('');
   $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のイベント</span><strong>0回</strong></div>';  $('eventBreakdownModal').classList.remove('hidden');
 }
-function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden')}
+async function showMindBreakdown(year,index){
+  const periods=getFiscalPeriods(Number(year)), p=periods[Number(index)];
+  const logs=await getLogs();
+  const periodLogs=logs.filter(x=>inDataPeriod(x.date,p));
+  const items=[
+    ['前向き','mind-positive.svg'],
+    ['穏やか','mind-calm.svg'],
+    ['不安','mind-anxiety.svg'],
+    ['イライラする','mind-irritated.svg'],
+    ['落ち込み','mind-down.svg'],
+    ['気になることがある','mind-concern.svg'],
+    ['眠たい','mind-sleepy.svg'],
+    ['休みたい','mind-rest.svg']
+  ];
+  const counts=items.map(([label,file])=>({label,file,count:periodLogs.filter(x=>x.mind===label).length}));
+  const rows=counts.filter(item=>item.count>0).map(item=>`<div class="eventRow"><span><img src="icons/${item.file}" alt="" style="width:30px;height:30px;object-fit:contain;vertical-align:middle;margin-right:8px">${item.label}</span><strong>${item.count}回</strong></div>`).join('');
+  $('eventBreakdownTitle').innerHTML='<img class="eventSheetTitleIcon" src="icons/log-layers.svg" alt="">マインドの状態';
+  $('eventBreakdownRows').innerHTML=rows||'<div class="eventRow"><span>この期間のマインド記録</span><strong>0回</strong></div>';
+  $('eventBreakdownModal').classList.remove('hidden');
+}
+function closeEventBreakdown(){const m=$('eventBreakdownModal');if(m)m.classList.add('hidden');const t=$('eventBreakdownTitle');if(t)t.innerHTML='<img class="eventSheetTitleIcon" src="icons/duty-calendar-neon.svg?v=20261105" alt="">イベントの内訳'}
 
 async function showMonthWeekday(year,index){
   currentMonthYear=Number(year); currentMonthIndex=Number(index);
