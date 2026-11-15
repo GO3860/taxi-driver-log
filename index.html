@@ -3461,34 +3461,61 @@ function showHighwayLog(){
 function saveHighwayMemo(){
   const station=String($('hwMemoStation').value||'').trim();
   const destination=String($('hwMemoDestination').value||'').trim();
-  const aliases=String($('hwMemoAliases').value||'').trim();
-  if(!station){alert('乗車地の最寄り駅を入力してください。');$('hwMemoStation').focus();return}
-  if(!destination){alert('目的地域を入力してください。');$('hwMemoDestination').focus();return}
-  const date=$('hwMemoDate').value||hwToday();
+  const entranceText=String($('hwMemoEntrance').value||'').trim();
+  const exitText=String($('hwMemoExit').value||'').trim();
   const note=String($('hwMemoNote').value||'').trim();
+  if(!destination){alert('目的地を入力してください。');$('hwMemoDestination').focus();return}
+  if(!station){alert('乗車地の最寄駅を入力してください。');$('hwMemoStation').focus();return}
+  const date=$('hwMemoDate').value||localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
   const memos=hwRead(HW_MEMOS_KEY);
-  if(hwEditingMemo){const target=memos.find(m=>m.id===hwEditingMemo);if(!target){alert('修正するメモが見つかりません。');return}Object.assign(target,{date,station,destination,aliases,note});hwWrite(HW_MEMOS_KEY,memos);hwEditingMemo=null;$('hwMemoSaveButton').textContent='簡易メモを保存';$('hwMemoCancelEdit').classList.add('hidden');}
-  else {const memo={id:hwId(),date:date,city:'',station:station,destination:destination,aliases:aliases,note:note,status:'pending',createdAt:new Date().toISOString()};memos.unshift(memo);hwWrite(HW_MEMOS_KEY,memos);}
-  $('hwMemoStation').value='';$('hwMemoDestination').value='';$('hwMemoAliases').value='';$('hwMemoNote').value='';
+  if(hwEditingMemo){
+    const target=memos.find(m=>m.id===hwEditingMemo);
+    if(!target){alert('修正するメモが見つかりません。');return}
+    Object.assign(target,{date,station,destination,entranceText,exitText,note});
+    hwWrite(HW_MEMOS_KEY,memos);hwEditingMemo=null;
+    $('hwMemoSaveButton').textContent='簡易メモを保存';$('hwMemoCancelEdit').classList.add('hidden');
+  }else{
+    const memo={id:hwId(),date,city:'',station,destination,aliases:'',entranceText,exitText,note,status:'pending',createdAt:new Date().toISOString()};
+    memos.unshift(memo);hwWrite(HW_MEMOS_KEY,memos);
+  }
+  $('hwMemoStation').value='';$('hwMemoDestination').value='';$('hwMemoEntrance').value='';$('hwMemoExit').value='';$('hwMemoNote').value='';
   $('hwMemoDate').value=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
   renderHighwayMemos();renderHighwayRoutes();
   const destOptions=$('hwDestinationOptions');
   if(destOptions){const all=[...new Set(hwRead(HW_ROUTES_KEY).map(r=>r.destination).filter(Boolean))];destOptions.innerHTML=all.map(x=>'<option value="'+escapeHtml(x)+'"></option>').join('')}
-  alert('簡易メモを保存しました。あとから乗るIC・降りるIC・路線名を登録できます。');
+  alert('簡易メモを保存しました。');
 }
+
 function renderHighwayMemos(){
   const box=$('hwMemoList');if(!box)return;
   const memos=hwRead(HW_MEMOS_KEY).filter(m=>m.status!=='done');
-  box.innerHTML=memos.length?memos.map(m=>'<div class="hwMemoItem"><div class="hwItemTitle">'+escapeHtml(m.station)+' → '+escapeHtml(m.destination)+'</div><div class="hwMeta">'+(m.aliases?'別名・通称：'+escapeHtml(m.aliases)+' ・':'')+'走行日 '+escapeHtml(m.date)+'</div>'+(m.note?'<div class="hwNote">'+escapeHtml(m.note)+'</div>':'')+'<div class="hwButtonRow"><button type="button" class="detailEdit" onclick="openHighwayFormal('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">ルートを登録</button><button type="button" class="detailEdit" onclick="editHighwayMemo('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">修正</button><button type="button" class="btn" onclick="deleteHighwayMemo('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">削除</button></div></div>').join(''):'<div class="routeDbEmpty">未整理のメモはありません。乗車地の最寄り駅と目的地域を記録しておきましょう。</div>';
+  box.innerHTML=memos.length?memos.map(m=>'<div class="hwMemoItem"><div class="hwItemTitle">'+escapeHtml(m.destination||'目的地未入力')+'</div><div class="hwMeta">乗車地の最寄駅：'+escapeHtml(m.station||'未入力')+' ・走行日 '+escapeHtml(m.date||'不明')+'</div>'+(m.entranceText?'<div class="hwNote">乗る路線名とIC：'+escapeHtml(m.entranceText)+'</div>':'')+(m.exitText?'<div class="hwNote">降りる路線名とIC：'+escapeHtml(m.exitText)+'</div>':'')+(m.note?'<div class="hwNote">注意事項：'+escapeHtml(m.note)+'</div>':'')+'<div class="hwButtonRow"><button type="button" class="detailEdit" onclick="openHighwayFormal('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">ルートを登録</button><button type="button" class="detailEdit" onclick="editHighwayMemo('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">修正</button><button type="button" class="btn" onclick="deleteHighwayMemo('+JSON.stringify(m.id).replace(/"/g,'&quot;')+')">削除</button></div></div>').join(''):'<div class="routeDbEmpty">未整理メモはありません。高速ルートの情報を簡易メモに記録できます。</div>';
 }
-function editHighwayMemo(id){const m=hwRead(HW_MEMOS_KEY).find(x=>x.id===id);if(!m)return;hwEditingMemo=id;$('hwMemoDate').value=m.date||hwToday();$('hwMemoStation').value=m.station||'';$('hwMemoDestination').value=m.destination||'';$('hwMemoAliases').value=m.aliases||'';$('hwMemoNote').value=m.note||'';$('hwMemoSaveButton').textContent='修正内容を保存';$('hwMemoCancelEdit').classList.remove('hidden');$('hwMemoDate').scrollIntoView({behavior:'smooth',block:'center'});}
-function cancelHighwayMemoEdit(){hwEditingMemo=null;$('hwMemoStation').value='';$('hwMemoDestination').value='';$('hwMemoAliases').value='';$('hwMemoNote').value='';$('hwMemoDate').value=hwToday();$('hwMemoSaveButton').textContent='簡易メモを保存';$('hwMemoCancelEdit').classList.add('hidden');}
+
+function editHighwayMemo(id){
+  const m=hwRead(HW_MEMOS_KEY).find(x=>x.id===id);if(!m)return;
+  hwEditingMemo=id;$('hwMemoDate').value=m.date||hwToday();
+  $('hwMemoStation').value=m.station||'';$('hwMemoDestination').value=m.destination||'';
+  $('hwMemoEntrance').value=m.entranceText||'';
+  $('hwMemoExit').value=m.exitText||'';
+  $('hwMemoNote').value=m.note||'';
+  $('hwMemoSaveButton').textContent='修正内容を保存';$('hwMemoCancelEdit').classList.remove('hidden');
+  $('hwMemoDestination').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelHighwayMemoEdit(){
+  hwEditingMemo=null;$('hwMemoStation').value='';$('hwMemoDestination').value='';
+  $('hwMemoEntrance').value='';$('hwMemoExit').value='';$('hwMemoNote').value='';
+  $('hwMemoDate').value=hwToday();$('hwMemoSaveButton').textContent='簡易メモを保存';
+  $('hwMemoCancelEdit').classList.add('hidden');
+}
+
 function openHighwayFormal(id){
   const memo=hwRead(HW_MEMOS_KEY).find(m=>m.id===id);if(!memo)return;
   hwEditingMemo=id;hwEditingRouteId=null;
   $('hwFormalCard').querySelector('.label').textContent='🛣️ 高速ルートを正式登録';$('hwFormalCard').querySelector('.hwSaveButton').textContent='正式登録';
   $('hwFormalMemoId').value=id;
-  $('hwFormalSummary').textContent=memo.station+' → '+memo.destination+(memo.aliases?'（'+memo.aliases+'）':'');
+  $('hwFormalSummary').textContent=memo.station+' → '+memo.destination+(memo.entranceText?' ／ 乗る：'+memo.entranceText:'')+(memo.exitText?' ／ 降りる：'+memo.exitText:'')+(memo.note?' ／ 注意：'+memo.note:'');
   $('hwFormalEntrance').value='';$('hwFormalExit').value='';
   $('hwFormalEntranceRoad').value='';$('hwFormalExitRoad').value='';
   $('hwFormalCondition').value='通常時';$('hwFormalReason').value='';$('hwFormalNotes').value='';
