@@ -2209,11 +2209,13 @@ async function editLog(id){
 }
 
 function migrateOptionalSettings(){
+  // 初めて使う人にはシンプルな画面を表示する。既存ユーザーの設定は変更しない。
   if(localStorage.getItem('taxiShowTime')===null) localStorage.setItem('taxiShowTime','0');
   if(localStorage.getItem('taxiShowBreakTime')===null) localStorage.setItem('taxiShowBreakTime','0');
-  // 営業データ欄は初期状態で表示。ユーザーが設定画面で変更した値は保持する。
-  if(localStorage.getItem('taxiShowSalesData')===null) localStorage.setItem('taxiShowSalesData','1');
+  if(localStorage.getItem('taxiShowSalesData')===null) localStorage.setItem('taxiShowSalesData','0');
   if(localStorage.getItem('taxiShowRoute')===null) localStorage.setItem('taxiShowRoute','0');
+  if(localStorage.getItem('taxiShowAreaAvg')===null) localStorage.setItem('taxiShowAreaAvg','0');
+  if(localStorage.getItem('taxiRoadQuizEnabled')===null) localStorage.setItem('taxiRoadQuizEnabled','0');
 }
 function savePersonalData(){
   const ids=['personalArea','baseDistance','baseFare','incrementDistance','incrementFare','timeDistanceMin','timeDistanceSec','timeDistanceFare','charterMin','charterFare','charterHours','charterHoursFare','discountThreshold','discountRate','pickupDistance','monthlyConstrainedHours','busySeasonConstrainedHours','dailyConstrainedHours','dailyBreakHours','dailyDrivingDistance','dailyCompanyConstrainedHours'];
