@@ -1349,7 +1349,17 @@ document.addEventListener('visibilitychange',()=>{
   if(!document.hidden)refreshDutyDateDisplay();
 });
 
+function applySimpleDefaultsFromLink(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('simple')!=='1')return;
+  // 表示設定だけをOFFにする。営業記録・道ログなどの保存データには触れない。
+  ['taxiShowTime','taxiShowBreakTime','taxiShowSalesData','taxiShowRoute','taxiShowAreaAvg','taxiRoadQuizEnabled'].forEach(key=>localStorage.setItem(key,'0'));
+  params.delete('simple');
+  const query=params.toString();
+  history.replaceState(null,'',window.location.pathname+(query?'?'+query:'')+window.location.hash);
+}
 document.addEventListener('DOMContentLoaded',()=>{
+  applySimpleDefaultsFromLink();
   startDutyDate();
   rememberTimes();
   migrateOptionalSettings();
