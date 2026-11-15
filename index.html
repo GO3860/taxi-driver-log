@@ -1186,17 +1186,18 @@ body.calendarModalOpen nav {
     <div class="label" style="display:flex;align-items:center;gap:8px"><img src="icons/road-highway.svg?v=20261107" alt="" style="width:36px;height:36px;object-fit:contain;flex:0 0 36px">高速ログ</div>
     <div class="help-text">目的地域と乗車地の最寄り駅を記録し、乗るIC・降りるICとそれぞれの路線名を登録して、大まかな高速ルートの感覚を身につけます。</div>
     <div class="hwSectionTitle" style="display:flex;align-items:center;gap:8px"><img src="icons/pen-nib.svg?v=20261107" alt="" style="width:36px;height:36px;object-fit:contain;flex:0 0 36px">簡易メモ</div>
-    <label class="hwLabel" for="hwMemoDate">走行した日</label>
-    <input id="hwMemoDate" type="date">
-    <label class="hwLabel" for="hwMemoStation">乗車地の最寄り駅</label>
-    <input id="hwMemoStation" type="text" placeholder="例：JR尼崎駅、阪神西宮駅">
-    <label class="hwLabel" for="hwMemoDestination">目的地域（必須）</label>
-    <input id="hwMemoDestination" type="text" list="hwDestinationOptions" placeholder="例：大阪市北区、神戸市中央区、新地">
+    <input id="hwMemoDate" type="hidden">
+    <label class="hwLabel" for="hwMemoDestination">目的地（必須）</label>
+    <input id="hwMemoDestination" type="text" list="hwDestinationOptions" placeholder="例：大阪市北区、神戸市中央区、梅田">
     <datalist id="hwDestinationOptions"></datalist>
-    <label class="hwLabel" for="hwMemoAliases">目的地域の別名・通称（任意）</label>
-    <input id="hwMemoAliases" type="text" placeholder="例：梅田、キタ（複数は読点で区切る）">
-    <label class="hwLabel" for="hwMemoNote">簡単なメモ（任意）</label>
-    <textarea id="hwMemoNote" placeholder="例：入口ICをあとで確認する。分岐に注意。"></textarea>
+    <label class="hwLabel" for="hwMemoStation">乗車地の最寄駅</label>
+    <input id="hwMemoStation" type="text" placeholder="例：JR尼崎駅、阪神西宮駅">
+    <label class="hwLabel" for="hwMemoEntrance">乗る路線名とIC</label>
+    <input id="hwMemoEntrance" type="text" placeholder="例：阪神高速3号神戸線・尼崎東IC">
+    <label class="hwLabel" for="hwMemoExit">降りる路線名とIC</label>
+    <input id="hwMemoExit" type="text" placeholder="例：阪神高速11号池田線・梅田出口">
+    <label class="hwLabel" for="hwMemoNote">注意事項</label>
+    <textarea id="hwMemoNote" placeholder="例：入口までの道順、分岐や合流で気をつけること"></textarea>
     <div class="hwButtonRow"><button id="hwMemoSaveButton" type="button" class="save hwSaveButton hwMemoSaveButton" onclick="saveHighwayMemo()">簡易メモを保存</button><button id="hwMemoCancelEdit" type="button" class="btn hidden" onclick="cancelHighwayMemoEdit()">キャンセル</button></div>
   </div>
   <div class="card">
