@@ -1184,7 +1184,7 @@ body.calendarModalOpen nav {
   <button type="button" class="routeDbBack" onclick="showRouteChoice()">← 道ログに戻る</button>
   <div class="card">
     <div class="label" style="display:flex;align-items:center;gap:8px"><img src="icons/road-highway.svg?v=20261107" alt="" style="width:36px;height:36px;object-fit:contain;flex:0 0 36px">高速ログ</div>
-    <div class="help-text">目的地域と乗車地の最寄り駅を記録し、乗るIC・降りるICとそれぞれの路線名を登録して、大まかな高速ルートの感覚を身につけます。</div>
+    <div class="help-text">目的地・乗車地・乗る路線とIC・降りる路線とIC・注意事項を入力して、そのまま高速ルートログとして保存します。</div>
     <div class="hwSectionTitle" style="display:flex;align-items:center;gap:8px"><img src="icons/pen-nib.svg?v=20261107" alt="" style="width:36px;height:36px;object-fit:contain;flex:0 0 36px">簡易メモ</div>
     <input id="hwMemoDate" type="hidden">
     <label class="hwLabel" for="hwMemoDestination">目的地（必須）</label>
@@ -1199,11 +1199,6 @@ body.calendarModalOpen nav {
     <label class="hwLabel" for="hwMemoNote">注意事項</label>
     <textarea id="hwMemoNote" placeholder="例：入口までの道順、分岐や合流で気をつけること"></textarea>
     <div class="hwButtonRow"><button id="hwMemoSaveButton" type="button" class="save hwSaveButton hwMemoSaveButton" onclick="saveHighwayMemo()">簡易メモを保存</button><button id="hwMemoCancelEdit" type="button" class="btn hidden" onclick="cancelHighwayMemoEdit()">キャンセル</button></div>
-  </div>
-  <div class="card">
-    <div class="label" style="display:flex;align-items:center;gap:8px"><img src="icons/memo-notepad-pencil.svg?v=20261107" alt="" style="width:36px;height:36px;object-fit:contain;flex:0 0 36px">未整理のメモ</div>
-    <div class="help-text">未整理メモから、乗るIC・降りるICと路線名を登録できます。</div>
-    <div id="hwMemoList"></div>
   </div>
   <div id="hwFormalCard" class="card hidden">
     <div class="label">🛣️ 高速ルートを正式登録</div>
@@ -3466,24 +3461,17 @@ function saveHighwayMemo(){
   const note=String($('hwMemoNote').value||'').trim();
   if(!destination){alert('目的地を入力してください。');$('hwMemoDestination').focus();return}
   if(!station){alert('乗車地の最寄駅を入力してください。');$('hwMemoStation').focus();return}
+  if(!entranceText){alert('乗る路線名とICを入力してください。');$('hwMemoEntrance').focus();return}
+  if(!exitText){alert('降りる路線名とICを入力してください。');$('hwMemoExit').focus();return}
   const date=$('hwMemoDate').value||localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
-  const memos=hwRead(HW_MEMOS_KEY);
-  if(hwEditingMemo){
-    const target=memos.find(m=>m.id===hwEditingMemo);
-    if(!target){alert('修正するメモが見つかりません。');return}
-    Object.assign(target,{date,station,destination,entranceText,exitText,note});
-    hwWrite(HW_MEMOS_KEY,memos);hwEditingMemo=null;
-    $('hwMemoSaveButton').textContent='簡易メモを保存';$('hwMemoCancelEdit').classList.add('hidden');
-  }else{
-    const memo={id:hwId(),date,city:'',station,destination,aliases:'',entranceText,exitText,note,status:'pending',createdAt:new Date().toISOString()};
-    memos.unshift(memo);hwWrite(HW_MEMOS_KEY,memos);
-  }
+  const routes=hwRead(HW_ROUTES_KEY);
+  const route={id:hwId(),memoId:'',date,city:'',station,destination,aliases:'',entranceIC:entranceText,entranceRoad:'',exitIC:exitText,exitRoad:'',road:'',waypoints:'',condition:'通常時',reason:'',notes:note,recommended:!routes.some(r=>r.station===station&&String(r.destination||'').toLowerCase()===destination.toLowerCase()&&r.recommended),createdAt:new Date().toISOString()};
+  if(route.recommended)routes.forEach(r=>{if(r.station===station&&String(r.destination||'').toLowerCase()===destination.toLowerCase())r.recommended=false});
+  routes.unshift(route);hwWrite(HW_ROUTES_KEY,routes);
   $('hwMemoStation').value='';$('hwMemoDestination').value='';$('hwMemoEntrance').value='';$('hwMemoExit').value='';$('hwMemoNote').value='';
   $('hwMemoDate').value=localStorage.getItem('taxiDutyDate')||localStorage.getItem('taxiRouteDutyDate')||hwToday();
-  renderHighwayMemos();renderHighwayRoutes();
-  const destOptions=$('hwDestinationOptions');
-  if(destOptions){const all=[...new Set(hwRead(HW_ROUTES_KEY).map(r=>r.destination).filter(Boolean))];destOptions.innerHTML=all.map(x=>'<option value="'+escapeHtml(x)+'"></option>').join('')}
-  alert('簡易メモを保存しました。');
+  renderHighwayRoutes();
+  alert('高速ルートログを保存しました。');
 }
 
 function renderHighwayMemos(){
